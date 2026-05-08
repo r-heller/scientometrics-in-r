@@ -113,8 +113,7 @@ format:
     geometry: "margin=2.5cm"
     include-in-header: styles/preamble.tex
     fig-pos: "H"
-  epub:
-    cover-image: images/cover.png
+  epub: default
 
 execute:
   freeze: auto
