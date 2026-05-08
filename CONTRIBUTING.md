@@ -31,9 +31,14 @@ missing topics, or clarity edits.
 
 The `main` branch requires:
 
-- Passing CI checks: `render`, `check`, `citations`, `lint`
-- At least one approving review
+- Passing CI checks (all must be green before merge):
+  - **Render and Deploy Book** (`render.yml`) — builds HTML via Quarto
+  - **R CMD Check** (`check.yml`) — `rcmdcheck --as-cran` on the companion package
+  - **Verify Citations** (`citations.yml`) — ensures every `@key` resolves in `references.bib` and DOIs are valid
+  - **Lint** (`lint.yml`) — `lintr::lint_dir("R")` and `styler::style_dir("R", dry = "fail")`
+- At least one approving review from `@r-heller`
 - No force pushes
+- No direct pushes — all changes via pull request
 
 ### Code style
 

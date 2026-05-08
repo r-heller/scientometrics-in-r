@@ -23,7 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      RETICULATE_PYTHON: /opt/scientometrics-py/bin/python
 
     steps:
       - name: Checkout
@@ -35,54 +34,39 @@ jobs:
           r-version: "4.4.1"
           use-public-rspm: true
 
-      - name: Setup R dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libcurl4-openssl-dev libssl-dev libxml2-dev libgit2-dev \
+            libfontconfig1-dev libharfbuzz-dev libfribidi-dev \
+            libpoppler-cpp-dev libtesseract-dev libleptonica-dev \
+            libudunits2-dev libgdal-dev libmagick++-dev
+
+      - name: Cache renv packages
+        uses: actions/cache@v4
         with:
-          extra-packages: any::renv
-          needs: book
+          path: ~/.local/share/renv
+          key: renv-${{ runner.os }}-${{ hashFiles('renv.lock') }}
+          restore-keys: renv-${{ runner.os }}-
 
       - name: Restore renv
         run: |
+          install.packages("renv")
           renv::restore(prompt = FALSE)
         shell: Rscript {0}
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Setup Python venv
-        run: |
-          python -m venv /opt/scientometrics-py
-          /opt/scientometrics-py/bin/pip install sentence-transformers bertopic umap-learn hdbscan
 
       - name: Install Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
-      - name: Render book
-        uses: quarto-dev/quarto-actions/render@v2
+      - name: Render book (HTML only)
+        run: quarto render --to html
 
       - name: Upload HTML artifact
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           path: _book
-
-      - name: Upload PDF artifact
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v4
-        with:
-          name: book-pdf
-          path: _book/*.pdf
-          if-no-files-found: ignore
-
-      - name: Upload EPUB artifact
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v4
-        with:
-          name: book-epub
-          path: _book/*.epub
-          if-no-files-found: ignore
 
   deploy:
     if: github.event_name != 'pull_request'
