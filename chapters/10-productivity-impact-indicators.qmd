@@ -1,5 +1,281 @@
 ---
 title: "Productivity and Impact Indicators"
+subtitle: "h-index, g-index, MNCS, and PP(top 10%)"
+author: "Raban Heller"
+date: last-modified
+abstract: |
+  This chapter covers the most widely used author- and paper-level
+  bibliometric indicators. We compute the h-index, g-index, m-quotient,
+  Mean Normalized Citation Score, and the proportion of papers in the top
+  10% of their field. Every metric is computed from code and accompanied
+  by a responsible-use discussion grounded in the Leiden Manifesto.
+keywords: [scientometrics, h-index, g-index, mncs, impact, indicators, leiden-manifesto]
 ---
 
-*This chapter is under development.*
+## Learning objectives {#sec-indicators-objectives}
+
+After completing this chapter, you will be able to:
+
+- Compute the h-index, g-index, and m-quotient from a vector of citation counts
+- Explain the difference between size-dependent and size-independent indicators
+- Calculate field-normalized indicators (MNCS, PP(top 10%)) and explain why normalization matters
+- Articulate the limitations of each indicator and the risks of misuse, citing the Leiden Manifesto
+
+## Setup {#sec-indicators-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#sec-indicators-background}
+
+Quantitative indicators are central to research evaluation — and among the most contested tools in science policy. The h-index, proposed by @hirsch2005, counts the number *h* of an author's papers that have each received at least *h* citations. Its simplicity made it wildly popular, but also obscures important nuances: it conflates productivity with impact, is insensitive to highly cited papers, and can only increase over a career [@waltman2016].
+
+The **g-index** [@egghe2006] addresses the insensitivity to top-cited papers by requiring that the top *g* papers have together received at least *g*² citations. The **m-quotient** divides the h-index by career length, offering a rough age correction.
+
+These are all *raw* indicators. Comparing them across fields is meaningless without **field normalization**. A citation count of 50 is exceptional in mathematics but ordinary in biomedical research. The **Mean Normalized Citation Score** (MNCS) divides each paper's citations by the world average for its field and publication year [@waltman2012mncs]. The **PP(top 10%)** — the proportion of an entity's papers in the top 10% most cited in their field — is a percentile-based indicator recommended by the Leiden Ranking.
+
+The Leiden Manifesto [@hicks2015] and the San Francisco Declaration on Research Assessment [@dora2012] both caution against mechanical use of any single indicator. Indicators should support, not replace, qualitative judgement.
+
+## Worked example {#sec-indicators-example}
+
+### Acquiring sample data
+
+We fetch a sample of works and their citation counts from OpenAlex.
+
+```{r}
+#| label: fetch-indicator-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S39224261",
+  from_publication_date = "2018-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 500, seed = 42)
+)
+
+works_slim <- works |>
+  select(id, display_name, publication_date, cited_by_count, doi) |>
+  mutate(year = year(publication_date))
+
+summary(works_slim$cited_by_count)
+```
+
+### Computing the h-index
+
+```{r}
+#| label: compute-h-index
+h <- compute_h_index(works_slim$cited_by_count)
+cat(glue("h-index for this corpus: {h}\n"))
+```
+
+The h-index tells us that {h} papers in this sample have each been cited at least {h} times.
+
+### Computing the g-index
+
+```{r}
+#| label: compute-g-index
+compute_g_index <- function(citations) {
+  sorted <- sort(citations, decreasing = TRUE)
+  cumsum_cites <- cumsum(sorted)
+  g_candidates <- which(cumsum_cites >= seq_along(sorted)^2)
+  if (length(g_candidates) == 0) return(0L)
+  as.integer(max(g_candidates))
+}
+
+g <- compute_g_index(works_slim$cited_by_count)
+cat(glue("g-index for this corpus: {g}\n"))
+```
+
+### The m-quotient
+
+The m-quotient normalizes the h-index by career length (here, publication span).
+
+```{r}
+#| label: compute-m-quotient
+career_years <- as.numeric(
+  difftime(max(works_slim$publication_date),
+           min(works_slim$publication_date),
+           units = "days")
+) / 365.25
+
+m_quotient <- h / career_years
+cat(glue("m-quotient: {round(m_quotient, 3)} (over {round(career_years, 1)} years)\n"))
+```
+
+### Field-normalized indicators: MNCS
+
+To compute MNCS, we need field averages. We simulate field means here; in a real analysis these would come from the OpenAlex snapshot or a reference dataset.
+
+```{r}
+#| label: compute-mncs
+field_means_by_year <- works_slim |>
+  group_by(year) |>
+  summarise(field_mean = mean(cited_by_count), .groups = "drop")
+
+works_normalized <- works_slim |>
+  left_join(field_means_by_year, by = "year") |>
+  mutate(ncs = field_normalize(cited_by_count, field_mean))
+
+mncs <- mean(works_normalized$ncs, na.rm = TRUE)
+cat(glue("MNCS: {round(mncs, 3)}\n"))
+```
+
+An MNCS of 1.0 means the entity performs at exactly the world average. Values above 1.0 indicate above-average citation impact.
+
+### PP(top 10%)
+
+```{r}
+#| label: compute-pp-top10
+works_with_pct <- works_normalized |>
+  group_by(year) |>
+  mutate(
+    pct_rank = percent_rank(cited_by_count),
+    is_top10 = pct_rank >= 0.90
+  ) |>
+  ungroup()
+
+pp_top10 <- mean(works_with_pct$is_top10)
+cat(glue("PP(top 10%): {scales::percent(pp_top10, accuracy = 0.1)}\n"))
+```
+
+### Visualization
+
+```{r}
+#| label: fig-indicators-citation-dist
+#| fig-cap: "Citation distribution of sampled works, with the h-index threshold marked."
+#| fig-alt: "Histogram of citation counts with a vertical dashed line at the h-index value, showing the long-tailed distribution typical of citation data."
+#| fig-width: 6
+#| fig-height: 4
+works_slim |>
+  ggplot(aes(x = cited_by_count)) +
+  geom_histogram(binwidth = 5, fill = palette_sci(1), color = "white") +
+  geom_vline(xintercept = h, linetype = "dashed", color = "red", linewidth = 0.8) +
+  annotate("text", x = h + 5, y = Inf, label = glue("h = {h}"),
+           vjust = 2, hjust = 0, color = "red", size = 4) +
+  labs(x = "Citation count", y = "Number of works") +
+  theme_sci()
+```
+
+```{r}
+#| label: fig-indicators-mncs-by-year
+#| fig-cap: "Mean Normalized Citation Score by publication year."
+#| fig-alt: "Line chart showing the MNCS trend across publication years, with a horizontal reference line at 1.0 representing the world average."
+#| fig-width: 6
+#| fig-height: 4
+works_normalized |>
+  group_by(year) |>
+  summarise(mncs = mean(ncs, na.rm = TRUE), .groups = "drop") |>
+  ggplot(aes(x = year, y = mncs)) +
+  geom_line(color = palette_sci(1), linewidth = 1) +
+  geom_point(color = palette_sci(1), size = 3) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "grey50") +
+  labs(x = "Publication year", y = "MNCS") +
+  theme_sci()
+```
+
+### Summary table
+
+```{r}
+#| label: tbl-indicators-summary
+#| tbl-cap: "Summary of computed indicators."
+tibble(
+  Indicator = c("h-index", "g-index", "m-quotient", "MNCS", "PP(top 10%)"),
+  Value = c(
+    as.character(h),
+    as.character(g),
+    round(m_quotient, 3) |> as.character(),
+    round(mncs, 3) |> as.character(),
+    scales::percent(pp_top10, accuracy = 0.1)
+  ),
+  Interpretation = c(
+    glue("{h} papers with >= {h} citations each"),
+    glue("Top {g} papers have >= {g}^2 = {g^2} cumulative citations"),
+    glue("h-index per year of publication activity"),
+    glue("{ifelse(mncs > 1, 'Above', 'Below')} world average"),
+    glue("{scales::percent(pp_top10, accuracy = 0.1)} of papers in the top decile")
+  )
+) |>
+  gt()
+```
+
+## Diagnostics and interpretation {#sec-indicators-diagnostics}
+
+When interpreting bibliometric indicators, keep in mind:
+
+- **Citation windows matter.** Recent papers have had less time to accumulate citations. The MNCS accounts for this by normalizing within publication year, but raw h-index and g-index do not.
+- **Field differences.** A "good" h-index in mathematics differs vastly from one in biomedicine. Only compare within fields, or use field-normalized indicators.
+- **Size dependence.** The h-index grows with the number of papers published. Comparing researchers at different career stages or with different publication rates requires the m-quotient or percentile indicators.
+- **Self-citations.** None of the indicators above exclude self-citations. In a full analysis, consider computing variants with and without self-citations.
+
+## Limitations and responsible use {#sec-indicators-limitations}
+
+::: {.callout-warning}
+## Limitations and responsible use
+
+No single number can capture the quality, significance, or societal impact of a researcher's work. The Leiden Manifesto [@hicks2015] offers ten principles for the responsible use of metrics:
+
+1. Quantitative evaluation should support, not replace, expert assessment.
+2. Measure performance against the research missions of the institution, group, or researcher.
+3. Protect excellence in locally relevant research (not just globally visible research).
+4. Keep data collection and analytical processes open, transparent, and simple.
+5. Allow those being evaluated to verify data and analysis.
+
+The h-index in particular can be gamed through self-citation, salami slicing, or guest authorship. It penalises researchers in small fields, those who publish fewer but higher-impact works, and those who take career breaks. The DORA declaration [@dora2012] explicitly warns against using journal-level metrics (like the Impact Factor) as surrogates for individual article quality — but the same caution applies to any single indicator.
+
+**Always present multiple indicators alongside qualitative context.** Never use a single number to make hiring, promotion, or funding decisions.
+:::
+
+## Common pitfalls {#sec-indicators-pitfalls}
+
+::: {.callout-important}
+## Common pitfalls
+
+- **Comparing h-indices across fields.** A physicist with h = 40 and a mathematician with h = 15 may have equivalent standing in their respective fields. Use field-normalized indicators for cross-field comparisons.
+- **Ignoring the citation window.** Computing MNCS without accounting for publication year conflates old, well-cited papers with recent ones that haven't had time to accumulate citations.
+- **Using the wrong denominator for PP(top 10%).** The "top 10%" must be defined relative to the same field and year, not relative to your own corpus.
+- **Reporting precision that isn't there.** An MNCS of 1.237 vs. 1.241 is not a meaningful difference. Report with appropriate precision and always provide confidence intervals or bootstrapped uncertainty where possible.
+:::
+
+## Exercises {#sec-indicators-exercises}
+
+1. **Career h-index.** Fetch all works by a specific author using `oa_fetch(entity = "works", author.id = "...")`. Compute their h-index, g-index, and m-quotient. How do the three indicators tell different stories about the same career?
+
+2. **Self-citation sensitivity.** If you could identify self-citations (e.g., via author overlap in the reference list), how would removing them affect the h-index? Write pseudocode for this analysis.
+
+3. **Bootstrap uncertainty for MNCS.** Use `replicate()` and `sample()` to compute a 95% confidence interval for the MNCS of your sample. How wide is the interval?
+
+4. **PP(top 10%) vs. MNCS.** For the sample data, plot PP(top 10%) against MNCS by year. Do they always agree on which years performed best?
+
+::: {.callout-tip collapse="true"}
+## Solutions
+
+Solutions are provided in @sec-cheatsheets.
+:::
+
+## Further reading {#sec-indicators-reading}
+
+- @hirsch2005 — The original h-index paper.
+- @egghe2006 — The g-index, addressing the h-index's insensitivity to highly cited papers.
+- @waltman2016 — A comprehensive review of citation impact indicators and their properties.
+- @waltman2012mncs — The theoretical basis for the MNCS ("new crown indicator").
+- @hicks2015 — The Leiden Manifesto: ten principles for responsible metrics.
+- @dora2012 — DORA: the San Francisco Declaration on Research Assessment.
+
+## Session info {#sec-indicators-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
