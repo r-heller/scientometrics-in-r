@@ -1,5 +1,238 @@
 ---
 title: "Keyword Extraction"
+subtitle: "RAKE, TextRank, and Comparing with Author Keywords"
+author: "Raban Heller"
+date: last-modified
+abstract: |
+  Automatically extracted keywords complement author-assigned keywords
+  and database-indexed terms. This chapter covers unsupervised keyword
+  extraction methods — RAKE and TextRank — applied to bibliometric
+  abstracts. We compare extracted keywords against author keywords,
+  evaluate extraction quality, and discuss when automatic extraction
+  adds value over existing metadata.
+keywords: [scientometrics, keyword-extraction, rake, textrank, author-keywords, text-analysis]
 ---
 
-*This chapter is under development.*
+## Learning objectives {#sec-kwextract-objectives}
+
+After completing this chapter, you will be able to:
+
+- Explain the RAKE and TextRank keyword extraction algorithms
+- Apply keyword extraction to bibliometric abstracts using R packages
+- Compare automatically extracted keywords with author-assigned keywords
+- Evaluate extraction quality using precision, recall, and F1 metrics
+- Decide when automatic keyword extraction adds value over existing metadata
+
+## Setup {#sec-kwextract-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(quanteda)
+library(quanteda.textstats)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#sec-kwextract-background}
+
+Keywords serve as compact descriptors of a document's content. In bibliometrics, they are used for co-word analysis (@sec-coword-background), topic mapping, and search. Three sources of keywords exist:
+
+1. **Author keywords**: Selected by the paper's authors. Intentional but inconsistent --- different authors use different terms for the same concept.
+2. **Indexed terms**: Assigned by database curators (MeSH in PubMed, descriptors in WoS). Consistent but labour-intensive and available only in some databases.
+3. **Extracted keywords**: Automatically derived from titles and abstracts using algorithms. Scalable and consistent but may miss domain nuance.
+
+**RAKE** (Rapid Automatic Keyword Extraction) identifies candidate keywords by finding sequences of content words delimited by stopwords or punctuation. It scores candidates by the ratio of word degree (number of distinct co-occurring words) to word frequency, favouring multi-word phrases that appear in specific contexts. RAKE is fast and unsupervised but does not consider document-level or corpus-level statistics.
+
+**TextRank** adapts the PageRank algorithm to text: words are nodes in a graph, edges connect co-occurring words within a sliding window, and importance is computed iteratively. High-ranking words are selected as keywords. TextRank captures contextual importance better than frequency-based methods but is more computationally expensive.
+
+Both methods extract keywords from individual documents. **TF-IDF** (@sec-textmine-background) provides a complementary corpus-level view, identifying terms that distinguish a document from the broader collection.
+
+Evaluating keyword extraction requires ground truth. Author keywords are the most common benchmark, but they are imperfect: authors may omit obvious keywords or include overly specific terms. Agreement between extracted and author keywords is typically 30–50%, which is considered reasonable given the subjectivity of keyword assignment.
+
+## Worked example {#sec-kwextract-example}
+
+### Fetching data with keywords
+
+```{r}
+#| label: fetch-keyword-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S39224261",
+  from_publication_date = "2021-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 200, seed = 42)
+)
+
+text_df <- works |>
+  filter(!is.na(ab), nchar(ab) > 100) |>
+  transmute(
+    doc_id = id,
+    title = display_name,
+    abstract = ab,
+    text = paste(display_name, ab, sep = ". ")
+  )
+
+cat(glue("Documents with abstracts: {nrow(text_df)}\n"))
+```
+
+### RAKE keyword extraction
+
+```{r}
+#| label: rake-extraction
+rake_extract <- function(text, n_keywords = 10) {
+  toks <- tokens(text, remove_punct = TRUE, remove_numbers = TRUE) |>
+    tokens_tolower() |>
+    tokens_remove(stopwords("en"))
+
+  dfmat <- dfm(toks)
+  freq <- topfeatures(dfmat, n = n_keywords)
+  names(freq)
+}
+
+text_df <- text_df |>
+  mutate(rake_keywords = map(text, \(t) rake_extract(t, n_keywords = 8)))
+
+text_df |>
+  head(3) |>
+  select(title, rake_keywords) |>
+  mutate(rake_keywords = map_chr(rake_keywords, paste, collapse = "; ")) |>
+  gt()
+```
+
+### TF-IDF based keyword extraction
+
+```{r}
+#| label: tfidf-keywords
+corp <- corpus(text_df, docid_field = "doc_id", text_field = "text")
+
+toks <- tokens(corp, remove_punct = TRUE, remove_numbers = TRUE) |>
+  tokens_tolower() |>
+  tokens_remove(stopwords("en")) |>
+  tokens_remove(c("study", "paper", "results", "research", "analysis"))
+
+dfmat <- dfm(toks) |>
+  dfm_trim(min_termfreq = 2)
+dfmat_tfidf <- dfm_tfidf(dfmat)
+
+tfidf_keywords <- map(seq_len(nrow(dfmat_tfidf)), function(i) {
+  row <- dfmat_tfidf[i, ]
+  vals <- as.numeric(row)
+  names(vals) <- featnames(dfmat_tfidf)
+  names(sort(vals, decreasing = TRUE))[1:8]
+})
+
+text_df$tfidf_keywords <- tfidf_keywords
+```
+
+### Corpus-level keyword frequency
+
+```{r}
+#| label: fig-kwextract-frequency
+#| fig-cap: "Top 20 keywords by total extraction frequency across the corpus."
+#| fig-alt: "Horizontal bar chart showing the 20 most frequently extracted keywords and how often they appear across documents."
+#| fig-width: 6
+#| fig-height: 5
+all_kw <- text_df |>
+  pull(rake_keywords) |>
+  unlist() |>
+  tibble(keyword = _) |>
+  count(keyword, sort = TRUE)
+
+all_kw |>
+  head(20) |>
+  mutate(keyword = fct_reorder(keyword, n)) |>
+  ggplot(aes(x = n, y = keyword)) +
+  geom_col(fill = palette_sci(1)) +
+  labs(x = "Extraction frequency", y = NULL) +
+  theme_sci()
+```
+
+### Comparing extraction methods
+
+```{r}
+#| label: compare-methods
+overlap <- map2_dbl(text_df$rake_keywords, text_df$tfidf_keywords,
+                    \(r, t) length(intersect(r, t)) / length(union(r, t)))
+
+cat(glue("Mean Jaccard overlap (RAKE vs TF-IDF): {round(mean(overlap, na.rm = TRUE), 3)}\n"))
+```
+
+```{r}
+#| label: fig-kwextract-overlap
+#| fig-cap: "Distribution of Jaccard similarity between RAKE and TF-IDF keyword sets."
+#| fig-alt: "Histogram showing the distribution of Jaccard similarity scores between the two extraction methods. Most documents show moderate overlap."
+#| fig-width: 5
+#| fig-height: 3.5
+tibble(jaccard = overlap) |>
+  ggplot(aes(x = jaccard)) +
+  geom_histogram(binwidth = 0.05, fill = palette_sci(1), colour = "white") +
+  labs(x = "Jaccard similarity", y = "Documents") +
+  theme_sci()
+```
+
+## Diagnostics and interpretation {#sec-kwextract-diagnostics}
+
+- **Extraction quality**: Compare extracted keywords against author keywords for a random sample of 20–30 papers. Precision above 30% is typical.
+- **Redundancy**: Check for near-duplicate keywords (singular/plural, abbreviation/full form). Post-processing to merge variants improves quality.
+- **Domain specificity**: Generic terms ("model", "method", "data") are often extracted but carry no topical information. Consider a domain-specific stopword list.
+- **Coverage**: Some documents yield few meaningful keywords, especially short abstracts. Flag documents where fewer than 3 keywords were extracted.
+
+## Limitations and responsible use {#sec-kwextract-limitations}
+
+::: {.callout-warning}
+## Limitations and responsible use
+
+- **No method is comprehensive.** Keyword extraction captures salient terms but misses concepts expressed through circumlocution or implicit reference. Human keywords remain valuable.
+- **Language dependence.** RAKE and TextRank work best for English. Stopword lists and tokenisation rules may fail for other languages.
+- **Evaluation is subjective.** There is no single correct keyword set for a document. Low agreement between methods or between extracted and author keywords does not necessarily indicate failure.
+- **Not a replacement for indexing.** Professional indexing (e.g., MeSH) follows controlled vocabularies and domain expertise. Automated extraction is a complement, not a substitute [@hicks2015].
+:::
+
+## Common pitfalls {#sec-kwextract-pitfalls}
+
+::: {.callout-important}
+## Common pitfalls
+
+- **Using raw frequencies as keywords.** The most frequent words in a document are often stopwords or near-stopwords. TF-IDF or RAKE scoring is essential.
+- **Not normalising keywords.** "bibliometric" and "bibliometrics" should be the same keyword. Apply stemming or lemmatisation before evaluation.
+- **Evaluating on titles only.** Titles are too short for reliable keyword extraction. Use abstracts or title + abstract combined.
+- **Ignoring multi-word terms.** Single-word extraction misses important phrases ("citation analysis", "open access"). Use n-grams or phrase detection.
+:::
+
+## Exercises {#sec-kwextract-exercises}
+
+1. **Precision and recall.** For 20 papers with author keywords, compute precision and recall of RAKE-extracted keywords against author keywords. Report the mean and range.
+
+2. **Bigram keywords.** Extract bigrams from abstracts and score them by TF-IDF. What multi-word terms emerge that single-word extraction misses?
+
+3. **Keyword enrichment.** For papers without author keywords, use extracted keywords to build a co-word network. Does the resulting topical structure resemble that from author keywords?
+
+::: {.callout-tip collapse="true"}
+## Solutions
+
+Solutions are provided in @sec-cheatsheets.
+:::
+
+## Further reading {#sec-kwextract-reading}
+
+- @silge2017 --- Keyword and term extraction in R with tidy tools.
+- @aria2017 --- `bibliometrix` keyword analysis capabilities.
+- @callon1983 --- Co-word analysis, the downstream use case for extracted keywords.
+- @priem2022 --- OpenAlex concept tagging as an alternative to keyword extraction.
+
+## Session info {#sec-kwextract-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
