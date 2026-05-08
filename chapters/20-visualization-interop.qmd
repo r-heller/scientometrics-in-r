@@ -1,5 +1,302 @@
 ---
-title: "Visualization and Interop"
+title: "Network Visualization and Interoperability"
+subtitle: "Exporting to Gephi, VOSviewer, and Interactive Formats"
+author: "Raban Heller"
+date: last-modified
+abstract: |
+  This chapter covers best practices for visualising bibliometric networks
+  and exporting them to external tools. We demonstrate export to Gephi
+  (GEXF/GraphML), VOSviewer (map/network files), and Pajek formats,
+  as well as interactive browser-based visualisation with visNetwork.
+  Layout algorithms, colour strategies, and publication-quality figure
+  production are also covered.
+keywords: [scientometrics, network-visualization, gephi, vosviewer, visnetwork, interoperability]
 ---
 
-*This chapter is under development.*
+## Learning objectives {#sec-viz-objectives}
+
+After completing this chapter, you will be able to:
+
+- Choose appropriate layout algorithms for different network types
+- Export igraph networks to Gephi (GraphML), VOSviewer, and Pajek formats
+- Create interactive network visualisations with `visNetwork`
+- Apply colour and size encoding that communicates structure clearly
+- Produce publication-quality static network figures with `ggraph`
+
+## Setup {#sec-viz-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(igraph)
+library(tidygraph)
+library(ggraph)
+library(visNetwork)
+library(glue)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#sec-viz-background}
+
+Network visualisation is both an analytical tool and a communication device. A well-designed network figure can reveal structure --- clusters, bridges, outliers --- at a glance. A poorly designed one obscures these patterns in visual noise.
+
+**Layout algorithms** determine node positions. Force-directed layouts (Fruchterman-Reingold, Kamada-Kawai) simulate physical forces: connected nodes attract, all nodes repel. They work well for small-to-medium networks (up to ~1,000 nodes) and produce aesthetically pleasing results. For larger networks, the DrL (Distributed Recursive Layout) or OpenOrd algorithms scale better. For trees or hierarchies, Reingold-Tilford or Sugiyama layouts are appropriate. The choice of algorithm depends on the network's structure and the visual question being asked.
+
+**Visual encoding** maps network properties to visual channels: node size (degree, centrality), node colour (community, attribute), edge width (weight), and edge colour or transparency. Effective encoding follows the principle of proportional ink: the visual weight of an element should correspond to its data importance. Avoid redundant encoding (mapping the same variable to both size and colour) and limit the number of distinct colours to what the reader can distinguish (typically 8–12 categories) [@fortunato2010].
+
+**Interoperability** is essential because no single tool excels at everything. R with igraph and ggraph is excellent for reproducible analysis and publication figures. Gephi [@bastian2009] provides a rich GUI for exploration and layout refinement. VOSviewer specialises in bibliometric network visualisation with built-in clustering. Pajek handles very large networks efficiently. A practical workflow often involves constructing and analysing the network in R, then exporting to a specialised tool for specific visualisation tasks.
+
+**Reproducibility** requires that layouts are deterministic. Force-directed algorithms start from random positions, so `set.seed()` before every layout computation. For cross-tool reproducibility, export node coordinates alongside the network data.
+
+## Worked example {#sec-viz-example}
+
+### Building a sample network
+
+We reuse a co-authorship network from Scientometrics.
+
+```{r}
+#| label: build-sample-network
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S39224261",
+  from_publication_date = "2021-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 200, seed = 42)
+)
+
+author_data <- works |>
+  select(id, author) |>
+  unnest(author, names_sep = "_") |>
+  select(work_id = id, author_id = author_au_id,
+         author_name = author_au_display_name) |>
+  filter(!is.na(author_id))
+
+edges <- author_data |>
+  inner_join(author_data, by = "work_id", suffix = c("_1", "_2"),
+             relationship = "many-to-many") |>
+  filter(author_id_1 < author_id_2) |>
+  count(author_id_1, author_id_2, name = "weight")
+
+g <- graph_from_data_frame(
+  edges |> select(author_id_1, author_id_2, weight),
+  directed = FALSE
+) |>
+  simplify(edge.attr.comb = list(weight = "sum"))
+
+comp <- components(g)
+giant <- induced_subgraph(g, which(comp$membership == which.max(comp$csize)))
+
+comm <- cluster_leiden(giant, resolution_parameter = 1.0,
+                       objective_function = "modularity")
+V(giant)$community <- membership(comm)
+V(giant)$degree <- degree(giant)
+
+author_lookup <- author_data |> distinct(author_id, author_name)
+V(giant)$label <- author_lookup$author_name[
+  match(V(giant)$name, author_lookup$author_id)
+]
+
+cat(glue("Network: {vcount(giant)} nodes, {ecount(giant)} edges\n"))
+```
+
+### Comparing layout algorithms
+
+```{r}
+#| label: fig-viz-layouts
+#| fig-cap: "The same network rendered with four different layout algorithms."
+#| fig-alt: "A 2x2 panel showing the same co-authorship network plotted with Fruchterman-Reingold, Kamada-Kawai, stress, and DRL layouts. Node colours indicate communities."
+#| fig-width: 8
+#| fig-height: 7
+tg <- as_tbl_graph(giant) |>
+  mutate(community = as.factor(community))
+
+layouts <- c("fr", "kk", "stress", "drl")
+layout_names <- c("Fruchterman-Reingold", "Kamada-Kawai", "Stress", "DrL")
+
+plots <- map2(layouts, layout_names, function(algo, name) {
+  set.seed(42)
+  ggraph(tg, layout = algo) +
+    geom_edge_link(alpha = 0.1, colour = "grey60") +
+    geom_node_point(aes(colour = community, size = degree), alpha = 0.7) +
+    scale_size_continuous(range = c(0.5, 4), guide = "none") +
+    scale_colour_manual(values = palette_sci(
+      n_distinct(V(giant)$community)
+    ), guide = "none") +
+    labs(title = name) +
+    theme_graph()
+})
+
+patchwork::wrap_plots(plots, ncol = 2)
+```
+
+### Exporting to GraphML (Gephi)
+
+```{r}
+#| label: export-graphml
+out_dir <- here::here("data")
+graphml_path <- file.path(out_dir, "coauth_network.graphml")
+write_graph(giant, graphml_path, format = "graphml")
+cat(glue("Exported GraphML: {graphml_path}\n"))
+cat(glue("File size: {round(file.size(graphml_path) / 1024, 1)} KB\n"))
+```
+
+### Exporting to Pajek format
+
+```{r}
+#| label: export-pajek
+pajek_path <- file.path(out_dir, "coauth_network.net")
+write_graph(giant, pajek_path, format = "pajek")
+cat(glue("Exported Pajek: {pajek_path}\n"))
+```
+
+### Exporting to VOSviewer format
+
+VOSviewer reads tab-separated map and network files.
+
+```{r}
+#| label: export-vosviewer
+set.seed(42)
+coords <- layout_with_fr(giant)
+
+vos_map <- tibble(
+  id = seq_len(vcount(giant)),
+  label = V(giant)$label,
+  x = coords[, 1],
+  y = coords[, 2],
+  cluster = V(giant)$community,
+  weight = V(giant)$degree
+)
+
+vos_network <- as_data_frame(giant, what = "edges") |>
+  mutate(
+    from_idx = match(from, V(giant)$name),
+    to_idx = match(to, V(giant)$name)
+  ) |>
+  select(from_idx, to_idx, weight)
+
+map_path <- file.path(out_dir, "vosviewer_map.txt")
+net_path <- file.path(out_dir, "vosviewer_network.txt")
+
+write_tsv(vos_map, map_path)
+write_tsv(vos_network, net_path)
+cat(glue("VOSviewer map: {map_path}\n"))
+cat(glue("VOSviewer network: {net_path}\n"))
+```
+
+### Interactive visualisation with visNetwork
+
+```{r}
+#| label: fig-viz-interactive
+#| fig-cap: "Interactive co-authorship network (zoom, pan, and hover for details)."
+#| fig-alt: "Interactive network visualisation where nodes can be hovered for author names and communities can be explored by zooming."
+vis_nodes <- tibble(
+  id = V(giant)$name,
+  label = ifelse(V(giant)$degree > quantile(V(giant)$degree, 0.9),
+                 V(giant)$label, ""),
+  title = paste0(V(giant)$label, "<br>Degree: ", V(giant)$degree,
+                 "<br>Community: ", V(giant)$community),
+  group = as.character(V(giant)$community),
+  value = V(giant)$degree
+)
+
+vis_edges <- as_data_frame(giant, what = "edges") |>
+  select(from, to, weight = weight)
+
+visNetwork(vis_nodes, vis_edges, width = "100%", height = "500px") |>
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE) |>
+  visPhysics(stabilization = FALSE) |>
+  visLayout(randomSeed = 42)
+```
+
+### Publication-quality figure
+
+```{r}
+#| label: fig-viz-publication
+#| fig-cap: "Publication-ready co-authorship network with labelled high-degree nodes."
+#| fig-alt: "A clean, publication-quality network visualisation with minimal visual clutter. High-degree nodes are labelled with author names. Community colours are distinct and colour-blind friendly."
+#| fig-width: 7
+#| fig-height: 5
+set.seed(42)
+
+ggraph(tg, layout = "fr") +
+  geom_edge_link(alpha = 0.08, colour = "grey60") +
+  geom_node_point(aes(size = degree, colour = community), alpha = 0.8) +
+  geom_node_text(
+    aes(label = ifelse(degree > quantile(degree, 0.95), label, NA)),
+    repel = TRUE, size = 2.5, max.overlaps = 15, na.rm = TRUE
+  ) +
+  scale_size_continuous(range = c(1, 6), guide = "none") +
+  scale_colour_manual(values = palette_sci(
+    n_distinct(V(giant)$community)
+  )) +
+  labs(colour = "Community") +
+  theme_graph() +
+  theme(legend.position = "bottom")
+```
+
+## Diagnostics and interpretation {#sec-viz-diagnostics}
+
+- **Layout quality**: A good layout separates communities visually, minimises edge crossings, and distributes nodes evenly. If communities overlap heavily, try a different algorithm or increase the number of layout iterations.
+- **Readability**: If the network is too dense to read, reduce the number of nodes (filter by degree), increase edge transparency, or remove edges below a weight threshold.
+- **Colour distinguishability**: Test figures in greyscale and with colour-blindness simulators. Viridis-based palettes (used by `palette_sci()`) are designed for this.
+- **Export verification**: After exporting, open the file in the target tool (Gephi, VOSviewer) to verify that node attributes, edge weights, and labels transferred correctly.
+
+## Limitations and responsible use {#sec-viz-limitations}
+
+::: {.callout-warning}
+## Limitations and responsible use
+
+- **Visualisation is not analysis.** A network figure is a communication tool. The visual impression can mislead if the layout, filtering, or colour encoding obscures structure. Always report the quantitative metrics alongside figures.
+- **Layout is not geography.** Absolute positions in a force-directed layout are meaningless; only relative distances carry information. Never compare positions across different layouts or runs without the same seed.
+- **Large networks are unreadable.** Beyond ~500 nodes, static network plots become unintelligible. Use interactive visualisation, backbone extraction (@sec-backbone-example), or subnetwork extraction for large data.
+- **Export formats lose information.** GraphML preserves most attributes; Pajek format is more limited. Always verify exports and document what was lost [@hicks2015].
+:::
+
+## Common pitfalls {#sec-viz-pitfalls}
+
+::: {.callout-important}
+## Common pitfalls
+
+- **Forgetting `set.seed()`.** Without a fixed seed, force-directed layouts change every render, making figures irreproducible across HTML and PDF.
+- **Encoding too many variables.** Mapping degree to size, community to colour, *and* betweenness to transparency creates visual overload. Choose two visual channels at most.
+- **Using default igraph plots.** Base R `plot.igraph()` produces low-quality figures. Use `ggraph` for publication and `visNetwork` for interactive exploration.
+- **Exporting without coordinates.** If you export a network to Gephi without coordinates, Gephi will recompute the layout, producing a different figure than your R output.
+:::
+
+## Exercises {#sec-viz-exercises}
+
+1. **Layout comparison.** Apply five different layout algorithms to the same network. Which layout best reveals the community structure? Time each layout and report the trade-off between quality and speed.
+
+2. **Interactive filtering.** Create a `visNetwork` visualisation where users can filter by community membership. Add a dropdown selector for community.
+
+3. **Gephi round-trip.** Export the network to GraphML, import into Gephi, apply a Force Atlas 2 layout, export as PDF. Compare the Gephi figure with the ggraph version.
+
+4. **Colour-blind check.** Render the network figure with 3, 5, and 10 communities. At what point do the viridis colours become hard to distinguish? Test with a colour-blindness simulator.
+
+::: {.callout-tip collapse="true"}
+## Solutions
+
+Solutions are provided in @sec-cheatsheets.
+:::
+
+## Further reading {#sec-viz-reading}
+
+- @bastian2009 --- Gephi: an open-source platform for network visualisation and exploration.
+- @fortunato2010 --- Community detection methods with extensive visualisation examples.
+- @waltman2012 --- VOSviewer's approach to bibliometric network visualisation.
+- @aria2017 --- `bibliometrix` includes network visualisation via `biblioshiny()`.
+
+## Session info {#sec-viz-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
