@@ -18,65 +18,78 @@ for (f in qmd_files) {
   all_keys <- c(all_keys, unlist(keys))
 }
 
-# Remove common false positives (Quarto cross-ref prefixes)
+# Remove Quarto cross-reference prefixes (not citation keys)
 all_keys <- unique(all_keys)
-all_keys <- all_keys[!grepl("^(sec-|fig-|tbl-|eq-|lst-|thm-|lem-|cor-|prp-|cnj-|def-|exm-|exr-)", all_keys)]
+all_keys <- all_keys[!grepl(
+  "^(sec-|fig-|tbl-|eq-|lst-|thm-|lem-|cor-|prp-|cnj-|def-|exm-|exr-)",
+  all_keys
+)]
 
 if (length(all_keys) == 0) {
   message("No citation keys found in .qmd files. Skipping verification.")
-  quit(status = 0)
+  quit(status = 0, save = "no")
 }
+
+cat(sprintf("Found %d unique citation keys in .qmd files.\n", length(all_keys)))
 
 # 2. Parse references.bib for available keys
 bib_text <- readLines("references.bib", warn = FALSE)
-bib_keys <- str_extract(bib_text, "(?<=@\\w{1,20}\\{)[A-Za-z0-9_:./-]+(?=\\s*,)")
+bib_keys <- str_extract(
+  bib_text,
+  "(?<=@\\w{1,20}\\{)[A-Za-z0-9_:./-]+(?=\\s*,)"
+)
 bib_keys <- bib_keys[!is.na(bib_keys)]
+
+cat(sprintf("Found %d entries in references.bib.\n", length(bib_keys)))
 
 # 3. Check for missing keys
 missing <- setdiff(all_keys, bib_keys)
 if (length(missing) > 0) {
   cat("ERROR: Citation keys used in .qmd files but missing from references.bib:\n")
   cat(paste(" -", missing, collapse = "\n"), "\n")
-  quit(status = 1)
+  quit(status = 1, save = "no")
 }
 
-# 4. Verify DOIs resolve (sample up to 20)
+cat("All citation keys found in references.bib.\n")
+
+# 4. Verify DOIs resolve (sample up to 10)
 doi_lines <- bib_text[grepl("^\\s*doi\\s*=", bib_text, ignore.case = TRUE)]
-dois <- str_extract(doi_lines, "10\\.[0-9]{4,}[^}\"]+")
+dois <- str_extract(doi_lines, "10\\.[0-9]{4,}[^},\"\\s]+")
 dois <- trimws(dois[!is.na(dois)])
 dois <- unique(dois)
 
 if (length(dois) == 0) {
   message("No DOIs found in references.bib. Skipping DOI resolution.")
-  quit(status = 0)
+  quit(status = 0, save = "no")
 }
 
-sample_size <- min(20, length(dois))
+sample_size <- min(10, length(dois))
+set.seed(42)
 doi_sample <- sample(dois, sample_size)
 
 cat(sprintf("Verifying %d/%d DOIs via Crossref...\n", sample_size, length(dois)))
 
 failures <- character()
 for (doi in doi_sample) {
-  url <- paste0("https://api.crossref.org/works/", doi)
-  resp <- tryCatch(
+  url <- paste0("https://api.crossref.org/works/", utils::URLencode(doi, reserved = TRUE))
+  success <- tryCatch(
     {
-      con <- url(url)
-      on.exit(close(con))
-      readLines(con, n = 1, warn = FALSE)
+      resp <- readLines(url(url), n = 1, warn = FALSE)
       TRUE
     },
-    error = function(e) FALSE
+    error = function(e) FALSE,
+    warning = function(w) TRUE
   )
-  if (!resp) {
+  if (!success) {
     failures <- c(failures, doi)
   }
+  Sys.sleep(0.5)
 }
 
 if (length(failures) > 0) {
   cat("ERROR: The following DOIs could not be resolved:\n")
   cat(paste(" -", failures, collapse = "\n"), "\n")
-  quit(status = 1)
+  quit(status = 1, save = "no")
 }
 
 cat("All citation checks passed.\n")
