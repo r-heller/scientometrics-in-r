@@ -1,5 +1,200 @@
 ---
 title: "Altmetrics"
+subtitle: "Beyond Citations — Social Media, Policy, and Public Engagement"
+author: "Raban Heller"
+date: last-modified
+abstract: |
+  Altmetrics capture dimensions of scholarly impact that citations miss:
+  social media attention, news coverage, policy citations, and reader
+  counts. This chapter introduces altmetric data sources, retrieves
+  altmetric data for an OpenAlex corpus, and evaluates the relationship
+  between altmetric indicators and citation counts. We discuss what
+  altmetrics measure and what they do not.
+keywords: [scientometrics, altmetrics, social-media, mendeley, plumx, scholarly-impact]
 ---
 
-*This chapter is under development.*
+## Learning objectives {#sec-altmetrics-objectives}
+
+After completing this chapter, you will be able to:
+
+- Define altmetrics and explain how they complement citation-based indicators
+- Retrieve altmetric-related data from OpenAlex (open access status, type, counts)
+- Compute correlations between citation counts and alternative indicators
+- Interpret altmetric signals critically — distinguishing attention from impact
+- Discuss the limitations of altmetrics for research evaluation
+
+## Setup {#sec-altmetrics-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#sec-altmetrics-background}
+
+Citations measure one dimension of scholarly impact: influence on subsequent research. But scholarly work can also influence policy, education, clinical practice, and public understanding — none of which are captured by citation counts. **Altmetrics** (alternative metrics) attempt to fill this gap by tracking online traces of attention: social media mentions, news coverage, blog posts, Wikipedia citations, Mendeley reader counts, and policy document references.
+
+The term was coined by @priem2010, who argued that the speed and diversity of online scholarly communication demanded new metrics beyond the Journal Impact Factor. Altmetrics are typically faster than citations (social media attention peaks within days of publication, while citations take years) and broader (they capture engagement by non-researchers).
+
+However, altmetrics come with significant caveats. Social media attention correlates weakly with scientific quality. Metrics are easily gamed (bots, self-promotion). Coverage is uneven: biomedical research attracts far more Twitter/X attention than mathematics or engineering. And the platforms providing altmetric data (Altmetric.com, PlumX) are commercial products with proprietary algorithms [@hicks2015].
+
+OpenAlex provides open-access status and citation counts but does not directly provide social media metrics. For altmetric data, external APIs (Altmetric.com, Crossref Event Data) are needed. In this chapter, we demonstrate what can be done with OpenAlex metadata alone and discuss how to extend the analysis with external sources.
+
+## Worked example {#sec-altmetrics-example}
+
+### Fetching data with OA indicators
+
+```{r}
+#| label: fetch-altmetrics-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S39224261",
+  from_publication_date = "2020-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 400, seed = 42)
+)
+
+works_slim <- works |>
+  transmute(
+    id, display_name,
+    year = year(publication_date),
+    cited_by_count,
+    oa_status = oa_status,
+    type,
+    referenced_works_count
+  )
+
+cat(glue("Works retrieved: {nrow(works_slim)}\n"))
+```
+
+### Open access as an altmetric dimension
+
+```{r}
+#| label: oa-breakdown
+oa_summary <- works_slim |>
+  count(oa_status, sort = TRUE) |>
+  mutate(pct = scales::percent(n / sum(n)))
+
+oa_summary |> gt()
+```
+
+```{r}
+#| label: fig-altmetrics-oa-citations
+#| fig-cap: "Citation distributions by open access status."
+#| fig-alt: "Box plot comparing citation counts across different OA categories (gold, green, hybrid, bronze, closed). Shows whether OA articles receive more citations."
+#| fig-width: 6
+#| fig-height: 4
+works_slim |>
+  filter(!is.na(oa_status)) |>
+  ggplot(aes(x = oa_status, y = cited_by_count + 1)) +
+  geom_boxplot(fill = palette_sci(1), alpha = 0.7) +
+  scale_y_log10() +
+  labs(x = "OA status", y = "Citations (log scale)") +
+  theme_sci()
+```
+
+### Citation count distribution
+
+```{r}
+#| label: fig-altmetrics-citedist
+#| fig-cap: "Citation distribution of the sample, showing the characteristic right skew."
+#| fig-alt: "Histogram of citation counts showing a heavy right tail — most papers have few citations, a few have many."
+#| fig-width: 5
+#| fig-height: 3.5
+ggplot(works_slim, aes(x = cited_by_count)) +
+  geom_histogram(binwidth = 5, fill = palette_sci(1), colour = "white") +
+  labs(x = "Citation count", y = "Number of papers") +
+  theme_sci()
+```
+
+### Proxy altmetric: reference list length
+
+Reference list length correlates with engagement breadth and can serve as a simple proxy for scholarly thoroughness.
+
+```{r}
+#| label: fig-altmetrics-refcount
+#| fig-cap: "Relationship between reference list length and citation count."
+#| fig-alt: "Scatter plot showing a positive but noisy relationship between the number of references a paper cites and the number of citations it receives."
+#| fig-width: 5
+#| fig-height: 4
+ggplot(works_slim, aes(x = referenced_works_count, y = cited_by_count)) +
+  geom_point(alpha = 0.3, colour = palette_sci(1)) +
+  geom_smooth(method = "lm", se = FALSE, colour = palette_sci(2)[2]) +
+  labs(x = "Number of references", y = "Citation count") +
+  theme_sci()
+```
+
+```{r}
+#| label: ref-cite-correlation
+cor_val <- cor(works_slim$referenced_works_count, works_slim$cited_by_count,
+               use = "complete.obs")
+cat(glue("Pearson correlation (references vs. citations): {round(cor_val, 3)}\n"))
+```
+
+## Diagnostics and interpretation {#sec-altmetrics-diagnostics}
+
+- **OA advantage**: Open-access articles often receive more citations, but this may reflect self-selection (higher-quality papers are more likely to be made OA) rather than the causal effect of open access.
+- **Platform coverage**: Social media altmetrics are biased toward English-language, biomedical, and controversial topics. Low altmetric scores do not indicate low impact.
+- **Temporal dynamics**: Altmetric attention peaks immediately after publication and decays rapidly. Citations follow a slower, more sustained trajectory.
+- **Gaming risk**: Social media metrics are more easily manipulated than citations. Interpret high altmetric scores with caution.
+
+## Limitations and responsible use {#sec-altmetrics-limitations}
+
+::: {.callout-warning}
+## Limitations and responsible use
+
+- **Attention ≠ impact.** A viral tweet about a paper does not mean the paper is scientifically significant. Altmetrics measure visibility, not quality [@hicks2015].
+- **Disciplinary bias.** Fields with active social media communities (public health, climate science) generate far more altmetric data than fields that do not (pure mathematics, medieval history).
+- **Platform dependence.** Altmetric data depends on commercial platforms whose coverage, algorithms, and existence are not guaranteed.
+- **Never use altmetrics for individual evaluation.** The Leiden Manifesto and DORA both caution against using any single metric — including altmetrics — as a proxy for research quality [@dora2012].
+:::
+
+## Common pitfalls {#sec-altmetrics-pitfalls}
+
+::: {.callout-important}
+## Common pitfalls
+
+- **Treating Mendeley readers as "citations."** Mendeley reader counts reflect who saved a paper, not who cited it. The overlap is partial.
+- **Comparing altmetrics across fields.** A paper in public health with 50 tweets is unremarkable; the same count in algebraic topology is extraordinary.
+- **Ignoring bots and self-promotion.** Some social media mentions are from automated accounts or coordinated campaigns. Commercial altmetric services attempt to filter these, but coverage is imperfect.
+- **Confusing the Altmetric Attention Score with a quality indicator.** The score is a weighted sum of online mentions, not a peer-reviewed quality assessment.
+:::
+
+## Exercises {#sec-altmetrics-exercises}
+
+1. **OA citation advantage.** For two journals with different OA rates, compare mean citations for OA vs. closed-access papers. Is the "OA advantage" consistent across journals?
+
+2. **Temporal attention.** For a set of recent papers, track how citation counts change between 6 months and 2 years after publication. Do papers with high early attention (many references, rapid initial citations) sustain their advantage?
+
+3. **Cross-field comparison.** Fetch samples from a biomedical journal and a mathematics journal. Compare their citation distributions and reference list lengths. What does this suggest about field-specific attention patterns?
+
+::: {.callout-tip collapse="true"}
+## Solutions
+
+Solutions are provided in @sec-cheatsheets.
+:::
+
+## Further reading {#sec-altmetrics-reading}
+
+- @priem2010 --- The altmetrics manifesto: the original call for alternative impact measures.
+- @hicks2015 --- The Leiden Manifesto: responsible metrics, including cautions about altmetrics.
+- @dora2012 --- DORA: principles for research assessment beyond the JIF.
+- @priem2022 --- OpenAlex open-access classification and metadata.
+
+## Session info {#sec-altmetrics-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
