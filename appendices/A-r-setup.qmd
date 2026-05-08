@@ -2,4 +2,67 @@
 title: "R Setup, renv, and Docker"
 ---
 
-*This appendix is under development.*
+## R installation
+
+Install the latest R release from [CRAN](https://cran.r-project.org/). This book was developed with R 4.4.x. We recommend [RStudio](https://posit.co/download/rstudio-desktop/) or [VS Code with the R extension](https://marketplace.visualstudio.com/items?itemName=REditorSupport.r) as your IDE.
+
+## Package management with renv
+
+This project uses **renv** for reproducible package management. After cloning the repository:
+
+```{r}
+#| eval: false
+install.packages("renv")
+renv::restore()
+```
+
+This installs the exact package versions recorded in `renv.lock`. To update the lockfile after adding a new package:
+
+```{r}
+#| eval: false
+renv::install("newpackage")
+renv::snapshot()
+```
+
+## Core packages
+
+The table below lists the primary packages used throughout the book.
+
+| Package | Purpose | Chapter(s) |
+|:--------|:--------|:-----------|
+| openalexR | OpenAlex API access | 5–37 |
+| tidyverse | Data wrangling and visualisation | All |
+| igraph | Network analysis | 15–20 |
+| tidygraph | Tidy network manipulation | 15–20 |
+| ggraph | Network visualisation | 15–20 |
+| quanteda | Text mining and corpus management | 21–25 |
+| topicmodels | LDA topic modelling | 22, CS-5 |
+| stm | Structural topic models | 22 |
+| gt | Publication-quality tables | Throughout |
+| targets | Pipeline orchestration | 34 |
+| plotly | Interactive charts | 35 |
+| DT | Interactive data tables | 35 |
+| shiny | Web applications | 37 |
+| word2vec | Word embeddings | 24 |
+| uwot | UMAP dimensionality reduction | 24 |
+
+## Docker environment
+
+A `Dockerfile` is provided at the repository root. It builds on `rocker/verse:4.4.1` and installs all required system libraries and R packages.
+
+```bash
+docker build -t scientometrics-in-r .
+docker run --rm -p 8787:8787 -e DISABLE_AUTH=true scientometrics-in-r
+```
+
+Then open `http://localhost:8787` in your browser to access RStudio Server with all dependencies pre-installed.
+
+## Quarto
+
+Install [Quarto CLI](https://quarto.org/docs/get-started/) version 1.4 or later. To render the book locally:
+
+```bash
+quarto render
+```
+
+Rendered output appears in `_book/`. For iterative development, use `quarto preview` to get live-reloading in the browser.
