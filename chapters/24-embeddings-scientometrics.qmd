@@ -1,5 +1,257 @@
 ---
 title: "Embeddings for Scientometrics"
+subtitle: "Document Similarity Beyond Bag-of-Words"
+author: "Raban Heller"
+date: last-modified
+abstract: |
+  Word and document embeddings capture semantic similarity that
+  bag-of-words methods miss. This chapter introduces word2vec-style
+  embeddings and pre-trained scientific document embeddings, demonstrates
+  how to compute document similarity from abstract embeddings, and
+  applies dimensionality reduction to visualise the semantic landscape
+  of a research corpus. Python-based tools (SPECTER) are accessed via
+  reticulate where needed.
+keywords: [scientometrics, embeddings, word2vec, document-similarity, dimensionality-reduction, specter]
 ---
 
-*This chapter is under development.*
+## Learning objectives {#sec-embed-objectives}
+
+After completing this chapter, you will be able to:
+
+- Explain how word and document embeddings differ from bag-of-words representations
+- Train simple word embeddings on a bibliometric corpus
+- Use pre-trained embeddings to compute document similarity
+- Apply UMAP or t-SNE to visualise document clusters in embedding space
+- Assess when embeddings add value over simpler text representations
+
+## Setup {#sec-embed-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(quanteda)
+library(word2vec)
+library(uwot)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#sec-embed-background}
+
+Bag-of-words representations (@sec-textmine-background) treat each word as an independent dimension. "Citation analysis" and "bibliometric study" share no features despite being semantically related. **Word embeddings** address this by mapping words into a dense, low-dimensional vector space where semantically similar words are close together. The word2vec algorithm learns these representations by predicting words from their context (skip-gram) or context from words (CBOW) in a large training corpus.
+
+**Document embeddings** extend the idea to whole documents. Simple approaches average the word vectors of a document's words (mean pooling). More sophisticated approaches include Doc2Vec (Paragraph Vector), which learns document-specific vectors alongside word vectors, and transformer-based models like **SPECTER**, which is pre-trained on scientific paper titles and abstracts using citation-based training signals.
+
+For scientometrics, embeddings enable several applications:
+
+- **Semantic similarity**: Finding papers with similar meaning, even when they use different terminology.
+- **Clustering**: Grouping papers by content in embedding space, complementing topic models (@sec-topicmodel-background).
+- **Visualisation**: Projecting embeddings to 2D with UMAP or t-SNE to create interpretable "maps" of a corpus.
+- **Anomaly detection**: Identifying papers that are semantically distant from their assigned field or cluster.
+
+The trade-off is interpretability: while TF-IDF features are directly readable (the word "citation" has a specific weight), embedding dimensions are opaque. Embeddings are powerful for similarity and clustering but resist the kind of term-level interpretation that co-word analysis provides.
+
+## Worked example {#sec-embed-example}
+
+### Preparing text data
+
+```{r}
+#| label: fetch-embed-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S39224261",
+  from_publication_date = "2019-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 400, seed = 42)
+)
+
+text_df <- works |>
+  filter(!is.na(ab), nchar(ab) > 100) |>
+  transmute(
+    doc_id = id,
+    title = display_name,
+    text = paste(display_name, ab, sep = ". "),
+    year = year(publication_date),
+    cited_by_count
+  )
+
+cat(glue("Documents for embedding: {nrow(text_df)}\n"))
+```
+
+### Training word2vec embeddings
+
+```{r}
+#| label: train-word2vec
+#| cache: true
+clean_text <- text_df$text |>
+  str_to_lower() |>
+  str_replace_all("[^a-z ]", " ") |>
+  str_squish()
+
+model <- word2vec(clean_text, dim = 100, iter = 20, min_count = 3,
+                  type = "skip-gram", threads = 1)
+
+cat(glue("Vocabulary size: {nrow(as.matrix(model))}\n"))
+```
+
+```{r}
+#| label: word-similarity
+if ("citation" %in% rownames(as.matrix(model))) {
+  nn <- predict(model, newdata = "citation", type = "nearest", top_n = 10)
+  cat("Nearest neighbours of 'citation':\n")
+  print(nn)
+}
+```
+
+### Computing document embeddings via mean pooling
+
+```{r}
+#| label: document-embeddings
+word_matrix <- as.matrix(model)
+
+doc_embed <- function(text, wm) {
+  words <- str_split(str_to_lower(str_replace_all(text, "[^a-z ]", " ")),
+                     "\\s+")[[1]]
+  matched <- words[words %in% rownames(wm)]
+  if (length(matched) == 0) return(rep(NA_real_, ncol(wm)))
+  colMeans(wm[matched, , drop = FALSE])
+}
+
+doc_embeddings <- map(text_df$text, \(t) doc_embed(t, word_matrix))
+embed_mat <- do.call(rbind, doc_embeddings)
+
+valid <- complete.cases(embed_mat)
+embed_mat <- embed_mat[valid, ]
+text_df_valid <- text_df[valid, ]
+
+cat(glue("Valid document embeddings: {nrow(embed_mat)}\n"))
+```
+
+### Dimensionality reduction with UMAP
+
+```{r}
+#| label: umap-projection
+#| cache: true
+umap_result <- umap(embed_mat, n_neighbors = 15, min_dist = 0.1,
+                    n_components = 2, ret_model = FALSE)
+
+text_df_valid$umap_x <- umap_result[, 1]
+text_df_valid$umap_y <- umap_result[, 2]
+```
+
+```{r}
+#| label: fig-embed-umap
+#| fig-cap: "UMAP projection of document embeddings, coloured by publication year."
+#| fig-alt: "Scatter plot showing documents positioned by semantic similarity in UMAP space. Colour indicates publication year, revealing whether temporal patterns correspond to semantic clusters."
+#| fig-width: 6
+#| fig-height: 5
+ggplot(text_df_valid, aes(x = umap_x, y = umap_y, colour = factor(year))) +
+  geom_point(alpha = 0.6, size = 1.5) +
+  scale_colour_manual(values = palette_sci(n_distinct(text_df_valid$year))) +
+  labs(x = "UMAP 1", y = "UMAP 2", colour = "Year") +
+  theme_sci() +
+  theme(axis.text = element_blank(), axis.ticks = element_blank())
+```
+
+### Document similarity search
+
+```{r}
+#| label: similarity-search
+cosine_sim <- function(a, b) sum(a * b) / (sqrt(sum(a^2)) * sqrt(sum(b^2)))
+
+query_idx <- 1
+sims <- map_dbl(seq_len(nrow(embed_mat)),
+                \(i) cosine_sim(embed_mat[query_idx, ], embed_mat[i, ]))
+
+top_similar <- order(sims, decreasing = TRUE)[2:6]
+
+cat(glue("Query: {text_df_valid$title[query_idx]}\n\n"))
+cat("Most similar documents:\n")
+walk(top_similar, \(i) {
+  cat(glue("  [{round(sims[i], 3)}] {text_df_valid$title[i]}\n"))
+})
+```
+
+### Embedding clusters vs. citation impact
+
+```{r}
+#| label: fig-embed-impact
+#| fig-cap: "UMAP embedding coloured by citation impact (log scale)."
+#| fig-alt: "Scatter plot in UMAP space with documents coloured by log citation count, showing whether highly cited papers cluster together semantically."
+#| fig-width: 6
+#| fig-height: 5
+ggplot(text_df_valid, aes(x = umap_x, y = umap_y,
+                          colour = log1p(cited_by_count))) +
+  geom_point(alpha = 0.6, size = 1.5) +
+  scale_colour_viridis_c(option = "C", name = "log(cites + 1)") +
+  labs(x = "UMAP 1", y = "UMAP 2") +
+  theme_sci() +
+  theme(axis.text = element_blank(), axis.ticks = element_blank())
+```
+
+## Diagnostics and interpretation {#sec-embed-diagnostics}
+
+- **Vocabulary coverage**: Check what fraction of abstract words appear in the embedding vocabulary. Low coverage (< 80%) indicates the training corpus is too small or preprocessing is too aggressive.
+- **Nearest neighbours**: Inspect the nearest neighbours of key domain terms. If "citation" is closest to "references" and "bibliometric", the embeddings capture domain structure.
+- **UMAP stability**: UMAP is stochastic. Run with multiple seeds and check whether the global cluster structure is stable. Individual point positions will vary but clusters should persist.
+- **Embedding dimensionality**: 100–300 dimensions is standard. Below 50, embeddings lose semantic resolution; above 300, training becomes slow with diminishing returns.
+
+## Limitations and responsible use {#sec-embed-limitations}
+
+::: {.callout-warning}
+## Limitations and responsible use
+
+- **Embeddings are opaque.** Unlike TF-IDF weights, embedding dimensions have no interpretable meaning. You can measure similarity but not explain *why* two documents are similar without additional analysis.
+- **Training data bias.** Embeddings reflect the biases of their training corpus. If the corpus overrepresents certain topics or perspectives, the embeddings will too.
+- **Small corpora produce poor embeddings.** Word2vec needs tens of thousands of documents for reliable training. For small bibliometric corpora (< 1,000 papers), use pre-trained embeddings instead.
+- **UMAP/t-SNE distort distances.** These methods preserve local structure but distort global distances. Documents that appear close in 2D may not be the most similar in high-dimensional space [@hicks2015].
+:::
+
+## Common pitfalls {#sec-embed-pitfalls}
+
+::: {.callout-important}
+## Common pitfalls
+
+- **Training on too few documents.** Word2vec on 200 abstracts produces unreliable embeddings. Use at least 5,000 documents or switch to pre-trained models.
+- **Averaging without weighting.** Simple mean pooling treats every word equally. TF-IDF-weighted averaging gives more weight to distinctive terms and often produces better document embeddings.
+- **Over-interpreting UMAP clusters.** Visual clusters in UMAP may reflect projection artifacts. Validate clusters with a separate method (e.g., k-means in the full embedding space).
+- **Comparing embeddings from different models.** Embedding spaces are not aligned across different training runs. Cosine similarity is only meaningful within a single embedding space.
+:::
+
+## Exercises {#sec-embed-exercises}
+
+1. **Weighted averaging.** Compute document embeddings using TF-IDF-weighted word vectors instead of simple means. Does the UMAP visualisation change?
+
+2. **K-means clustering.** Apply k-means (k = 5, 8, 12) to the document embeddings. Compare the resulting clusters with LDA topics from @sec-topicmodel-example. Do they agree?
+
+3. **Pre-trained embeddings.** If available, use SPECTER embeddings (via reticulate and Python) instead of corpus-trained word2vec. How does similarity search quality change?
+
+4. **Analogy test.** Test whether the word2vec model captures analogical relationships (e.g., "journal" - "article" + "book" ≈ "publisher"). What does the result tell you about the model?
+
+::: {.callout-tip collapse="true"}
+## Solutions
+
+Solutions are provided in @sec-cheatsheets.
+:::
+
+## Further reading {#sec-embed-reading}
+
+- @silge2017 --- Text embeddings in R, including integration with word2vec.
+- @priem2022 --- OpenAlex concept embeddings and their relationship to document content.
+- @waltman2012 --- Bibliometric similarity measures as context for embedding-based approaches.
+
+## Session info {#sec-embed-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
