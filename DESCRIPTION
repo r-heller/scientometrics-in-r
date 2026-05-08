@@ -1,0 +1,33 @@
+Package: scientometricsInR
+Title: Companion Package for 'Scientometrics in R'
+Version: 0.1.0
+Authors@R:
+    person("Raban", "Heller", , "raban.heller@outlook.com",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-8006-9742"))
+Description: Helper functions and bundled datasets for the book
+    'Scientometrics in R: Bibliometrics, Network Science, and Research
+    Evaluation'. Provides utilities for fetching OpenAlex data, computing
+    bibliometric indicators, building co-authorship networks, and
+    detecting emerging topics.
+License: MIT + file LICENSE-CODE
+URL: https://r-heller.github.io/scientometrics-in-r/,
+    https://github.com/r-heller/scientometrics-in-r
+BugReports: https://github.com/r-heller/scientometrics-in-r/issues
+Depends:
+    R (>= 4.1.0)
+Imports:
+    dplyr,
+    igraph,
+    openalexR,
+    rlang,
+    tibble
+Suggests:
+    ggraph,
+    testthat (>= 3.0.0),
+    tidygraph
+Config/testthat/edition: 3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
