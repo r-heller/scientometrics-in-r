@@ -1,0 +1,128 @@
+---
+title: "Chapter Title"
+subtitle: "Optional subtitle"
+author: "Raban Heller"
+date: last-modified
+abstract: |
+  One-paragraph abstract summarizing the chapter's content, methods covered,
+  and key takeaways. Keep to 120 words or fewer.
+keywords: [scientometrics, openalex]
+---
+
+<!-- TEMPLATE: Copy this file to create a new chapter. Replace all placeholder
+     content. Delete these HTML comments before committing. Every chapter must
+     include all 10 sections below, in this order. -->
+
+## Learning objectives {#sec-CHID-objectives}
+
+After completing this chapter, you will be able to:
+
+- Objective 1 (use action verbs: compute, interpret, construct, evaluate, …)
+- Objective 2
+- Objective 3
+
+## Setup {#sec-CHID-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+# Add chapter-specific packages here
+
+set.seed(20260509)
+```
+
+## Conceptual background {#sec-CHID-background}
+
+<!-- ≤500 words. Introduce the theoretical motivation and key concepts.
+     Cite foundational literature from references.bib. -->
+
+## Worked example {#sec-CHID-example}
+
+<!-- Full reproducible R workflow. All data from OpenAlex or bundled samples.
+     Break into subsections as needed. -->
+
+### Acquiring the data
+
+```{r}
+#| label: fetch-data
+#| cache: true
+# Example: fetch works from OpenAlex
+# works <- fetch_openalex(
+#   entity = "works",
+#   search = "your query",
+#   from_publication_date = "2020-01-01"
+# )
+```
+
+### Analysis
+
+```{r}
+#| label: analyse
+# Analysis code here
+```
+
+### Visualization
+
+```{r}
+#| label: fig-CHID-main
+#| fig-cap: "Descriptive caption for the figure."
+#| fig-alt: "Accessible text description of the figure content."
+#| fig-width: 6
+#| fig-height: 4.5
+# ggplot code here, using theme_sci() and palette_sci()
+```
+
+## Diagnostics and interpretation {#sec-CHID-diagnostics}
+
+<!-- Discuss how to interpret the results. What do the numbers mean?
+     What are the benchmarks? How to sanity-check the output? -->
+
+## Limitations and responsible use {#sec-CHID-limitations}
+
+::: {.callout-warning}
+## Limitations and responsible use
+
+<!-- MANDATORY in every quantitative chapter. Discuss:
+     - What this method cannot tell you
+     - Known biases in the data or indicator
+     - How the metric can be gamed or misused
+     - Cite Leiden Manifesto / DORA where relevant -->
+:::
+
+## Common pitfalls {#sec-CHID-pitfalls}
+
+::: {.callout-important}
+## Common pitfalls
+
+<!-- MANDATORY. List 3–5 concrete mistakes practitioners make:
+     - Pitfall 1
+     - Pitfall 2
+     - Pitfall 3 -->
+:::
+
+## Exercises {#sec-CHID-exercises}
+
+1. **Exercise 1.** Description of task. *(Hint: …)*
+2. **Exercise 2.** Description of task.
+3. **Exercise 3.** Description of task.
+
+::: {.callout-tip collapse="true"}
+## Solutions
+
+Solutions are provided in @sec-cheatsheets.
+:::
+
+## Further reading {#sec-CHID-reading}
+
+<!-- Annotated list, ≤8 entries, all present in references.bib. -->
+
+- @hicks2015 — The Leiden Manifesto; foundational reading on responsible metrics.
+
+## Session info {#sec-CHID-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
