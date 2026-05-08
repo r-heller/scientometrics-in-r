@@ -6,13 +6,11 @@ on:
     paths:
       - "R/**"
       - "scripts/**"
-      - "chapters/**"
   pull_request:
     branches: [main]
     paths:
       - "R/**"
       - "scripts/**"
-      - "chapters/**"
   workflow_dispatch:
 
 jobs:
@@ -36,28 +34,19 @@ jobs:
           install.packages(c("lintr", "styler"))
         shell: Rscript {0}
 
-      - name: lintr
+      - name: Run lintr
         run: |
           library(lintr)
           lints <- lint_dir("R")
           if (length(lints) > 0) {
             print(lints)
-            stop("lintr found issues. See above.")
+            stop("lintr found issues.")
           }
           cat("lintr: all clear\n")
         shell: Rscript {0}
 
-      - name: styler
+      - name: Run styler check
         run: |
           library(styler)
-          result <- style_dir("R", dry = "fail")
-          if (any(!result$changed)) {
-            cat("styler: all files already styled\n")
-          }
+          out <- style_dir("R", dry = "fail")
         shell: Rscript {0}
-
-      - name: Install Quarto
-        uses: quarto-dev/quarto-actions/setup@v2
-
-      - name: Quarto check
-        run: quarto check

@@ -3,25 +3,13 @@ name: Verify Citations
 on:
   push:
     branches: [main]
-    paths:
-      - "references.bib"
-      - "chapters/**"
-      - "case-studies/**"
-      - "appendices/**"
   pull_request:
     branches: [main]
-    paths:
-      - "references.bib"
-      - "chapters/**"
-      - "case-studies/**"
-      - "appendices/**"
   workflow_dispatch:
 
 jobs:
   citations:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout
@@ -35,7 +23,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          install.packages(c("bib2df", "rcrossref", "stringr"))
+          install.packages("stringr")
         shell: Rscript {0}
 
       - name: Verify citations
