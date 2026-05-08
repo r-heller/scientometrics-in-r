@@ -1,5 +1,205 @@
 ---
 title: "Open Science Indicators"
+subtitle: "Measuring Open Access, Data Sharing, and Preprints"
+author: "Raban Heller"
+date: last-modified
+abstract: |
+  Open science practices — open access publishing, data sharing, preprint
+  posting, and open peer review — are reshaping scholarly communication.
+  This chapter shows how to measure open science uptake from bibliometric
+  data: computing OA rates by type and year, tracking preprint-to-journal
+  pathways, and assessing data availability statement coverage using
+  OpenAlex metadata.
+keywords: [scientometrics, open-access, open-science, preprints, data-sharing, openalex]
 ---
 
-*This chapter is under development.*
+## Learning objectives {#sec-openscience-objectives}
+
+After completing this chapter, you will be able to:
+
+- Classify open access types (gold, green, hybrid, bronze) using OpenAlex metadata
+- Compute OA rates by year, journal, and discipline
+- Track the growth of preprint posting and preprint-to-publication pathways
+- Assess data availability statement coverage in a corpus
+- Discuss the relationship between open science practices and citation impact
+
+## Setup {#sec-openscience-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#sec-openscience-background}
+
+The open science movement aims to make research processes and outputs freely accessible. Bibliometric analysis can measure the extent to which these ideals are being realised, track trends over time, and identify disparities across disciplines and geographies.
+
+**Open access (OA)** is the most measurable dimension of open science. OpenAlex classifies each work's OA status using Unpaywall data: **gold** (published in a fully OA journal), **green** (available in a repository), **hybrid** (OA in a subscription journal via APC), **bronze** (free to read but without an explicit open license), or **closed** [@priem2022].
+
+**Preprints** are manuscripts posted publicly before peer review. The growth of preprint servers (bioRxiv, arXiv, medRxiv) has accelerated since 2015, with a dramatic spike during the COVID-19 pandemic. Bibliometric analysis can track preprint posting rates, the time from preprint to journal publication, and whether preprints receive more citations than non-preprint papers.
+
+**Data availability statements** (DAS) indicate whether the data underlying a study are accessible. Their prevalence is growing as journals adopt mandatory data-sharing policies, but the quality of DAS varies: many state "data available upon request" without providing actual access.
+
+Measuring open science is important for policy. Funders increasingly require OA publication and data sharing; institutions report OA rates as indicators of compliance and impact. However, @hicks2015 caution that metrics-driven OA mandates can produce perverse incentives (predatory journals, superficial compliance).
+
+## Worked example {#sec-openscience-example}
+
+### OA rates by year
+
+```{r}
+#| label: fetch-openscience-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S39224261",
+  from_publication_date = "2015-01-01",
+  to_publication_date = "2023-12-31",
+  type = "article",
+  options = list(sample = 600, seed = 42)
+)
+
+works_oa <- works |>
+  transmute(
+    id, year = year(publication_date),
+    oa_status = oa_status,
+    cited_by_count
+  )
+
+cat(glue("Works: {nrow(works_oa)}\n"))
+```
+
+```{r}
+#| label: fig-openscience-oa-trend
+#| fig-cap: "Open access rates by year and OA type."
+#| fig-alt: "Stacked bar chart showing the proportion of articles in each OA category (gold, green, hybrid, bronze, closed) for each publication year from 2015 to 2023."
+#| fig-width: 7
+#| fig-height: 4
+oa_by_year <- works_oa |>
+  count(year, oa_status) |>
+  group_by(year) |>
+  mutate(pct = n / sum(n)) |>
+  ungroup()
+
+ggplot(oa_by_year, aes(x = factor(year), y = pct, fill = oa_status)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_manual(values = palette_sci(n_distinct(oa_by_year$oa_status))) +
+  labs(x = "Publication year", y = "Proportion", fill = "OA status") +
+  theme_sci()
+```
+
+### OA citation advantage
+
+```{r}
+#| label: oa-advantage
+oa_cites <- works_oa |>
+  filter(!is.na(oa_status)) |>
+  mutate(is_oa = oa_status != "closed") |>
+  group_by(is_oa) |>
+  summarise(
+    n = n(),
+    mean_cites = round(mean(cited_by_count), 1),
+    median_cites = median(cited_by_count),
+    .groups = "drop"
+  )
+
+oa_cites |> gt()
+```
+
+### Document type breakdown
+
+```{r}
+#| label: fig-openscience-types
+#| fig-cap: "OA status by document type."
+#| fig-alt: "Grouped bar chart showing how OA status varies across document types (article, review, etc.)."
+#| fig-width: 6
+#| fig-height: 4
+works |>
+  count(type, oa_status) |>
+  group_by(type) |>
+  mutate(pct = n / sum(n)) |>
+  ungroup() |>
+  ggplot(aes(x = pct, y = type, fill = oa_status)) +
+  geom_col() +
+  scale_x_continuous(labels = scales::percent) +
+  scale_fill_manual(values = palette_sci(n_distinct(works$oa_status))) +
+  labs(x = "Proportion", y = NULL, fill = "OA status") +
+  theme_sci()
+```
+
+### Summary table
+
+```{r}
+#| label: oa-summary-table
+works_oa |>
+  count(oa_status, sort = TRUE) |>
+  mutate(pct = scales::percent(n / sum(n))) |>
+  gt() |>
+  cols_label(oa_status = "OA Status", n = "Count", pct = "Percentage")
+```
+
+## Diagnostics and interpretation {#sec-openscience-diagnostics}
+
+- **Classification accuracy**: OpenAlex OA classification relies on Unpaywall, which may lag behind publisher changes. Spot-check a sample of "closed" articles to verify they are truly behind a paywall.
+- **Bronze ambiguity**: Bronze OA means free-to-read without an explicit license. Publishers can revoke access at any time. Do not treat bronze as equivalent to gold or green.
+- **Year effects**: OA rates have risen over time due to funder mandates and policy changes. Compare year-normalised rates rather than pooling across years.
+- **Self-selection**: Higher OA rates among highly cited papers may reflect self-selection (better papers are more likely to be made OA) rather than a causal OA effect.
+
+## Limitations and responsible use {#sec-openscience-limitations}
+
+::: {.callout-warning}
+## Limitations and responsible use
+
+- **OA ≠ quality.** Open access status is a property of the publication venue and access model, not the research quality. Predatory journals are often gold OA.
+- **Coverage gaps.** Green OA via institutional repositories is underreported in some databases. Actual OA rates may be higher than measured.
+- **Data sharing claims vs. reality.** A data availability statement saying "data available upon request" often results in no response when requests are made. Measuring DAS presence overestimates actual data sharing.
+- **Equity implications.** Gold OA via article processing charges shifts costs from readers to authors, potentially disadvantaging researchers without institutional funding [@hicks2015].
+:::
+
+## Common pitfalls {#sec-openscience-pitfalls}
+
+::: {.callout-important}
+## Common pitfalls
+
+- **Treating all OA as equivalent.** Gold, green, hybrid, and bronze OA have very different implications for access, sustainability, and cost.
+- **Ignoring embargo periods.** Green OA articles may have 6–24 month embargoes before they become freely available. They are "closed" during the embargo.
+- **Double-counting.** An article available in both a gold OA journal and a green repository should be counted once. OpenAlex classifies by the "best" OA type.
+- **Using OA rate as a performance indicator.** OA rates reflect policy and funding environment, not research quality. Mandated OA inflates rates without changing the underlying work.
+:::
+
+## Exercises {#sec-openscience-exercises}
+
+1. **Cross-journal OA comparison.** Compare OA rates for three journals in different disciplines. Which discipline has the highest gold OA rate?
+
+2. **Temporal OA growth.** Compute the year-over-year growth rate of gold OA articles in your corpus. Has growth accelerated since 2020?
+
+3. **OA and collaboration.** Is there a relationship between the number of authors on a paper and its OA status? Hypothesise why.
+
+::: {.callout-tip collapse="true"}
+## Solutions
+
+Solutions are provided in @sec-cheatsheets.
+:::
+
+## Further reading {#sec-openscience-reading}
+
+- @priem2022 --- OpenAlex OA classification methodology.
+- @hicks2015 --- The Leiden Manifesto: principles for responsible metrics, including OA considerations.
+- @dora2012 --- DORA: recommendations for research assessment beyond journal metrics.
+
+## Session info {#sec-openscience-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
