@@ -1,5 +1,200 @@
 ---
 title: "Case Study 1: CRISPR Field Review (2010–2024)"
+subtitle: "A Comprehensive Bibliometric Analysis of Gene Editing Research"
+author: "Raban Heller"
+date: last-modified
+abstract: |
+  This case study applies the full bibliometric toolkit to the CRISPR
+  gene editing field: publication trends, citation analysis, co-authorship
+  networks, topic evolution, and institutional mapping. It integrates
+  techniques from Chapters 5, 9–15, 17, 22, and 25.
+keywords: [case-study, crispr, field-review, bibliometrics, openalex]
 ---
 
-*This case study is under development.*
+## Objective
+
+Map the structure, growth, and evolution of CRISPR gene editing research from its emergence to its current state using open bibliometric data.
+
+## Setup
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(igraph)
+library(tidygraph)
+library(ggraph)
+library(quanteda)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Data acquisition
+
+```{r}
+#| label: fetch-crispr
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  search = "CRISPR",
+  from_publication_date = "2010-01-01",
+  to_publication_date = "2024-06-30",
+  type = "article",
+  options = list(sample = 500, seed = 42)
+)
+
+works <- works |>
+  mutate(year = year(publication_date))
+
+cat(glue("CRISPR articles retrieved: {nrow(works)}\n"))
+cat(glue("Year range: {min(works$year)}--{max(works$year)}\n"))
+```
+
+## Publication growth
+
+```{r}
+#| label: fig-cs01-growth
+#| fig-cap: "Annual publication output in the CRISPR field."
+#| fig-alt: "Bar chart showing exponential growth in CRISPR publications from 2010 to 2024."
+#| fig-width: 6
+#| fig-height: 4
+works |>
+  count(year) |>
+  ggplot(aes(x = year, y = n)) +
+  geom_col(fill = palette_sci(1)) +
+  labs(x = "Year", y = "Publications") +
+  theme_sci()
+```
+
+## Citation landscape
+
+```{r}
+#| label: fig-cs01-citations
+#| fig-cap: "Citation distribution of CRISPR articles."
+#| fig-alt: "Histogram showing the heavily right-skewed citation distribution typical of a rapidly growing field."
+#| fig-width: 5
+#| fig-height: 3.5
+ggplot(works, aes(x = cited_by_count)) +
+  geom_histogram(binwidth = 10, fill = palette_sci(1), colour = "white") +
+  labs(x = "Citations", y = "Papers") +
+  theme_sci()
+```
+
+```{r}
+#| label: cs01-top-papers
+works |>
+  arrange(desc(cited_by_count)) |>
+  head(10) |>
+  select(display_name, year, cited_by_count, so) |>
+  gt()
+```
+
+## Co-authorship network
+
+```{r}
+#| label: cs01-coauth-network
+author_data <- works |>
+  select(id, author) |>
+  unnest(author, names_sep = "_") |>
+  select(work_id = id, author_id = author_au_id,
+         author_name = author_au_display_name) |>
+  filter(!is.na(author_id))
+
+edges <- author_data |>
+  inner_join(author_data, by = "work_id", suffix = c("_1", "_2"),
+             relationship = "many-to-many") |>
+  filter(author_id_1 < author_id_2) |>
+  count(author_id_1, author_id_2, name = "weight")
+
+g <- graph_from_data_frame(
+  edges |> select(author_id_1, author_id_2, weight),
+  directed = FALSE
+) |> simplify(edge.attr.comb = list(weight = "sum"))
+
+comp <- components(g)
+giant <- induced_subgraph(g, which(comp$membership == which.max(comp$csize)))
+V(giant)$community <- as.factor(membership(
+  cluster_leiden(giant, resolution_parameter = 1.0,
+                 objective_function = "modularity")
+))
+V(giant)$degree <- degree(giant)
+
+cat(glue("Network: {vcount(giant)} nodes, {ecount(giant)} edges\n"))
+```
+
+```{r}
+#| label: fig-cs01-network
+#| fig-cap: "Co-authorship network of CRISPR researchers."
+#| fig-alt: "Network graph showing collaboration patterns among CRISPR researchers, with communities coloured by Leiden algorithm."
+#| fig-width: 7
+#| fig-height: 5
+set.seed(42)
+ggraph(as_tbl_graph(giant), layout = "fr") +
+  geom_edge_link(alpha = 0.1, colour = "grey60") +
+  geom_node_point(aes(size = degree, colour = community), alpha = 0.7) +
+  scale_size_continuous(range = c(0.5, 5), guide = "none") +
+  scale_colour_manual(values = palette_sci(n_distinct(V(giant)$community))) +
+  labs(colour = "Community") +
+  theme_graph() + theme(legend.position = "bottom")
+```
+
+## Topic evolution
+
+```{r}
+#| label: cs01-topics
+text_df <- works |>
+  filter(!is.na(ab), nchar(ab) > 50) |>
+  transmute(doc_id = id, text = paste(display_name, ab, sep = ". "), year)
+
+corp <- corpus(text_df, docid_field = "doc_id", text_field = "text")
+toks <- tokens(corp, remove_punct = TRUE, remove_numbers = TRUE) |>
+  tokens_tolower() |>
+  tokens_remove(stopwords("en")) |>
+  tokens_remove(c("study", "paper", "results", "using", "based"))
+
+dfmat <- dfm(toks) |> dfm_trim(min_termfreq = 5, min_docfreq = 3)
+
+top_by_year <- map_dfr(unique(text_df$year), function(yr) {
+  docs <- docvars(dfmat, "year") == yr
+  if (sum(docs) < 5) return(tibble())
+  top <- topfeatures(dfmat[docs, ], 5)
+  tibble(year = yr, term = names(top), freq = unname(top))
+})
+```
+
+```{r}
+#| label: fig-cs01-topics
+#| fig-cap: "Top terms by year showing topical evolution."
+#| fig-alt: "Faceted bar chart showing the top 5 terms in each year of CRISPR research."
+#| fig-width: 8
+#| fig-height: 6
+top_by_year |>
+  group_by(year) |>
+  mutate(term = reorder_within(term, freq, year)) |>
+  ggplot(aes(x = freq, y = term)) +
+  geom_col(fill = palette_sci(1)) +
+  facet_wrap(~ year, scales = "free_y", ncol = 4) +
+  scale_y_reordered() +
+  labs(x = "Frequency", y = NULL) +
+  theme_sci(base_size = 8)
+```
+
+## Key findings
+
+1. **Explosive growth**: CRISPR publications grew exponentially from 2012, reflecting the rapid adoption of Cas9-based editing.
+2. **Citation concentration**: A small number of foundational papers dominate the citation landscape.
+3. **Collaborative structure**: The co-authorship network shows distinct communities, likely corresponding to different application domains (therapeutics, agriculture, basic biology).
+4. **Topic evolution**: Early terms focus on methodology; later years shift toward applications and clinical translation.
+
+## Lessons learned
+
+- OpenAlex sampling provides a representative snapshot but may miss some highly specialised or non-English publications.
+- The citation distribution is extreme: median citations are far below the mean, making median-based statistics essential.
+- Co-authorship networks in fast-growing fields are fragmented; many research groups work independently.
