@@ -1,5 +1,225 @@
 ---
 title: "Journal Metrics"
+subtitle: "JIF, SJR, SNIP, Eigenfactor, and CiteScore Proxies"
+author: "Raban Heller"
+date: last-modified
+abstract: |
+  This chapter explains how major journal-level indicators are computed,
+  why we build open proxies from OpenAlex rather than relying on
+  proprietary values, and how network-based metrics (Eigenfactor, SJR)
+  differ from simple citation ratios. A worked example computes JIF-like
+  and SNIP-like proxies for a set of journals using OpenAlex data.
+keywords: [scientometrics, journal-metrics, impact-factor, sjr, snip, eigenfactor, citescore]
 ---
 
-*This chapter is under development.*
+## Learning objectives {#sec-jmetrics-objectives}
+
+After completing this chapter, you will be able to:
+
+- Describe how the Journal Impact Factor, CiteScore, SNIP, SJR, and Eigenfactor are computed
+- Explain why network-based journal metrics differ from simple citation ratios
+- Compute JIF-like and SNIP-like proxies from OpenAlex data
+- Articulate why proxy values differ from official proprietary metrics
+- Evaluate journals using multiple indicators rather than a single number
+
+## Setup {#sec-jmetrics-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#sec-jmetrics-background}
+
+Journal-level metrics aim to summarise a journal's citation performance. The most famous is the **Journal Impact Factor** (JIF), introduced by @garfield1955 and commercialised by Clarivate. The two-year JIF for year *t* equals the citations received in year *t* by articles published in years *t*-1 and *t*-2, divided by the number of "citable items" published in those two years. Its simplicity is both its appeal and its weakness: the numerator includes citations to all document types, but the denominator often excludes editorials and letters, inflating the ratio [@hicks2015].
+
+**CiteScore** (Elsevier) uses a four-year window and counts all document types in both numerator and denominator, making it more transparent. **SNIP** (Source-Normalized Impact per Paper) normalises by citation potential --- the average number of references in citing articles' reference lists --- so that journals in fields with longer reference lists are not automatically advantaged [@waltman2016]. **SJR** (SCImago Journal Rank) and the **Eigenfactor** use iterative algorithms inspired by PageRank: a citation from a prestigious journal carries more weight than one from a low-impact source. This makes them network-based indicators, conceptually similar to eigenvector centrality in graph theory.
+
+All of these official metrics are tied to proprietary databases (Web of Science or Scopus). With OpenAlex [@priem2022], we can compute **proxy** values from fully open data. Proxies will not match official figures exactly --- differences in coverage, document-type classification, and citation linking guarantee some divergence [@visser2021] --- but they are transparent, reproducible, and free.
+
+DORA [@dora2012] explicitly warns against using the JIF as a proxy for individual article quality. The Leiden Manifesto [@hicks2015] echoes this: journal metrics describe *average* journal performance and say nothing about any specific paper.
+
+## Worked example {#sec-jmetrics-example}
+
+### Selecting journals
+
+We analyse five well-known journals in information science and scientometrics.
+
+```{r}
+#| label: define-journals
+journals <- tribble(
+  ~short_name,        ~source_id,
+  "Scientometrics",   "S39224261",
+  "J Informetrics",   "S205038879",
+  "Quant Sci Stud",   "S4210178031",
+  "J Am Soc Inf Sci", "S145342767",
+  "Res Evaluation",   "S100532675"
+)
+```
+
+### Fetching citation data
+
+We fetch works published in 2021-2022 and count citations received during 2022-2023 to construct a two-year JIF-like proxy.
+
+```{r}
+#| label: fetch-journal-data
+#| cache: true
+fetch_journal_works <- function(source_id, from_year, to_year) {
+  oa_fetch(
+    entity = "works",
+    primary_location.source.id = source_id,
+    from_publication_date = paste0(from_year, "-01-01"),
+    to_publication_date = paste0(to_year, "-12-31"),
+    type = "article"
+  )
+}
+
+journal_works <- journals |>
+  mutate(data = map2(source_id, 2021, \(sid, yr) {
+    fetch_journal_works(sid, yr, yr + 1)
+  }))
+```
+
+### Computing JIF-like proxies
+
+```{r}
+#| label: compute-jif-proxy
+jif_proxy <- journal_works |>
+  mutate(
+    n_articles = map_int(data, nrow),
+    total_cites = map_dbl(data, \(d) sum(d$cited_by_count, na.rm = TRUE))
+  ) |>
+  mutate(jif_proxy = total_cites / pmax(n_articles, 1)) |>
+  select(short_name, n_articles, total_cites, jif_proxy) |>
+  arrange(desc(jif_proxy))
+
+jif_proxy |>
+  gt() |>
+  fmt_number(columns = jif_proxy, decimals = 2) |>
+  cols_label(
+    short_name = "Journal",
+    n_articles = "Articles (2021-22)",
+    total_cites = "Total citations",
+    jif_proxy = "JIF proxy"
+  )
+```
+
+### Computing a SNIP-like proxy
+
+SNIP normalises by citation potential. We approximate this by dividing each journal's mean citations per paper by the median reference-list length of its citing works.
+
+```{r}
+#| label: compute-snip-proxy
+snip_proxy <- journal_works |>
+  mutate(
+    mean_cites = map_dbl(data, \(d) mean(d$cited_by_count, na.rm = TRUE)),
+    median_refs = map_dbl(data, \(d) {
+      median(d$referenced_works_count, na.rm = TRUE)
+    })
+  ) |>
+  mutate(
+    citation_potential = pmax(median_refs, 1),
+    snip_proxy = mean_cites / citation_potential
+  ) |>
+  select(short_name, mean_cites, citation_potential, snip_proxy) |>
+  arrange(desc(snip_proxy))
+
+snip_proxy |>
+  gt() |>
+  fmt_number(columns = c(mean_cites, snip_proxy), decimals = 2)
+```
+
+### Visualization
+
+```{r}
+#| label: fig-jmetrics-comparison
+#| fig-cap: "Comparison of JIF proxy and SNIP proxy across five journals."
+#| fig-alt: "Dot plot showing JIF proxy and SNIP proxy values side by side for five information science journals, illustrating how normalisation changes relative rankings."
+#| fig-width: 6
+#| fig-height: 4
+combined <- jif_proxy |>
+  select(short_name, jif_proxy) |>
+  left_join(snip_proxy |> select(short_name, snip_proxy), by = "short_name") |>
+  pivot_longer(cols = c(jif_proxy, snip_proxy), names_to = "metric", values_to = "value") |>
+  mutate(metric = recode(metric, jif_proxy = "JIF proxy", snip_proxy = "SNIP proxy"))
+
+ggplot(combined, aes(x = value, y = reorder(short_name, value), colour = metric)) +
+  geom_point(size = 3) +
+  labs(x = "Metric value", y = NULL, colour = "Metric") +
+  scale_colour_manual(values = palette_sci(2)) +
+  theme_sci()
+```
+
+## Diagnostics and interpretation {#sec-jmetrics-diagnostics}
+
+When evaluating journal metric proxies:
+
+- **Coverage gaps**: OpenAlex may miss some document types or citations present in Scopus/WoS. Compare article counts with known totals.
+- **Document-type classification**: The JIF denominator famously excludes editorials and letters. Our proxy counts all articles; this may lower the ratio compared to official JIF values.
+- **Temporal alignment**: Ensure citation windows match the intended metric definition exactly (two years for JIF, four for CiteScore).
+- **Rank correlation**: Even if absolute values differ from official metrics, the *rank order* of journals often agrees, which is sufficient for many analyses.
+
+## Limitations and responsible use {#sec-jmetrics-limitations}
+
+::: {.callout-warning}
+## Limitations and responsible use
+
+- **Journal metrics are not article metrics.** The distribution of citations within a journal is highly skewed; the mean says little about any individual paper [@dora2012].
+- **Goodhart's law applies.** When a metric becomes a target, it ceases to be a good metric [@goodhart1984]. Editors may game the JIF through citation stacking, coercive citation, or manipulating the denominator.
+- **Proxy ≠ official.** Our OpenAlex-based proxies are transparent and reproducible, but they will differ from Clarivate JIF or Elsevier CiteScore. Never present proxies as official values.
+- **Field dependence persists.** Even SNIP does not fully eliminate field effects. Comparing SNIP values across distant disciplines requires caution [@waltman2016].
+:::
+
+## Common pitfalls {#sec-jmetrics-pitfalls}
+
+::: {.callout-important}
+## Common pitfalls
+
+- **Treating the JIF as a measure of article quality.** The JIF describes the journal, not the paper. A paper in a high-JIF journal may have zero citations.
+- **Ignoring the citation window.** Computing a "JIF" using lifetime citations instead of a two-year window produces a different and non-comparable number.
+- **Conflating numerator and denominator document types.** Mixing reviews (which inflate the numerator) with a denominator that excludes them inflates the ratio.
+- **Ranking journals by a single metric.** Always use multiple indicators and consider disciplinary context.
+:::
+
+## Exercises {#sec-jmetrics-exercises}
+
+1. **Four-year CiteScore proxy.** Modify the worked example to compute a four-year CiteScore proxy (citations in year *t* to articles published in years *t*-1 to *t*-4, divided by all documents in those years). How does the ranking change?
+
+2. **Rank correlation.** Compute Spearman's rank correlation between your JIF proxy and SNIP proxy. Is the agreement high or low?
+
+3. **Field comparison.** Pick five journals from two different fields (e.g., physics and sociology). Compute JIF proxies for both groups. Does SNIP normalisation reduce the between-field gap?
+
+4. **Self-citation share.** For one journal, estimate the proportion of citations that come from the journal itself. How would excluding self-citations change the JIF proxy?
+
+::: {.callout-tip collapse="true"}
+## Solutions
+
+Solutions are provided in @sec-cheatsheets.
+:::
+
+## Further reading {#sec-jmetrics-reading}
+
+- @garfield1955 --- The original proposal for citation indexes, from which the JIF eventually emerged.
+- @waltman2016 --- Comprehensive review of citation impact indicators, including journal-level metrics.
+- @hicks2015 --- The Leiden Manifesto, with specific guidance on responsible use of journal metrics.
+- @dora2012 --- DORA: explicitly warns against using the JIF for individual evaluation.
+- @goodhart1984 --- Goodhart's law: when a measure becomes a target, it ceases to be a good measure.
+- @visser2021 --- Database comparison showing how coverage affects computed metrics.
+- @priem2022 --- OpenAlex as a fully open data source for computing metric proxies.
+
+## Session info {#sec-jmetrics-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
