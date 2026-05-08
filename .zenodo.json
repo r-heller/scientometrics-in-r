@@ -1,0 +1,24 @@
+{
+  "title": "Scientometrics in R: Bibliometrics, Network Science, and Research Evaluation",
+  "description": "A comprehensive Quarto book covering scientometric methods in R, from data acquisition through network analysis, text mining, and responsible research evaluation.",
+  "upload_type": "publication",
+  "publication_type": "book",
+  "creators": [
+    {
+      "name": "Heller, Raban",
+      "orcid": "0000-0001-8006-9742"
+    }
+  ],
+  "keywords": [
+    "scientometrics",
+    "bibliometrics",
+    "R",
+    "network science",
+    "research evaluation",
+    "OpenAlex",
+    "citation analysis"
+  ],
+  "license": "CC-BY-4.0",
+  "language": "eng",
+  "access_right": "open"
+}
