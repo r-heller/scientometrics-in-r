@@ -1,0 +1,46 @@
+# Quarto build output
+_book/
+_freeze/
+.quarto/
+
+# R
+.Rhistory
+.Rdata
+.RData
+*.Rproj.user
+.Rproj.user/
+
+# renv
+renv/library/
+renv/staging/
+renv/python/
+renv/sandbox/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# LaTeX auxiliary
+*.aux
+*.log
+*.out
+*.toc
+*.lot
+*.lof
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# Cached API responses (rebuilt by code)
+_freeze/openalex_cache/
