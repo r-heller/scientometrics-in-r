@@ -1,5 +1,275 @@
 ---
 title: "Co-citation and Bibliographic Coupling"
+subtitle: "Intellectual Structure Through Shared References"
+author: "Raban Heller"
+date: last-modified
+abstract: |
+  This chapter introduces two complementary approaches to mapping
+  intellectual structure: co-citation analysis (papers cited together)
+  and bibliographic coupling (papers sharing references). We build
+  both network types from OpenAlex data, compute similarity measures,
+  and visualise the resulting intellectual landscape of a research field.
+keywords: [scientometrics, co-citation, bibliographic-coupling, intellectual-structure, igraph]
 ---
 
-*This chapter is under development.*
+## Learning objectives {#sec-cocit-objectives}
+
+After completing this chapter, you will be able to:
+
+- Distinguish co-citation analysis from bibliographic coupling and explain when each is appropriate
+- Construct co-citation and bibliographic coupling networks from OpenAlex reference data
+- Compute normalised similarity measures (cosine, Jaccard) for citation-based linkages
+- Identify core documents and intellectual clusters in a research field
+- Interpret co-citation maps as representations of intellectual structure
+
+## Setup {#sec-cocit-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(igraph)
+library(tidygraph)
+library(ggraph)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#sec-cocit-background}
+
+While co-authorship networks (@sec-coauth-background) reveal social structure, **co-citation** and **bibliographic coupling** networks reveal *intellectual* structure --- the conceptual relationships between documents as expressed through citation behaviour.
+
+**Co-citation analysis**, introduced independently by @small1973 and Marshakova-Shaikevich in 1973, measures the relatedness of two documents by how often they are cited together by other papers. If documents A and B frequently appear in the same reference lists, they likely address related topics or represent complementary contributions to a field. Co-citation strength changes over time: as a field evolves, new citing papers create new co-citation links and strengthen or weaken existing ones.
+
+**Bibliographic coupling**, proposed by @kessler1963, takes the complementary perspective. Two documents are bibliographically coupled if they share one or more references. Unlike co-citation, coupling strength is fixed at publication time --- once a paper is published, its reference list does not change. This makes bibliographic coupling especially useful for analysing the most recent literature, where co-citation links have not yet had time to form.
+
+The two methods reveal different facets of intellectual structure. Co-citation maps the *reception* of ideas (how the community groups prior work); bibliographic coupling maps the *production* of knowledge (how authors draw on shared foundations). @waltman2012 demonstrated that combining both perspectives yields richer maps of science than either alone.
+
+Both methods produce **similarity matrices** that can be converted to networks. Common normalisation approaches include cosine similarity (emphasising relative overlap) and the Jaccard index (penalising pairs with many unshared references). Unnormalised raw counts are dominated by highly-cited papers; normalisation is essential for balanced network construction.
+
+## Worked example {#sec-cocit-example}
+
+### Fetching citing and cited works
+
+We fetch a corpus of scientometrics research and extract reference lists.
+
+```{r}
+#| label: fetch-cocit-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S39224261",
+  from_publication_date = "2020-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 200, seed = 42)
+)
+
+refs <- works |>
+  select(citing_id = id, referenced_works) |>
+  unnest(referenced_works) |>
+  rename(cited_id = referenced_works)
+
+cat(glue("Citing works: {n_distinct(refs$citing_id)}\n"))
+cat(glue("Cited works: {n_distinct(refs$cited_id)}\n"))
+cat(glue("Citation links: {nrow(refs)}\n"))
+```
+
+### Building a co-citation network
+
+Two cited documents are co-cited when they appear in the same reference list. We count shared citing papers.
+
+```{r}
+#| label: build-cocitation
+cocit_pairs <- refs |>
+  inner_join(refs, by = "citing_id", suffix = c("_a", "_b"),
+             relationship = "many-to-many") |>
+  filter(cited_id_a < cited_id_b) |>
+  count(cited_id_a, cited_id_b, name = "cocit_count")
+
+cocit_top <- cocit_pairs |>
+  filter(cocit_count >= 3)
+
+cat(glue("Co-citation pairs (count >= 3): {nrow(cocit_top)}\n"))
+```
+
+```{r}
+#| label: cocit-network
+g_cocit <- graph_from_data_frame(
+  cocit_top |> select(cited_id_a, cited_id_b, weight = cocit_count),
+  directed = FALSE
+) |>
+  simplify(edge.attr.comb = list(weight = "sum"))
+
+cat(glue("Co-citation network: {vcount(g_cocit)} nodes, {ecount(g_cocit)} edges\n"))
+```
+
+### Building a bibliographic coupling network
+
+Two citing documents are coupled when they share at least one reference.
+
+```{r}
+#| label: build-bibcoupling
+bibcoup_pairs <- refs |>
+  inner_join(refs, by = "cited_id", suffix = c("_a", "_b"),
+             relationship = "many-to-many") |>
+  filter(citing_id_a < citing_id_b) |>
+  count(citing_id_a, citing_id_b, name = "shared_refs")
+
+bibcoup_top <- bibcoup_pairs |>
+  filter(shared_refs >= 5)
+
+cat(glue("Bibliographic coupling pairs (shared refs >= 5): {nrow(bibcoup_top)}\n"))
+```
+
+```{r}
+#| label: bibcoup-network
+g_bibcoup <- graph_from_data_frame(
+  bibcoup_top |> select(citing_id_a, citing_id_b, weight = shared_refs),
+  directed = FALSE
+) |>
+  simplify(edge.attr.comb = list(weight = "sum"))
+
+cat(glue("Coupling network: {vcount(g_bibcoup)} nodes, {ecount(g_bibcoup)} edges\n"))
+```
+
+### Visualisation
+
+```{r}
+#| label: fig-cocit-network
+#| fig-cap: "Co-citation network of frequently co-cited references in Scientometrics (2020–2023)."
+#| fig-alt: "Network graph showing co-citation relationships between documents. Nodes are cited papers; edges connect papers frequently cited together. Node size reflects degree. Communities are coloured."
+#| fig-width: 6
+#| fig-height: 4.5
+comp <- components(g_cocit)
+giant <- induced_subgraph(g_cocit, which(comp$membership == which.max(comp$csize)))
+V(giant)$community <- as.factor(membership(cluster_leiden(
+  giant, resolution_parameter = 1.0, objective_function = "modularity"
+)))
+V(giant)$degree <- degree(giant)
+
+set.seed(42)
+layout <- create_layout(as_tbl_graph(giant), layout = "fr")
+
+ggraph(layout) +
+  geom_edge_link(alpha = 0.1, colour = "grey60") +
+  geom_node_point(aes(size = degree, colour = community), alpha = 0.8) +
+  scale_size_continuous(range = c(1, 5), guide = "none") +
+  scale_colour_manual(values = palette_sci(
+    n_distinct(V(giant)$community)
+  )) +
+  labs(colour = "Community") +
+  theme_graph() +
+  theme(legend.position = "bottom")
+```
+
+```{r}
+#| label: fig-bibcoup-network
+#| fig-cap: "Bibliographic coupling network of Scientometrics articles (2020–2023)."
+#| fig-alt: "Network graph showing bibliographic coupling relationships between articles. Edges connect papers that share many references. Coloured by community."
+#| fig-width: 6
+#| fig-height: 4.5
+comp_bc <- components(g_bibcoup)
+giant_bc <- induced_subgraph(g_bibcoup,
+                             which(comp_bc$membership == which.max(comp_bc$csize)))
+V(giant_bc)$community <- as.factor(membership(cluster_leiden(
+  giant_bc, resolution_parameter = 1.0, objective_function = "modularity"
+)))
+V(giant_bc)$degree <- degree(giant_bc)
+
+set.seed(42)
+layout_bc <- create_layout(as_tbl_graph(giant_bc), layout = "fr")
+
+ggraph(layout_bc) +
+  geom_edge_link(alpha = 0.1, colour = "grey60") +
+  geom_node_point(aes(size = degree, colour = community), alpha = 0.8) +
+  scale_size_continuous(range = c(1, 5), guide = "none") +
+  scale_colour_manual(values = palette_sci(
+    n_distinct(V(giant_bc)$community)
+  )) +
+  labs(colour = "Community") +
+  theme_graph() +
+  theme(legend.position = "bottom")
+```
+
+### Comparing the two approaches
+
+```{r}
+#| label: compare-approaches
+comparison <- tibble(
+  Method = c("Co-citation", "Bibliographic coupling"),
+  Nodes = c(vcount(g_cocit), vcount(g_bibcoup)),
+  Edges = c(ecount(g_cocit), ecount(g_bibcoup)),
+  Components = c(components(g_cocit)$no, components(g_bibcoup)$no),
+  Density = c(round(graph.density(g_cocit), 4),
+              round(graph.density(g_bibcoup), 4))
+)
+
+comparison |> gt()
+```
+
+## Diagnostics and interpretation {#sec-cocit-diagnostics}
+
+- **Threshold selection**: The minimum co-citation count or shared-reference count determines network density. Too low a threshold creates a hairball; too high excludes important links. Experiment with multiple thresholds and report the chosen value.
+- **Normalisation**: Raw co-citation counts favour highly cited papers. Cosine normalisation produces more balanced networks. Always report whether counts are raw or normalised.
+- **Giant component ratio**: A fragmented co-citation network may indicate that the corpus spans multiple disconnected subfields, or that the threshold is too high.
+- **Temporal stability**: Co-citation networks change as new papers cite old ones. Bibliographic coupling networks are fixed at publication time. If you need a stable snapshot of recent literature, coupling is preferable.
+
+## Limitations and responsible use {#sec-cocit-limitations}
+
+::: {.callout-warning}
+## Limitations and responsible use
+
+- **Co-citation reflects citing behaviour, not truth.** Frequently co-cited papers may be co-cited because they represent a dominant paradigm, not because they are the best or most relevant works. Minority viewpoints may be invisible.
+- **Reference list quality.** Both methods depend entirely on the accuracy and completeness of reference lists. Missing references, formatting errors, and DOI mismatches reduce coverage. OpenAlex reference parsing is imperfect [@priem2022].
+- **Size effects.** Papers with long reference lists contribute disproportionately to bibliographic coupling. Consider normalising by reference list length.
+- **Not evaluative.** Co-citation and coupling measure relatedness, not quality. A highly co-cited paper is intellectually central, which is not the same as excellent or correct [@hicks2015].
+:::
+
+## Common pitfalls {#sec-cocit-pitfalls}
+
+::: {.callout-important}
+## Common pitfalls
+
+- **Confusing the two methods.** Co-citation links *cited* documents; bibliographic coupling links *citing* documents. They answer different questions about the same citation data.
+- **Skipping normalisation.** Raw counts produce networks dominated by a few highly cited papers. Always normalise for balanced analysis.
+- **Ignoring the threshold.** Reporting results without specifying the minimum count or similarity cutoff makes the analysis irreproducible.
+- **Treating coupling as dynamic.** Bibliographic coupling strength is fixed at publication. Do not interpret changes in coupling networks over time as evolving relationships --- they reflect changes in the corpus, not the links.
+:::
+
+## Exercises {#sec-cocit-exercises}
+
+1. **Cosine normalisation.** Compute cosine-normalised co-citation strengths instead of raw counts. How does the network structure change? Do the same core documents emerge?
+
+2. **Temporal co-citation.** Split the corpus into two time periods (2020–2021 and 2022–2023). Build a co-citation network for each. Which co-citation pairs are stable across periods, and which are new?
+
+3. **Bibliographic coupling by year.** For each publication year, build a bibliographic coupling network and report the number of components and modularity. Does the intellectual structure become more or less fragmented over time?
+
+4. **Identifying research fronts.** Use bibliographic coupling communities to identify research fronts. For each community, list the three most frequent keywords or title words. Do the fronts correspond to recognisable subfields?
+
+::: {.callout-tip collapse="true"}
+## Solutions
+
+Solutions are provided in @sec-cheatsheets.
+:::
+
+## Further reading {#sec-cocit-reading}
+
+- @small1973 --- Co-citation analysis: the foundational paper.
+- @kessler1963 --- Bibliographic coupling: the original proposal.
+- @waltman2012 --- Unified approach to bibliometric network construction and clustering.
+- @fortunato2010 --- Community detection methods applicable to citation networks.
+- @garfield1955 --- The intellectual origins of citation indexing.
+
+## Session info {#sec-cocit-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
