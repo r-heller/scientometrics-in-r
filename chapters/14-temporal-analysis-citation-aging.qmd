@@ -1,5 +1,258 @@
 ---
 title: "Temporal Analysis and Citation Aging"
+subtitle: "Citation Windows, Half-Lives, and Aging Curves"
+author: "Raban Heller"
+date: last-modified
+abstract: |
+  This chapter examines how citation patterns evolve over time. We cover
+  citation windows, the citation half-life, aging curves, the Price index,
+  and time-series analysis of publication and citation trends. A worked
+  example constructs aging curves from OpenAlex data and computes
+  half-life estimates for different journals.
+keywords: [scientometrics, citation-aging, half-life, price-index, temporal-analysis, citation-window]
 ---
 
-*This chapter is under development.*
+## Learning objectives {#sec-temporal-objectives}
+
+After completing this chapter, you will be able to:
+
+- Define and apply citation windows of different lengths
+- Compute and interpret the citation half-life for a journal or corpus
+- Plot citation aging curves showing how citations accumulate over time
+- Calculate the Price index (proportion of references less than five years old)
+- Analyse temporal trends in publication output and citation rates
+- Explain how aging patterns differ across disciplines
+
+## Setup {#sec-temporal-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#sec-temporal-background}
+
+Citations are not evenly distributed over time. Most papers receive the bulk of their citations within a few years of publication, then gradually fade. This phenomenon --- **citation aging** or **obsolescence** --- was first studied systematically by @price1963, who observed that scientific literature has a characteristic "half-life": the time by which half of all citations to a given year's output have been received.
+
+The **citation half-life** varies dramatically across disciplines. In fast-moving fields like molecular biology, half-lives may be three to four years; in mathematics or humanities, they can exceed ten years. This has direct consequences for metrics: a two-year Journal Impact Factor systematically undervalues journals in slow-aging fields [@waltman2016].
+
+A **citation window** is the fixed period after publication during which citations are counted. The JIF uses a two-year window; CiteScore uses four years. Choosing the window involves a trade-off: short windows favour fast-aging fields but miss delayed-recognition papers; long windows are more inclusive but dilute the signal of recent trends.
+
+The **Price index** --- the proportion of references in a paper's bibliography that are less than five years old --- measures how rapidly a field consumes recent literature. A high Price index indicates a fast-moving frontier field; a low Price index suggests reliance on older foundational works. @price1963 introduced this as an "immediacy" measure.
+
+**Sleeping beauties** --- papers that receive few citations for years then suddenly attract attention [@kleinberg2003] --- violate the standard aging model. Their existence is a reminder that citation half-lives describe averages, not individual papers. @garfield1955 already noted that some ideas take decades to be recognised.
+
+Understanding citation temporality is essential for fair evaluation. Comparing citation counts without accounting for publication year, citation window, and field-specific aging rates produces meaningless results.
+
+## Worked example {#sec-temporal-example}
+
+### Acquiring the data
+
+We fetch works from two journals with different expected aging profiles.
+
+```{r}
+#| label: fetch-temporal-data
+#| cache: true
+# Scientometrics (social science, moderate aging)
+works_sciento <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S39224261",
+  from_publication_date = "2013-01-01",
+  to_publication_date = "2018-12-31",
+  type = "article",
+  options = list(sample = 400, seed = 42)
+)
+
+# PLOS ONE (multidisciplinary, faster aging)
+works_plos <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S202381698",
+  from_publication_date = "2013-01-01",
+  to_publication_date = "2018-12-31",
+  type = "article",
+  options = list(sample = 400, seed = 42)
+)
+
+works_all <- bind_rows(
+  works_sciento |> mutate(journal = "Scientometrics"),
+  works_plos |> mutate(journal = "PLOS ONE")
+) |>
+  mutate(year = year(publication_date),
+         age = 2024 - year)
+```
+
+### Citation aging curves
+
+We compute mean citations by age (years since publication) for each journal.
+
+```{r}
+#| label: aging-curves
+aging <- works_all |>
+  group_by(journal, age) |>
+  summarise(
+    mean_cites = mean(cited_by_count, na.rm = TRUE),
+    median_cites = median(cited_by_count, na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  ) |>
+  arrange(journal, age)
+```
+
+```{r}
+#| label: fig-temporal-aging
+#| fig-cap: "Citation aging curves for Scientometrics and PLOS ONE articles published 2013-2018."
+#| fig-alt: "Line chart showing mean citation count by years since publication for two journals. PLOS ONE articles accumulate citations faster in early years, while Scientometrics articles show a slower but more sustained pattern."
+#| fig-width: 6
+#| fig-height: 4
+ggplot(aging, aes(x = age, y = mean_cites, colour = journal)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  scale_colour_manual(values = palette_sci(2)) +
+  labs(x = "Years since publication", y = "Mean citations",
+       colour = "Journal") +
+  theme_sci()
+```
+
+### Estimating citation half-life
+
+We estimate the half-life as the age at which cumulative citations reach 50% of total.
+
+```{r}
+#| label: compute-half-life
+half_life <- works_all |>
+  group_by(journal) |>
+  arrange(age) |>
+  mutate(
+    cum_cites = cumsum(cited_by_count),
+    total_cites = sum(cited_by_count),
+    cum_pct = cum_cites / total_cites
+  ) |>
+  summarise(
+    total_cites = first(total_cites),
+    half_life_age = min(age[cum_pct >= 0.50]),
+    .groups = "drop"
+  )
+
+half_life |>
+  gt() |>
+  cols_label(
+    journal = "Journal",
+    total_cites = "Total citations",
+    half_life_age = "Half-life (years)"
+  )
+```
+
+### Price index
+
+The Price index is the fraction of references less than five years old. A full computation requires publication years of each reference; here we show reference-list lengths as a starting point.
+
+```{r}
+#| label: compute-price-index
+works_all |>
+  filter(!is.na(referenced_works_count), referenced_works_count > 0) |>
+  group_by(journal) |>
+  summarise(mean_refs = round(mean(referenced_works_count), 1), .groups = "drop")
+```
+
+### Cumulative citation trajectories
+
+```{r}
+#| label: fig-temporal-cumulative
+#| fig-cap: "Cumulative citation percentage by years since publication."
+#| fig-alt: "Line chart showing how the cumulative share of total citations grows with article age for each journal. Steeper curves indicate faster citation accumulation."
+#| fig-width: 6
+#| fig-height: 4
+cum_aging <- works_all |>
+  group_by(journal, age) |>
+  summarise(total = sum(cited_by_count), .groups = "drop") |>
+  group_by(journal) |>
+  arrange(age) |>
+  mutate(
+    cum_total = cumsum(total),
+    cum_pct = cum_total / sum(total)
+  )
+
+ggplot(cum_aging, aes(x = age, y = cum_pct, colour = journal)) +
+  geom_line(linewidth = 1) +
+  geom_hline(yintercept = 0.5, linetype = "dashed", colour = "grey50") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_colour_manual(values = palette_sci(2)) +
+  labs(x = "Years since publication", y = "Cumulative % of citations",
+       colour = "Journal") +
+  annotate("text", x = 9, y = 0.52, label = "50% threshold",
+           colour = "grey40", size = 3.5) +
+  theme_sci()
+```
+
+## Diagnostics and interpretation {#sec-temporal-diagnostics}
+
+- **Sample size per age bin**: Ensure each year has enough papers for stable estimates. Small cohorts produce noisy aging curves.
+- **Truncation**: Papers published in the most recent year have not had time to accumulate citations. Exclude or flag incomplete citation windows.
+- **Disciplinary benchmarks**: Compare your half-life estimates against known benchmarks. Social sciences typically have half-lives of 5-8 years; biomedical fields 3-5 years; mathematics 8-12 years.
+- **Outliers**: A few extremely highly cited papers can distort mean-based aging curves. Compare mean and median trajectories.
+
+## Limitations and responsible use {#sec-temporal-limitations}
+
+::: {.callout-warning}
+## Limitations and responsible use
+
+- **Half-life is an average.** Individual papers deviate wildly from the average aging pattern. Sleeping beauties and flash-in-the-pan papers both exist.
+- **Database lag.** Citation counts in OpenAlex may lag behind reality by weeks or months. Very recent citation data is unreliable.
+- **Survivor bias.** Retracted papers or papers removed from databases disappear from aging analyses, potentially biasing half-life estimates.
+- **Citation inflation.** The total volume of citations has grown over time. A paper published in 2020 will accumulate citations faster than an identical paper published in 2000, simply because there are more papers being published [@price1963].
+- **Do not penalise slow-aging fields.** Using short citation windows systematically undervalues mathematics, humanities, and theoretical disciplines [@hicks2015].
+:::
+
+## Common pitfalls {#sec-temporal-pitfalls}
+
+::: {.callout-important}
+## Common pitfalls
+
+- **Mixing citation windows.** Comparing a 2-year JIF for one journal with lifetime citations for another produces meaningless rankings.
+- **Ignoring publication-year effects.** A corpus spanning 2000-2023 includes papers with 23 years of citation history alongside papers with 1 year. Normalise by publication year.
+- **Confusing obsolescence with irrelevance.** A declining citation curve does not mean the knowledge is wrong or useless; it may mean the ideas have been absorbed into textbooks or standard practice.
+- **Forgetting about the denominator.** If the number of publications in a field is growing, the absolute citation count grows even if the per-paper impact is constant.
+:::
+
+## Exercises {#sec-temporal-exercises}
+
+1. **Half-life comparison.** Fetch works from a mathematics journal and a biomedical journal. Compute and compare their citation half-lives. Does the difference match disciplinary expectations?
+
+2. **Price index computation.** For a set of papers with known reference lists, compute the actual Price index (fraction of references < 5 years old). *(Hint: you will need to fetch metadata for the referenced works.)*
+
+3. **Sleeping beauty detection.** Identify papers that received fewer than 2 citations in their first 3 years but more than 20 total. What are these papers about?
+
+4. **Median vs. mean aging.** Replot the aging curves using median instead of mean citations. How does the shape change, and why?
+
+5. **Citation window sensitivity.** For a single journal, compute a JIF-like proxy using 2-year, 3-year, and 5-year windows. How much does the value change?
+
+::: {.callout-tip collapse="true"}
+## Solutions
+
+Solutions are provided in @sec-cheatsheets.
+:::
+
+## Further reading {#sec-temporal-reading}
+
+- @price1963 --- *Little Science, Big Science*; introduced citation aging and the Price index.
+- @garfield1955 --- The origin of citation indexing, including early observations on citation temporality.
+- @kleinberg2003 --- Bursty patterns in temporal data; relevant to sleeping beauties and sudden citation surges.
+- @waltman2016 --- Review of citation indicators, including discussion of citation windows and aging.
+- @hicks2015 --- The Leiden Manifesto; warns against penalising slow-aging fields with short citation windows.
+
+## Session info {#sec-temporal-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
