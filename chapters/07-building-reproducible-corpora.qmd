@@ -1,5 +1,201 @@
 ---
 title: "Building Reproducible Corpora"
+subtitle: "Deduplication, ID Resolution, and Affiliation Cleanup"
+author: "Raban Heller"
+date: last-modified
+abstract: |
+  A bibliometric analysis is only as good as its corpus. This chapter
+  covers the critical data-cleaning steps between raw retrieval and
+  analysis: deduplication by DOI and fuzzy title matching, identifier
+  resolution across databases, author name disambiguation, and
+  affiliation standardization via ROR.
+keywords: [data-acquisition, deduplication, corpus, reproducibility, author-disambiguation, ror]
 ---
 
-*This chapter is under development.*
+## Learning objectives {#sec-corpora-objectives}
+
+After completing this chapter, you will be able to:
+
+- Deduplicate bibliographic records by DOI and by approximate title matching
+- Resolve identifiers across databases (OpenAlex ID, DOI, PMID)
+- Recognize author name disambiguation challenges and apply basic heuristics
+- Standardize institutional affiliations using ROR identifiers
+- Save a clean corpus in an efficient format (Parquet) for downstream analysis
+
+## Setup {#sec-corpora-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(glue)
+library(arrow)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#sec-corpora-background}
+
+Raw bibliographic data is messy. Records from different sources may describe the same paper with different metadata, the same author under different name variants, and the same institution under dozens of spelling variations. Building a clean, reproducible corpus requires systematic attention to three problems:
+
+**Deduplication.** When merging data from multiple sources, the same publication may appear multiple times. DOI-based deduplication is the gold standard, but not all records have DOIs. Fuzzy title matching provides a fallback but is error-prone for short or generic titles.
+
+**Author disambiguation.** "J. Smith" could be dozens of different people. OpenAlex uses machine-learning-based author clustering to assign persistent author IDs, but errors persist — especially for common names and authors who change institutions [@priem2022].
+
+**Affiliation standardization.** Institutional names appear in countless variants ("MIT", "Massachusetts Institute of Technology", "Mass. Inst. Tech."). The Research Organization Registry (ROR) provides a curated set of persistent identifiers for research organizations. OpenAlex maps many affiliations to ROR IDs, but coverage is incomplete.
+
+## Worked example {#sec-corpora-example}
+
+### Fetching raw data
+
+```{r}
+#| label: fetch-corpus-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  search = "bibliometrics",
+  from_publication_date = "2021-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 300, seed = 42)
+)
+
+cat(glue("Raw records: {nrow(works)}\n"))
+```
+
+### DOI-based deduplication
+
+```{r}
+#| label: dedup-doi
+works_deduped <- dedupe_by_doi(works)
+cat(glue("After DOI dedup: {nrow(works_deduped)}\n"))
+cat(glue("Removed: {nrow(works) - nrow(works_deduped)} duplicates\n"))
+```
+
+### Fuzzy title deduplication
+
+For records without DOIs, we use approximate string matching.
+
+```{r}
+#| label: fuzzy-dedup
+no_doi <- works_deduped |> filter(is.na(doi))
+
+if (nrow(no_doi) > 1) {
+  title_lower <- tolower(no_doi$display_name)
+  dist_matrix <- stringdist::stringdistmatrix(title_lower, method = "jw")
+  potential_dupes <- which(as.matrix(dist_matrix) < 0.1 &
+                            as.matrix(dist_matrix) > 0, arr.ind = TRUE)
+  potential_dupes <- potential_dupes[potential_dupes[, 1] < potential_dupes[, 2], , drop = FALSE]
+  cat(glue("Potential fuzzy duplicates (no DOI): {nrow(potential_dupes)} pairs\n"))
+} else {
+  cat("No records without DOI to fuzzy-match.\n")
+}
+```
+
+### Affiliation extraction and ROR mapping
+
+```{r}
+#| label: affiliation-cleanup
+affiliations <- works_deduped |>
+  select(id, author) |>
+  unnest(author, names_sep = "_") |>
+  select(work_id = id,
+         author_name = author_au_display_name,
+         institution = author_institution_display_name) |>
+  filter(!is.na(institution))
+
+top_institutions <- affiliations |>
+  count(institution, sort = TRUE) |>
+  head(15)
+
+top_institutions
+```
+
+### Saving as Parquet
+
+```{r}
+#| label: save-parquet
+corpus_clean <- works_deduped |>
+  select(id, display_name, publication_date, cited_by_count, doi, so, ab)
+
+out_path <- here::here("data", "corpus_sample.parquet")
+write_parquet(corpus_clean, out_path)
+cat(glue("Saved {nrow(corpus_clean)} records to {out_path}\n"))
+```
+
+### Visualization
+
+```{r}
+#| label: fig-corpora-institutions
+#| fig-cap: "Top 15 institutions by publication count in the sample corpus."
+#| fig-alt: "Horizontal bar chart showing the 15 most frequent institutional affiliations in the cleaned corpus."
+#| fig-width: 6
+#| fig-height: 4.5
+top_institutions |>
+  mutate(institution = fct_reorder(institution, n)) |>
+  ggplot(aes(x = n, y = institution)) +
+  geom_col(fill = palette_sci(1)) +
+  labs(x = "Publications", y = NULL) +
+  theme_sci()
+```
+
+## Diagnostics and interpretation {#sec-corpora-diagnostics}
+
+After cleaning:
+
+- **Deduplication rate**: A rate above 5% suggests either a multi-source merge or a query that returns overlapping result pages.
+- **DOI coverage**: The proportion of records with DOIs determines how effective DOI-based deduplication can be.
+- **Affiliation coverage**: Check what fraction of author records have institutional affiliations. Low coverage limits institutional analysis.
+- **Parquet file size**: Parquet is columnar and compressed. A 10,000-record corpus typically compresses to under 1 MB.
+
+## Limitations and responsible use {#sec-corpora-limitations}
+
+::: {.callout-warning}
+## Limitations and responsible use
+
+- **Fuzzy matching is imperfect.** Jaro-Winkler similarity can produce both false positives (different papers with similar titles) and false negatives (same paper with different title versions). Always spot-check.
+- **Author disambiguation remains unsolved.** No automated method achieves perfect accuracy. Report the disambiguation method used and its known error rate.
+- **Affiliation data is noisy.** Even with ROR mapping, temporary affiliations, joint appointments, and name changes create ambiguity. Never use affiliation data as ground truth without validation [@hicks2015].
+:::
+
+## Common pitfalls {#sec-corpora-pitfalls}
+
+::: {.callout-important}
+## Common pitfalls
+
+- **Deduplicating before merging.** Always merge first, then deduplicate. Deduplicating each source independently misses cross-source duplicates.
+- **Trusting DOIs blindly.** Some records have incorrect DOIs (typos, test DOIs, placeholder values). Validate a sample.
+- **Ignoring records without DOIs.** Discarding them biases the corpus toward recent, well-indexed publications.
+- **Not documenting cleaning steps.** Every deduplication or name-standardization step should be logged for reproducibility.
+:::
+
+## Exercises {#sec-corpora-exercises}
+
+1. **DOI coverage by year.** Compute the DOI coverage rate by publication year in the sample. Is there a trend?
+
+2. **Name variants.** Find authors in the sample who appear under multiple name spellings. What heuristics could you use to merge them?
+
+3. **ROR lookup.** Use the ROR API to resolve the top 5 institutions in your corpus to their official ROR identifiers.
+
+::: {.callout-tip collapse="true"}
+## Solutions
+
+Solutions are provided in @sec-cheatsheets.
+:::
+
+## Further reading {#sec-corpora-reading}
+
+- @priem2022 — OpenAlex author disambiguation and institutional mapping.
+- @aria2017 — `bibliometrix` data cleaning utilities.
+- @hicks2015 — The Leiden Manifesto; principles 4 and 5 emphasise data transparency and verifiability.
+
+## Session info {#sec-corpora-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
