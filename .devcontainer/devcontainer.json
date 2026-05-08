@@ -1,0 +1,22 @@
+{
+  "name": "Scientometrics in R",
+  "build": {
+    "dockerfile": "../Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "quarto.quarto",
+        "REditorSupport.r",
+        "ms-python.python"
+      ],
+      "settings": {
+        "r.rterm.linux": "/usr/local/bin/R",
+        "python.defaultInterpreterPath": "/opt/scientometrics-py/bin/python"
+      }
+    }
+  },
+  "forwardPorts": [4321],
+  "postCreateCommand": "R -e 'renv::restore(prompt = FALSE)'",
+  "remoteUser": "rstudio"
+}
