@@ -68,18 +68,18 @@ The trade-off is interpretability: while TF-IDF features are directly readable (
 #| cache: true
 works <- oa_fetch(
   entity = "works",
-  primary_location.source.id = "S39224261",
+  primary_location.source.id = "S148561398",
   from_publication_date = "2019-01-01",
   to_publication_date = "2023-12-31",
   options = list(sample = 400, seed = 42)
 )
 
 text_df <- works |>
-  filter(!is.na(ab), nchar(ab) > 100) |>
+  filter(!is.na(abstract), nchar(abstract) > 100) |>
   transmute(
     doc_id = id,
     title = display_name,
-    text = paste(display_name, ab, sep = ". "),
+    text = paste(display_name, abstract, sep = ". "),
     year = year(publication_date),
     cited_by_count
   )

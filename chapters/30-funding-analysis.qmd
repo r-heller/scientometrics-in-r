@@ -59,7 +59,7 @@ The fundamental challenge is **attribution**: a paper acknowledging three funder
 #| cache: true
 works <- oa_fetch(
   entity = "works",
-  primary_location.source.id = "S39224261",
+  primary_location.source.id = "S148561398",
   from_publication_date = "2020-01-01",
   to_publication_date = "2023-12-31",
   options = list(sample = 400, seed = 42)

@@ -74,19 +74,19 @@ works_multi <- oa_fetch(
 )
 
 journal_data <- works_multi |>
-  select(id, so, referenced_works) |>
-  filter(!is.na(so)) |>
+  select(id, source_display_name, referenced_works) |>
+  filter(!is.na(source_display_name)) |>
   unnest(referenced_works) |>
   rename(cited_id = referenced_works)
 
 cat(glue("Citing papers with journal info: {n_distinct(journal_data$id)}\n"))
-cat(glue("Unique source journals: {n_distinct(journal_data$so)}\n"))
+cat(glue("Unique source journals: {n_distinct(journal_data$source_display_name)}\n"))
 ```
 
 ```{r}
 #| label: journal-cocitation
 journal_cited <- journal_data |>
-  select(citing_journal = so, cited_id)
+  select(citing_journal = source_display_name, cited_id)
 
 journal_pairs <- journal_cited |>
   inner_join(journal_cited, by = "cited_id", suffix = c("_a", "_b"),
@@ -171,12 +171,12 @@ inst_works <- oa_fetch(
 )
 
 inst_journals <- inst_works |>
-  filter(!is.na(so)) |>
-  count(so, name = "n_pubs", sort = TRUE)
+  filter(!is.na(source_display_name)) |>
+  count(source_display_name, name = "n_pubs", sort = TRUE)
 
 basemap_journals <- V(g_journals)$name
 inst_journals_matched <- inst_journals |>
-  filter(so %in% basemap_journals)
+  filter(source_display_name %in% basemap_journals)
 
 cat(glue("Institution journals matched to base map: {nrow(inst_journals_matched)} / {nrow(inst_journals)}\n"))
 ```
@@ -188,7 +188,7 @@ cat(glue("Institution journals matched to base map: {nrow(inst_journals_matched)
 #| fig-width: 7
 #| fig-height: 5.5
 overlay_sizes <- tibble(journal = V(g_journals)$name) |>
-  left_join(inst_journals_matched, by = c("journal" = "so")) |>
+  left_join(inst_journals_matched, by = c("journal" = "source_display_name")) |>
   mutate(n_pubs = replace_na(n_pubs, 0))
 
 set.seed(42)

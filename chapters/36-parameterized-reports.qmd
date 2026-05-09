@@ -64,7 +64,7 @@ A parameterized Quarto document starts with parameters in the YAML header:
 # ---
 # title: "Journal Bibliometric Profile"
 # params:
-#   journal_id: "S39224261"
+#   journal_id: "S148561398"
 #   journal_name: "Scientometrics"
 #   start_year: 2020
 #   end_year: 2023
@@ -75,7 +75,7 @@ A parameterized Quarto document starts with parameters in the YAML header:
 
 ```{r}
 #| label: use-params
-journal_id <- "S39224261"
+journal_id <- "S148561398"
 journal_name <- "Scientometrics"
 start_year <- 2020
 end_year <- 2023
@@ -140,7 +140,7 @@ works |>
 #| eval: false
 # Render for multiple journals:
 journals <- tibble(
-  journal_id = c("S39224261", "S202381698", "S137773608"),
+  journal_id = c("S148561398", "S202381698", "S137773608"),
   journal_name = c("Scientometrics", "PLOS ONE", "Nature")
 )
 

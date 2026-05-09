@@ -68,7 +68,7 @@ list(
   tar_target(raw_works, {
     oa_fetch(
       entity = "works",
-      primary_location.source.id = "S39224261",
+      primary_location.source.id = "S148561398",
       from_publication_date = "2020-01-01",
       to_publication_date = "2023-12-31",
       options = list(sample = 300, seed = 42)

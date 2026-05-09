@@ -64,7 +64,7 @@ We fetch a sample of works from the *Scientometrics* journal via OpenAlex and co
 #| cache: true
 works <- oa_fetch(
   entity = "works",
-  primary_location.source.id = "S39224261",
+  primary_location.source.id = "S148561398",
   from_publication_date = "2018-01-01",
   to_publication_date = "2023-12-31",
   options = list(sample = 500, seed = 42)
@@ -118,12 +118,12 @@ ggplot(annual, aes(x = year, y = n)) +
 #| fig-width: 6
 #| fig-height: 4.5
 author_prod <- works |>
-  select(id, author) |>
-  unnest(author, names_sep = "_") |>
-  count(author_au_display_name, sort = TRUE) |>
+  select(id, authorships) |>
+  unnest(authorships, names_sep = "_") |>
+  count(authorships_display_name, sort = TRUE) |>
   head(15)
 
-ggplot(author_prod, aes(x = n, y = reorder(author_au_display_name, n))) +
+ggplot(author_prod, aes(x = n, y = reorder(authorships_display_name, n))) +
   geom_col(fill = palette_sci(1)) +
   labs(x = "Articles", y = NULL) +
   theme_sci()

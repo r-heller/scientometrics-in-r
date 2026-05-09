@@ -67,19 +67,19 @@ Evaluating keyword extraction requires ground truth. Author keywords are the mos
 #| cache: true
 works <- oa_fetch(
   entity = "works",
-  primary_location.source.id = "S39224261",
+  primary_location.source.id = "S148561398",
   from_publication_date = "2021-01-01",
   to_publication_date = "2023-12-31",
   options = list(sample = 200, seed = 42)
 )
 
 text_df <- works |>
-  filter(!is.na(ab), nchar(ab) > 100) |>
+  filter(!is.na(abstract), nchar(abstract) > 100) |>
   transmute(
     doc_id = id,
     title = display_name,
-    abstract = ab,
-    text = paste(display_name, ab, sep = ". ")
+    abstract = abstract,
+    text = paste(display_name, abstract, sep = ". ")
   )
 
 cat(glue("Documents with abstracts: {nrow(text_df)}\n"))

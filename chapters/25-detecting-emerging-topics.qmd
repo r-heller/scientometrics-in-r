@@ -64,17 +64,17 @@ An **emerging topic** is a research area experiencing rapid growth in attention 
 #| cache: true
 works <- oa_fetch(
   entity = "works",
-  primary_location.source.id = "S39224261",
+  primary_location.source.id = "S148561398",
   from_publication_date = "2015-01-01",
   to_publication_date = "2023-12-31",
   options = list(sample = 600, seed = 42)
 )
 
 text_df <- works |>
-  filter(!is.na(ab), nchar(ab) > 50) |>
+  filter(!is.na(abstract), nchar(abstract) > 50) |>
   transmute(
     doc_id = id,
-    text = paste(display_name, ab, sep = ". "),
+    text = paste(display_name, abstract, sep = ". "),
     year = year(publication_date)
   )
 

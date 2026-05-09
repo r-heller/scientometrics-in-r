@@ -71,7 +71,7 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       textInput("journal_id", "OpenAlex Source ID:",
-                value = "S39224261"),
+                value = "S148561398"),
       sliderInput("year_range", "Publication Years:",
                   min = 2015, max = 2023, value = c(2020, 2023)),
       numericInput("sample_size", "Sample Size:", value = 200,

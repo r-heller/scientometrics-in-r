@@ -119,7 +119,7 @@ oa_meta <- oa_results |>
     title = display_name,
     year = publication_year,
     cited_by = cited_by_count,
-    has_abstract = !is.na(ab),
+    has_abstract = !is.na(abstract),
     type = type
   )
 

@@ -92,7 +92,7 @@ ggplot(works, aes(x = cited_by_count)) +
 works |>
   arrange(desc(cited_by_count)) |>
   head(10) |>
-  select(display_name, year, cited_by_count, so) |>
+  select(display_name, year, cited_by_count, source_display_name) |>
   gt()
 ```
 
@@ -101,10 +101,10 @@ works |>
 ```{r}
 #| label: cs01-coauth-network
 author_data <- works |>
-  select(id, author) |>
-  unnest(author, names_sep = "_") |>
-  select(work_id = id, author_id = author_au_id,
-         author_name = author_au_display_name) |>
+  select(id, authorships) |>
+  unnest(authorships, names_sep = "_") |>
+  select(work_id = id, author_id = authorships_id,
+         author_name = authorships_display_name) |>
   filter(!is.na(author_id))
 
 edges <- author_data |>
@@ -150,8 +150,8 @@ ggraph(as_tbl_graph(giant), layout = "fr") +
 ```{r}
 #| label: cs01-topics
 text_df <- works |>
-  filter(!is.na(ab), nchar(ab) > 50) |>
-  transmute(doc_id = id, text = paste(display_name, ab, sep = ". "), year)
+  filter(!is.na(abstract), nchar(abstract) > 50) |>
+  transmute(doc_id = id, text = paste(display_name, abstract, sep = ". "), year)
 
 corp <- corpus(text_df, docid_field = "doc_id", text_field = "text")
 toks <- tokens(corp, remove_punct = TRUE, remove_numbers = TRUE) |>

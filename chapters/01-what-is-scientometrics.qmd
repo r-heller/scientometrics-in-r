@@ -94,7 +94,7 @@ cat(glue("Fetched {nrow(works)} works\n"))
 glimpse(works)
 ```
 
-Each row is a scholarly work. Key columns include `display_name` (the title), `publication_date`, `cited_by_count`, `doi`, and `so` (the source or journal name).
+Each row is a scholarly work. Key columns include `display_name` (the title), `publication_date`, `cited_by_count`, `doi`, and `source_display_name` (the source or journal name).
 
 ### Basic descriptive statistics
 
@@ -124,8 +124,8 @@ Which journals appear most often in our sample?
 ```{r}
 #| label: top-journals
 top_journals <- works |>
-  filter(!is.na(so)) |>
-  count(so, sort = TRUE) |>
+  filter(!is.na(source_display_name)) |>
+  count(source_display_name, sort = TRUE) |>
   head(10)
 
 top_journals
@@ -162,8 +162,8 @@ The trend shows a growing volume of scientometrics-related publications over the
 #| fig-width: 7
 #| fig-height: 5
 top_journals |>
-  mutate(so = fct_reorder(so, n)) |>
-  ggplot(aes(x = n, y = so)) +
+  mutate(source_display_name = fct_reorder(source_display_name, n)) |>
+  ggplot(aes(x = n, y = source_display_name)) +
   geom_col(fill = palette_sci(1)) +
   labs(
     x = "Number of works",
@@ -206,7 +206,7 @@ Even for a simple descriptive analysis, a few diagnostic checks are essential:
 #| label: diagnostics
 cat(glue("Date range: {min(works$publication_date)} to {max(works$publication_date)}\n"))
 cat(glue("Works with zero citations: {sum(works$cited_by_count == 0)}\n"))
-cat(glue("Unique journals: {n_distinct(works$so, na.rm = TRUE)}\n"))
+cat(glue("Unique journals: {n_distinct(works$source_display_name, na.rm = TRUE)}\n"))
 ```
 
 ## Limitations and responsible use {#sec-what-limitations}

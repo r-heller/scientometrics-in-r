@@ -44,3 +44,7 @@ Thumbs.db
 
 # Cached API responses (rebuilt by code)
 _freeze/openalex_cache/
+
+# Knitr cache and figure output (rebuilt by render)
+*_cache/
+*_files/
