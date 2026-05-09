@@ -1,4 +1,4 @@
----
+﻿---
 title: "Building Reproducible Corpora"
 subtitle: "Deduplication, ID Resolution, and Affiliation Cleanup"
 author: "Raban Heller"
@@ -185,7 +185,7 @@ After cleaning:
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-corpora-reading}

@@ -1,4 +1,4 @@
----
+﻿---
 title: "Embeddings for Scientometrics"
 subtitle: "Document Similarity Beyond Bag-of-Words"
 author: "Raban Heller"
@@ -240,7 +240,7 @@ ggplot(text_df_valid, aes(x = umap_x, y = umap_y,
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-embed-reading}

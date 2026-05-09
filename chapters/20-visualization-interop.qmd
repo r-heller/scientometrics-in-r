@@ -1,4 +1,4 @@
----
+﻿---
 title: "Network Visualization and Interoperability"
 subtitle: "Exporting to Gephi, VOSviewer, and Interactive Formats"
 author: "Raban Heller"
@@ -284,7 +284,7 @@ ggraph(tg, layout = "fr") +
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-viz-reading}

@@ -13,11 +13,6 @@ concurrency:
   group: render-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 jobs:
   render:
     runs-on: ubuntu-latest
@@ -43,6 +38,19 @@ jobs:
             libpoppler-cpp-dev libtesseract-dev libleptonica-dev \
             libudunits2-dev libgdal-dev libmagick++-dev
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Create Python venv
+        run: |
+          python -m venv /opt/scientometrics-py
+          /opt/scientometrics-py/bin/pip install --upgrade pip
+          /opt/scientometrics-py/bin/pip install \
+            sentence-transformers bertopic umap-learn hdbscan
+          echo "RETICULATE_PYTHON=/opt/scientometrics-py/bin/python" >> $GITHUB_ENV
+
       - name: Cache renv packages
         uses: actions/cache@v4
         with:
@@ -59,24 +67,21 @@ jobs:
       - name: Install Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
-      - name: Render book (HTML only)
-        run: quarto render --to html
+      - name: Render book
+        run: quarto render
 
-      - name: Upload HTML artifact
+      - name: Upload PDF and EPUB artifacts
         if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          path: _book
+          name: book-outputs
+          path: |
+            _book/*.pdf
+            _book/*.epub
 
-  deploy:
-    if: github.event_name != 'pull_request'
-    needs: render
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        if: github.event_name != 'pull_request'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_book

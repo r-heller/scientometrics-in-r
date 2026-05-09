@@ -1,4 +1,4 @@
----
+﻿---
 title: "Reproducible Pipelines"
 subtitle: "targets, renv, and Docker for Bibliometric Workflows"
 author: "Raban Heller"
@@ -205,7 +205,7 @@ renv::restore()
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-pipeline-reading}

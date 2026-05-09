@@ -1,4 +1,4 @@
----
+﻿---
 title: "Patent–Paper Linkages"
 subtitle: "Tracing the Science–Technology Interface"
 author: "Raban Heller"
@@ -172,7 +172,7 @@ works_patent |>
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-patent-reading}

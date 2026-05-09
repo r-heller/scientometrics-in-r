@@ -1,4 +1,4 @@
----
+﻿---
 title: "Funding Analysis and Grant-to-Publication Linkage"
 subtitle: "Tracing Research Investments to Scholarly Outputs"
 author: "Raban Heller"
@@ -178,7 +178,7 @@ works |>
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-funding-reading}

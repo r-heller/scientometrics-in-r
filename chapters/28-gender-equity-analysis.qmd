@@ -1,4 +1,4 @@
----
+﻿---
 title: "Gender and Equity Analysis"
 subtitle: "Measuring Representation and Disparities in Scholarly Output"
 author: "Raban Heller"
@@ -216,7 +216,7 @@ ggplot(position_summary, aes(x = author_position, y = pct, fill = gender_proxy))
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-gender-reading}

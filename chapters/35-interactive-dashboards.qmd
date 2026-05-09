@@ -1,4 +1,4 @@
----
+﻿---
 title: "Interactive Dashboards"
 subtitle: "Quarto Dashboards, plotly, and DT for Bibliometric Exploration"
 author: "Raban Heller"
@@ -188,7 +188,7 @@ ggplotly(p3)
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-dashboard-reading}

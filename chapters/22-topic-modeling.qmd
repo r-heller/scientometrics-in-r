@@ -1,4 +1,4 @@
----
+﻿---
 title: "Topic Modeling"
 subtitle: "LDA, STM, and Structural Topic Models for Bibliometrics"
 author: "Raban Heller"
@@ -254,7 +254,7 @@ diag_df |> gt()
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-topicmodel-reading}

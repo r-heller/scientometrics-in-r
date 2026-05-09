@@ -1,4 +1,4 @@
----
+﻿---
 title: "Working with Full Text"
 subtitle: "PDF Extraction with pdftools, tabulizer, and tesseract"
 author: "Raban Heller"
@@ -170,7 +170,7 @@ Full-text extraction quality varies dramatically:
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-fulltext-reading}

@@ -1,4 +1,4 @@
----
+﻿---
 title: "Open Science Indicators"
 subtitle: "Measuring Open Access, Data Sharing, and Preprints"
 author: "Raban Heller"
@@ -188,7 +188,7 @@ works_oa |>
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-openscience-reading}

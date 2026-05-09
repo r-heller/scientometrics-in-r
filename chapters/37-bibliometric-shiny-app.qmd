@@ -1,4 +1,4 @@
----
+﻿---
 title: "Building a Bibliometric Shiny App"
 subtitle: "Interactive Analysis for Non-Technical Users"
 author: "Raban Heller"
@@ -236,7 +236,7 @@ shinyApp(ui = ui, server = server)
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-shiny-reading}

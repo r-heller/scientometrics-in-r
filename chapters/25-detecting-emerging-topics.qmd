@@ -1,4 +1,4 @@
----
+﻿---
 title: "Detecting Emerging Topics"
 subtitle: "Burst Detection, Novelty Indicators, and Temporal Topic Tracking"
 author: "Raban Heller"
@@ -270,7 +270,7 @@ window_top_terms |>
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-emerging-reading}

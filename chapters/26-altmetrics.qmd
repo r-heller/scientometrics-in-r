@@ -1,4 +1,4 @@
----
+﻿---
 title: "Altmetrics"
 subtitle: "Beyond Citations — Social Media, Policy, and Public Engagement"
 author: "Raban Heller"
@@ -182,7 +182,7 @@ cat(glue("Pearson correlation (references vs. citations): {round(cor_val, 3)}\n"
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-altmetrics-reading}

@@ -1,4 +1,4 @@
----
+﻿---
 title: "APIs and Packages"
 subtitle: "Querying OpenAlex, Crossref, and PubMed from R"
 author: "Raban Heller"
@@ -218,7 +218,7 @@ cat(glue("Date range: {min(works$publication_date)} to {max(works$publication_da
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-apis-reading}

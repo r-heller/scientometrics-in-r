@@ -1,4 +1,4 @@
----
+﻿---
 title: "Text Mining Bibliographic Corpora"
 subtitle: "From Abstracts to Document-Term Matrices"
 author: "Raban Heller"
@@ -229,7 +229,7 @@ ggplot(freq_by_year, aes(x = year, y = rel_freq, colour = term)) +
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-textmine-reading}

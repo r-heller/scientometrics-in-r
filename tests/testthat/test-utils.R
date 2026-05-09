@@ -29,3 +29,55 @@ test_that("field_normalize handles zero field means", {
   expect_true(is.na(result[1]))
   expect_equal(result[2], 0 / 3)
 })
+
+test_that("compute_mncs adds mncs column", {
+  df <- tibble::tibble(
+    cited_by_count = c(10, 5, 20, 8),
+    field = c("A", "A", "B", "B"),
+    year = c(2020, 2020, 2020, 2020)
+  )
+  result <- compute_mncs(df)
+  expect_true("mncs" %in% names(result))
+  expect_true("field_mean" %in% names(result))
+  expect_equal(nrow(result), 4)
+  a_mean <- mean(c(10, 5))
+  expect_equal(result$mncs[result$field == "A"], c(10, 5) / a_mean)
+})
+
+test_that("build_coauth_graph returns igraph", {
+  works <- tibble::tibble(
+    id = c("W1", "W1", "W2", "W2", "W2"),
+    authorships = list(
+      tibble::tibble(au_id = "A1", au_display_name = "Alice"),
+      tibble::tibble(au_id = "A2", au_display_name = "Bob"),
+      tibble::tibble(au_id = "A1", au_display_name = "Alice"),
+      tibble::tibble(au_id = "A2", au_display_name = "Bob"),
+      tibble::tibble(au_id = "A3", au_display_name = "Carol")
+    )
+  )
+  works_nested <- tibble::tibble(
+    id = c("W1", "W2"),
+    authorships = list(
+      tibble::tibble(au_id = c("A1", "A2"),
+                     au_display_name = c("Alice", "Bob")),
+      tibble::tibble(au_id = c("A1", "A2", "A3"),
+                     au_display_name = c("Alice", "Bob", "Carol"))
+    )
+  )
+  g <- build_coauth_graph(works_nested)
+  expect_s3_class(g, "igraph")
+  expect_true(igraph::vcount(g) >= 2)
+})
+
+test_that("kleinberg_bursts returns data frame", {
+  skip_if_not_installed("bursts")
+  set.seed(42)
+  n <- 100
+  kw <- sample(c("open access", "bibliometrics", "h-index"), n, replace = TRUE)
+  dates <- as.Date("2020-01-01") + sort(sample(1:1000, n))
+  result <- kleinberg_bursts(kw, dates, top_n = 3)
+  expect_true(is.data.frame(result))
+  if (nrow(result) > 0) {
+    expect_true("keyword" %in% names(result))
+  }
+})

@@ -1,4 +1,4 @@
----
+﻿---
 title: "What Is Scientometrics?"
 subtitle: "Defining the Field and Its Scope"
 author: "Raban Heller"
@@ -245,7 +245,7 @@ cat(glue("Unique journals: {n_distinct(works$source_display_name, na.rm = TRUE)}
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-what-reading}

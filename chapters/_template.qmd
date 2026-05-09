@@ -1,4 +1,4 @@
----
+﻿---
 title: "Chapter Title"
 subtitle: "Optional subtitle"
 author: "Raban Heller"
@@ -111,7 +111,7 @@ set.seed(20260509)
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-CHID-reading}

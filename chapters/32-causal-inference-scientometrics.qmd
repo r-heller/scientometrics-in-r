@@ -1,4 +1,4 @@
----
+﻿---
 title: "Causal Inference in Scientometrics"
 subtitle: "From Correlation to Causation in Bibliometric Data"
 author: "Raban Heller"
@@ -202,7 +202,7 @@ ggplot(trends, aes(x = year, y = mean_cites, colour = group)) +
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-causal-reading}

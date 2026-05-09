@@ -1,4 +1,4 @@
----
+﻿---
 title: "Reproducibility, RRIDs, and Badges"
 subtitle: "Measuring and Incentivising Transparent Research Practices"
 author: "Raban Heller"
@@ -197,7 +197,7 @@ works_repro |>
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-repro-reading}

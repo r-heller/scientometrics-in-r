@@ -6,11 +6,17 @@ on:
     paths:
       - "R/**"
       - "scripts/**"
+      - "chapters/**"
+      - "case-studies/**"
+      - "appendices/**"
   pull_request:
     branches: [main]
     paths:
       - "R/**"
       - "scripts/**"
+      - "chapters/**"
+      - "case-studies/**"
+      - "appendices/**"
   workflow_dispatch:
 
 jobs:
@@ -29,7 +35,7 @@ jobs:
           r-version: "4.4.1"
           use-public-rspm: true
 
-      - name: Install dependencies
+      - name: Install R dependencies
         run: |
           install.packages(c("lintr", "styler"))
         shell: Rscript {0}
@@ -50,3 +56,9 @@ jobs:
           library(styler)
           out <- style_dir("R", dry = "fail")
         shell: Rscript {0}
+
+      - name: Install Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Quarto check
+        run: quarto check

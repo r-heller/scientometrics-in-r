@@ -1,4 +1,4 @@
----
+﻿---
 title: "Parameterized Quarto Reports"
 subtitle: "One Template, Many Reports"
 author: "Raban Heller"
@@ -199,7 +199,7 @@ walk2(journals$journal_id, journals$journal_name, function(jid, jname) {
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-paramreport-reading}

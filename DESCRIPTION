@@ -17,11 +17,14 @@ BugReports: https://github.com/r-heller/scientometrics-in-r/issues
 Depends:
     R (>= 4.1.0)
 Imports:
+    bursts,
     dplyr,
     igraph,
     openalexR,
     rlang,
-    tibble
+    tibble,
+    tidyr,
+    utils
 Suggests:
     ggraph,
     testthat (>= 3.0.0),

@@ -1,4 +1,4 @@
----
+﻿---
 title: "Ethics and Responsible Metrics"
 subtitle: "The Leiden Manifesto, DORA, and the Dangers of Indicator Misuse"
 author: "Raban Heller"
@@ -313,7 +313,7 @@ Self-citation rates vary enormously across disciplines, career stages, and resea
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-ethics-reading}
