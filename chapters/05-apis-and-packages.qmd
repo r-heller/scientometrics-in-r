@@ -45,7 +45,7 @@ Bibliometric research begins with data. The quality and completeness of a biblio
 
 Historically, Web of Science and Scopus have dominated as data sources for scientometric research. Both require institutional subscriptions and impose restrictions on bulk data use. The launch of **OpenAlex** in 2022 changed this landscape fundamentally [@priem2022]. OpenAlex is a fully open index of over 250 million scholarly works, built from Crossref, PubMed, institutional repositories, and other open sources. It provides a free REST API with no authentication required, making it the ideal backbone for reproducible bibliometric research.
 
-OpenAlex organises its data around five entity types: **works** (publications), **authors**, **sources** (journals, repositories), **institutions**, and **concepts** (hierarchical topic tags). Each entity has a unique OpenAlex ID and can be queried via filters on metadata fields such as publication date, citation count, open-access status, and institutional affiliation.
+OpenAlex organises its data around five entity types: **works** (publications), **authors**, **sources** (journals, repositories), **institutions**, and **topics** (hierarchical subject tags). Each entity has a unique OpenAlex ID and can be queried via filters on metadata fields such as publication date, citation count, open-access status, and institutional affiliation.
 
 The `openalexR` package provides a tidy R interface to the OpenAlex API. It handles pagination, rate limiting, and result parsing, returning clean tibbles ready for analysis. For metadata not covered by OpenAlex — such as reference lists and funding information — `rcrossref` provides access to Crossref's extensive metadata registry, and `pubmedR` covers the biomedical literature indexed in PubMed/MEDLINE.
 
@@ -85,14 +85,15 @@ works |>
 
 ### Querying authors
 
-We can also retrieve author-level data. Let us look up authors associated with scientometrics research.
+We can also retrieve author-level data. Let us look up authors associated with scientometrics research by filtering on the relevant topic.
 
 ```{r}
 #| label: fetch-authors
 #| cache: true
 authors <- oa_fetch(
   entity = "authors",
-  search = "scientometrics",
+  topics.id = "T10102",
+  works_count = ">50",
   options = list(sample = 50, seed = 42)
 )
 
