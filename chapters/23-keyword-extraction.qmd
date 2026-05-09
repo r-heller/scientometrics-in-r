@@ -1,4 +1,4 @@
----
+﻿---
 title: "Keyword Extraction"
 subtitle: "RAKE, TextRank, and Comparing with Author Keywords"
 author: "Raban Heller"
@@ -220,7 +220,7 @@ tibble(jaccard = overlap) |>
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-kwextract-reading}

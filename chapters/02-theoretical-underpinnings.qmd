@@ -1,4 +1,4 @@
----
+﻿---
 title: "Theoretical Underpinnings"
 subtitle: "Lotka, Bradford, Zipf, Price, and the Matthew Effect"
 author: "Raban Heller"
@@ -239,7 +239,7 @@ The value of these laws is not predictive precision but the insight that **skewe
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-theory-reading}

@@ -1,4 +1,4 @@
----
+﻿---
 title: "Journal Metrics"
 subtitle: "JIF, SJR, SNIP, Eigenfactor, and CiteScore Proxies"
 author: "Raban Heller"
@@ -209,7 +209,7 @@ When evaluating journal metric proxies:
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-jmetrics-reading}

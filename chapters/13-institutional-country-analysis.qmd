@@ -1,4 +1,4 @@
----
+﻿---
 title: "Institutional and Country Analysis"
 subtitle: "Fractional vs. Full Counting"
 author: "Raban Heller"
@@ -241,7 +241,7 @@ ggplot(inst_impact, aes(x = mncs_approx, y = reorder(short_name, mncs_approx))) 
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-instcountry-reading}

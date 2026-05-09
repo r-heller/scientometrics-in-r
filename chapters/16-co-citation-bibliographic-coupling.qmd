@@ -1,4 +1,4 @@
----
+﻿---
 title: "Co-citation and Bibliographic Coupling"
 subtitle: "Intellectual Structure Through Shared References"
 author: "Raban Heller"
@@ -256,7 +256,7 @@ comparison |> gt()
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-cocit-reading}

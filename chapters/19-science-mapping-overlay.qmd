@@ -1,4 +1,4 @@
----
+﻿---
 title: "Science Mapping and Overlay Maps"
 subtitle: "Positioning Local Research on the Global Map of Science"
 author: "Raban Heller"
@@ -252,7 +252,7 @@ ggraph(layout_overlay) +
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-scimap-reading}

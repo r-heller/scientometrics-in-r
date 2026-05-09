@@ -1,4 +1,4 @@
----
+﻿---
 title: "Co-authorship Networks"
 subtitle: "Building, Analysing, and Visualising Collaboration Structures"
 author: "Raban Heller"
@@ -282,7 +282,7 @@ cat(glue("Transitivity (global): {round(transitivity(giant, type = 'global'), 3)
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-coauth-reading}

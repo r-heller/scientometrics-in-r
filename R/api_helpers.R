@@ -23,7 +23,32 @@ fetch_openalex <- function(..., cache_dir = "_freeze/openalex_cache",
     }
   }
 
+  sci_rate_limit()
   result <- openalexR::oa_fetch(...)
   saveRDS(result, cache_file)
   result
+}
+
+# Rate-limiting state shared across calls within a session
+.sci_rate_env <- new.env(parent = emptyenv())
+.sci_rate_env$last_request <- NULL
+
+#' Enforce rate limiting between API requests
+#'
+#' Sleeps if the last request was made less than `min_interval` seconds ago.
+#' Called internally by [fetch_openalex()].
+#'
+#' @param min_interval Minimum seconds between requests (default 0.2).
+#' @return Invisible NULL.
+#' @keywords internal
+sci_rate_limit <- function(min_interval = 0.2) {
+  now <- proc.time()[["elapsed"]]
+  if (!is.null(.sci_rate_env$last_request)) {
+    elapsed <- now - .sci_rate_env$last_request
+    if (elapsed < min_interval) {
+      Sys.sleep(min_interval - elapsed)
+    }
+  }
+  .sci_rate_env$last_request <- proc.time()[["elapsed"]]
+  invisible(NULL)
 }

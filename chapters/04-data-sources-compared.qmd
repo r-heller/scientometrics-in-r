@@ -1,4 +1,4 @@
----
+﻿---
 title: "Data Sources Compared"
 subtitle: "Coverage, Access, and Metadata Quality across Bibliographic Databases"
 author: "Raban Heller"
@@ -305,7 +305,7 @@ The key takeaway is that no single source is complete or definitive. Cross-valid
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-datasources-reading}

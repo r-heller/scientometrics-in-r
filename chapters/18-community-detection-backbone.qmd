@@ -1,4 +1,4 @@
----
+﻿---
 title: "Community Detection and Backbone Extraction"
 subtitle: "Finding Structure in Dense Bibliometric Networks"
 author: "Raban Heller"
@@ -265,7 +265,7 @@ ggraph(layout) +
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-backbone-reading}

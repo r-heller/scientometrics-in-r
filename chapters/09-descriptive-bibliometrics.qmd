@@ -1,4 +1,4 @@
----
+﻿---
 title: "Descriptive Bibliometrics"
 subtitle: "bibliometrix, biblioshiny, and Basic Descriptive Analysis"
 author: "Raban Heller"
@@ -215,7 +215,7 @@ When reviewing descriptive output, check the following:
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-desc-reading}

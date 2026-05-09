@@ -1,4 +1,4 @@
----
+﻿---
 title: "Temporal Analysis and Citation Aging"
 subtitle: "Citation Windows, Half-Lives, and Aging Curves"
 author: "Raban Heller"
@@ -239,7 +239,7 @@ ggplot(cum_aging, aes(x = age, y = cum_pct, colour = journal)) +
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-temporal-reading}

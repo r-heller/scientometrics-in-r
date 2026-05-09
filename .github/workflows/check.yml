@@ -43,7 +43,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          install.packages(c("rcmdcheck", "remotes"))
+          install.packages(c("rcmdcheck", "remotes", "pkgdown"))
           remotes::install_deps(dependencies = TRUE)
         shell: Rscript {0}
 
@@ -51,3 +51,16 @@ jobs:
         run: |
           rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "error")
         shell: Rscript {0}
+
+      - name: Build pkgdown site
+        run: |
+          pkgdown::build_site(override = list(destination = "../_book/pkg"))
+        shell: Rscript {0}
+
+      - name: Deploy pkgdown to GitHub Pages
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_book/pkg
+          destination_dir: pkg

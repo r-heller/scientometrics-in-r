@@ -1,4 +1,4 @@
----
+﻿---
 title: "Co-word and Keyword Co-occurrence"
 subtitle: "Mapping Topical Structure Through Shared Terminology"
 author: "Raban Heller"
@@ -237,7 +237,7 @@ ggraph(layout) +
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-coword-reading}

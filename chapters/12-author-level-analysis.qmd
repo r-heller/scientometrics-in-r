@@ -1,4 +1,4 @@
----
+﻿---
 title: "Author-Level Analysis and Disambiguation"
 subtitle: "Profiles, Name Variants, and ORCID Integration"
 author: "Raban Heller"
@@ -223,7 +223,7 @@ When building author profiles, verify the following:
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-author-reading}

@@ -1,4 +1,4 @@
----
+﻿---
 title: "Parsing Native Exports"
 subtitle: "BibTeX, RIS, WoS Plain Text, and Scopus CSV"
 author: "Raban Heller"
@@ -176,7 +176,7 @@ After parsing, always check:
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-parsing-reading}

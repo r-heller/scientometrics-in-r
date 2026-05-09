@@ -1,4 +1,4 @@
----
+﻿---
 title: "Retraction Analysis"
 subtitle: "Patterns, Persistence, and Citation Afterlife of Retracted Papers"
 author: "Raban Heller"
@@ -186,7 +186,7 @@ retracted |>
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-retraction-reading}

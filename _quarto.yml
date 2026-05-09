@@ -94,6 +94,7 @@ book:
     - appendices/C-glossary.qmd
     - appendices/D-indicator-crosswalk.qmd
     - appendices/E-cheatsheets.qmd
+    - appendices/E-solutions.qmd
 
 bibliography: references.bib
 csl: styles/chicago-author-date.csl
@@ -113,7 +114,8 @@ format:
     geometry: "margin=2.5cm"
     include-in-header: styles/preamble.tex
     fig-pos: "H"
-  epub: default
+  epub:
+    cover-image: images/cover.png
 
 execute:
   freeze: auto

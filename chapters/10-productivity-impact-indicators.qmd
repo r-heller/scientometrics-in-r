@@ -1,4 +1,4 @@
----
+﻿---
 title: "Productivity and Impact Indicators"
 subtitle: "h-index, g-index, MNCS, and PP(top 10%)"
 author: "Raban Heller"
@@ -261,7 +261,7 @@ The h-index in particular can be gamed through self-citation, salami slicing, or
 ::: {.callout-tip collapse="true"}
 ## Solutions
 
-Solutions are provided in @sec-cheatsheets.
+Solutions are provided in @sec-solutions.
 :::
 
 ## Further reading {#sec-indicators-reading}
