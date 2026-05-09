@@ -75,13 +75,17 @@ We fetch works published in 2021-2022 and count citations received during 2022-2
 #| label: fetch-journal-data
 #| cache: true
 fetch_journal_works <- function(source_id, from_year, to_year) {
-  oa_fetch(
-    entity = "works",
-    primary_location.source.id = source_id,
-    from_publication_date = paste0(from_year, "-01-01"),
-    to_publication_date = paste0(to_year, "-12-31"),
-    type = "article"
+  res <- tryCatch(
+    oa_fetch(
+      entity = "works",
+      primary_location.source.id = source_id,
+      from_publication_date = paste0(from_year, "-01-01"),
+      to_publication_date = paste0(to_year, "-12-31"),
+      type = "article"
+    ),
+    error = function(e) NULL
   )
+  if (is.null(res)) tibble() else res
 }
 
 journal_works <- journals |>
@@ -122,8 +126,9 @@ SNIP normalises by citation potential. We approximate this by dividing each jour
 #| label: compute-snip-proxy
 snip_proxy <- journal_works |>
   mutate(
-    mean_cites = map_dbl(data, \(d) mean(d$cited_by_count, na.rm = TRUE)),
+    mean_cites = map_dbl(data, \(d) if (nrow(d) == 0) NA_real_ else mean(d$cited_by_count, na.rm = TRUE)),
     median_refs = map_dbl(data, \(d) {
+      if (nrow(d) == 0) return(NA_real_)
       median(d$referenced_works_count, na.rm = TRUE)
     })
   ) |>

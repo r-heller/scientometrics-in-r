@@ -60,7 +60,7 @@ Bibliometric analysis of retractions must be approached carefully. The goal is t
 #| cache: true
 retracted <- oa_fetch(
   entity = "works",
-  type = "retracted",
+  is_retracted = "true",
   from_publication_date = "2010-01-01",
   to_publication_date = "2023-12-31",
   options = list(sample = 200, seed = 42)

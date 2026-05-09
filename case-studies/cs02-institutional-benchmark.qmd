@@ -110,9 +110,9 @@ counting <- inst_data |>
       w |>
         select(id, authorships) |>
         unnest(authorships, names_sep = "_") |>
-        unnest(authorships_institutions, names_sep = "_") |>
+        unnest(authorships_affiliations, names_sep = "_") |>
         group_by(id) |>
-        summarise(n_inst = n_distinct(authorships_institutions_id),
+        summarise(n_inst = n_distinct(authorships_affiliations_id),
                   .groups = "drop") |>
         mutate(frac = 1 / pmax(n_inst, 1)) |>
         pull(frac) |>

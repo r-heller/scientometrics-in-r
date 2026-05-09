@@ -103,7 +103,7 @@ as.data.frame(bib_rm) |> select(title, author, year, journal, doi)
 standardize_bib <- function(df) {
   df |>
     transmute(
-      title = coalesce(TITLE, display_name),
+      title = TITLE,
       authors = AUTHOR,
       year = as.integer(YEAR),
       journal = JOURNAL,
