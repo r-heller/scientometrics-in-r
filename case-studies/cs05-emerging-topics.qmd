@@ -27,6 +27,7 @@ library(openalexR)
 library(quanteda)
 library(quanteda.textstats)
 library(topicmodels)
+library(tidytext)
 library(glue)
 library(gt)
 
