@@ -25,10 +25,10 @@ works <- oa_fetch(
   type = "article"
 )
 
-# Fetch works by concept/topic
+# Fetch works by topic
 works <- oa_fetch(
   entity = "works",
-  concepts.id = "C41008148",
+  topics.id = "T10102",
   from_publication_date = "2023-01-01"
 )
 
