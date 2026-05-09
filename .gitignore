@@ -48,3 +48,5 @@ _freeze/openalex_cache/
 # Knitr cache and figure output (rebuilt by render)
 *_cache/
 *_files/
+
+/.quarto/
