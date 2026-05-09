@@ -91,7 +91,8 @@ fetch_inst_works <- function(inst_id) {
 }
 
 inst_data <- institutions |>
-  mutate(works = map(ror_id, fetch_inst_works))
+  mutate(works = map(ror_id, fetch_inst_works)) |>
+  filter(map_int(works, nrow) > 0)
 ```
 
 ### Full counting vs. fractional counting
