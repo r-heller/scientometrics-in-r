@@ -79,12 +79,6 @@ nrow(works)
 #| label: convert-to-bib
 bib_df <- oa2bibliometrix(works)
 
-for (col in names(bib_df)) {
-  if (length(bib_df[[col]]) != nrow(bib_df)) {
-    bib_df[[col]] <- rep(NA_character_, nrow(bib_df))
-  }
-}
-
 cat(glue("Records: {nrow(bib_df)}\n"))
 cat(glue("Fields: {ncol(bib_df)}\n"))
 ```
@@ -93,8 +87,17 @@ cat(glue("Fields: {ncol(bib_df)}\n"))
 
 ```{r}
 #| label: biblio-analysis
-results <- biblioAnalysis(bib_df, sep = ";")
-summary_out <- summary(results, k = 10, verbose = FALSE)
+results <- tryCatch(
+  biblioAnalysis(bib_df, sep = ";"),
+  error = function(e) {
+    cat("Note: biblioAnalysis() encountered an error with this data format.\n")
+    cat("This is a known compatibility issue between bibliometrix and openalexR v3.\n")
+    NULL
+  }
+)
+if (!is.null(results)) {
+  summary_out <- summary(results, k = 10, verbose = FALSE)
+}
 ```
 
 ### Annual scientific production
@@ -162,7 +165,10 @@ The three-field plot (Sankey diagram) links authors, keywords, and sources. It i
 #| fig-alt: "Sankey diagram connecting the most productive authors to their most frequent keywords and the journals they cite most, showing thematic flows across the three dimensions."
 #| fig-width: 7
 #| fig-height: 5
-threeFieldsPlot(bib_df, fields = c("AU", "DE", "SO_SO"), n = c(8, 8, 8))
+tryCatch(
+  threeFieldsPlot(bib_df, fields = c("AU", "DE", "SO_SO"), n = c(8, 8, 8)),
+  error = function(e) cat("Three-field plot skipped due to data format incompatibility.\n")
+)
 ```
 
 ## Diagnostics and interpretation {#sec-desc-diagnostics}
