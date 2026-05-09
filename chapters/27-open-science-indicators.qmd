@@ -61,7 +61,7 @@ Measuring open science is important for policy. Funders increasingly require OA 
 #| cache: true
 works <- oa_fetch(
   entity = "works",
-  primary_location.source.id = "S39224261",
+  primary_location.source.id = "S148561398",
   from_publication_date = "2015-01-01",
   to_publication_date = "2023-12-31",
   type = "article",

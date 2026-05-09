@@ -101,11 +101,12 @@ if (nrow(no_doi) > 1) {
 ```{r}
 #| label: affiliation-cleanup
 affiliations <- works_deduped |>
-  select(id, author) |>
-  unnest(author, names_sep = "_") |>
+  select(id, authorships) |>
+  unnest(authorships, names_sep = "_") |>
+  unnest(authorships_affiliations, names_sep = "_") |>
   select(work_id = id,
-         author_name = author_au_display_name,
-         institution = author_institution_display_name) |>
+         author_name = authorships_display_name,
+         institution = authorships_affiliations_display_name) |>
   filter(!is.na(institution))
 
 top_institutions <- affiliations |>
@@ -120,7 +121,7 @@ top_institutions
 ```{r}
 #| label: save-parquet
 corpus_clean <- works_deduped |>
-  select(id, display_name, publication_date, cited_by_count, doi, so, ab)
+  select(id, display_name, publication_date, cited_by_count, doi, source_display_name, abstract)
 
 out_path <- here::here("data", "corpus_sample.parquet")
 write_parquet(corpus_clean, out_path)

@@ -40,7 +40,7 @@ source(here::here("R", "sci_palette.R"))
 #| cache: true
 works_sciento <- oa_fetch(
   entity = "works",
-  primary_location.source.id = "S39224261",
+  primary_location.source.id = "S148561398",
   from_publication_date = "2019-01-01",
   to_publication_date = "2023-12-31",
   type = "article",
@@ -71,8 +71,8 @@ common_male <- c("john", "david", "michael", "james", "robert", "peter",
                  "chris", "matthew", "andrew", "william", "kevin", "brian")
 
 authors <- works_all |>
-  select(work_id = id, journal, author) |>
-  unnest(author, names_sep = "_") |>
+  select(work_id = id, journal, authorships) |>
+  unnest(authorships, names_sep = "_") |>
   group_by(work_id) |>
   mutate(
     n_authors = n(),
@@ -84,7 +84,7 @@ authors <- works_all |>
   ) |>
   ungroup() |>
   mutate(
-    first_name = str_to_lower(str_extract(author_au_display_name, "^\\S+")),
+    first_name = str_to_lower(str_extract(authorships_display_name, "^\\S+")),
     gender = case_when(
       first_name %in% common_female ~ "female",
       first_name %in% common_male ~ "male",

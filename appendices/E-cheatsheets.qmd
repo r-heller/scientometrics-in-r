@@ -11,7 +11,7 @@ library(openalexR)
 # Fetch works by journal (source)
 works <- oa_fetch(
   entity = "works",
-  primary_location.source.id = "S39224261",
+  primary_location.source.id = "S148561398",
   from_publication_date = "2020-01-01",
   to_publication_date = "2023-12-31",
   type = "article"
@@ -41,7 +41,7 @@ inst <- oa_fetch(entity = "institutions", id = "I63966007")
 # Sampling
 works <- oa_fetch(
   entity = "works",
-  primary_location.source.id = "S39224261",
+  primary_location.source.id = "S148561398",
   options = list(sample = 500, seed = 42)
 )
 ```
@@ -106,8 +106,8 @@ library(tidyverse)
 
 # Unnest OpenAlex authorships
 authors <- works |>
-  select(work_id = id, author) |>
-  unnest(author, names_sep = "_")
+  select(work_id = id, authorships) |>
+  unnest(authorships, names_sep = "_")
 
 # Unnest OpenAlex topics
 topics <- works |>
@@ -130,7 +130,7 @@ works |>
 
 # Fractional counting
 works |>
-  unnest(author, names_sep = "_") |>
+  unnest(authorships, names_sep = "_") |>
   group_by(id) |>
   mutate(frac = 1 / n()) |>
   ungroup()

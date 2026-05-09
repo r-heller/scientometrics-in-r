@@ -115,11 +115,11 @@ cite_stats |> gt()
 #| fig-width: 6
 #| fig-height: 4
 retracted |>
-  filter(!is.na(so)) |>
-  count(so, sort = TRUE) |>
+  filter(!is.na(source_display_name)) |>
+  count(source_display_name, sort = TRUE) |>
   head(10) |>
-  mutate(so = fct_reorder(so, n)) |>
-  ggplot(aes(x = n, y = so)) +
+  mutate(source_display_name = fct_reorder(source_display_name, n)) |>
+  ggplot(aes(x = n, y = source_display_name)) +
   geom_col(fill = palette_sci(1)) +
   labs(x = "Retracted papers", y = NULL) +
   theme_sci()

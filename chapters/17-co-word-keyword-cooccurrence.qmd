@@ -68,7 +68,7 @@ We extract author keywords from a sample of scientometrics research.
 #| cache: true
 works <- oa_fetch(
   entity = "works",
-  primary_location.source.id = "S39224261",
+  primary_location.source.id = "S148561398",
   from_publication_date = "2019-01-01",
   to_publication_date = "2023-12-31",
   options = list(sample = 500, seed = 42)

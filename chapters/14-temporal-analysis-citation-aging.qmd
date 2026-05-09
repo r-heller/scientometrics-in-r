@@ -66,7 +66,7 @@ We fetch works from two journals with different expected aging profiles.
 # Scientometrics (social science, moderate aging)
 works_sciento <- oa_fetch(
   entity = "works",
-  primary_location.source.id = "S39224261",
+  primary_location.source.id = "S148561398",
   from_publication_date = "2013-01-01",
   to_publication_date = "2018-12-31",
   type = "article",

@@ -59,7 +59,7 @@ We analyse five well-known journals in information science and scientometrics.
 #| label: define-journals
 journals <- tribble(
   ~short_name,        ~source_id,
-  "Scientometrics",   "S39224261",
+  "Scientometrics",   "S148561398",
   "J Informetrics",   "S205038879",
   "Quant Sci Stud",   "S4210178031",
   "J Am Soc Inf Sci", "S145342767",

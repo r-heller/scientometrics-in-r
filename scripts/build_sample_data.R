@@ -8,7 +8,7 @@ library(dplyr)
 # Small sample: 200 works from scientometrics-adjacent journals
 openalex_sample <- oa_fetch(
   entity = "works",
-  primary_location.source.id = "S39224261",
+  primary_location.source.id = "S148561398",
   from_publication_date = "2020-01-01",
   to_publication_date = "2023-12-31",
   options = list(sample = 200, seed = 42)

@@ -66,17 +66,17 @@ We reuse a co-authorship network from Scientometrics.
 #| cache: true
 works <- oa_fetch(
   entity = "works",
-  primary_location.source.id = "S39224261",
+  primary_location.source.id = "S148561398",
   from_publication_date = "2021-01-01",
   to_publication_date = "2023-12-31",
   options = list(sample = 200, seed = 42)
 )
 
 author_data <- works |>
-  select(id, author) |>
-  unnest(author, names_sep = "_") |>
-  select(work_id = id, author_id = author_au_id,
-         author_name = author_au_display_name) |>
+  select(id, authorships) |>
+  unnest(authorships, names_sep = "_") |>
+  select(work_id = id, author_id = authorships_id,
+         author_name = authorships_display_name) |>
   filter(!is.na(author_id))
 
 edges <- author_data |>

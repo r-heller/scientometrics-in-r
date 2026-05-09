@@ -68,7 +68,7 @@ works <- oa_fetch(
 
 works_patent <- works |>
   transmute(
-    id, display_name, so,
+    id, display_name, source_display_name,
     year = year(publication_date),
     cited_by_count,
     referenced_works_count,
@@ -106,11 +106,11 @@ ggplot(works_patent, aes(x = cited_by_count)) +
 #| fig-width: 7
 #| fig-height: 5
 works_patent |>
-  filter(cited_by_count >= p90, !is.na(so)) |>
-  count(so, sort = TRUE) |>
+  filter(cited_by_count >= p90, !is.na(source_display_name)) |>
+  count(source_display_name, sort = TRUE) |>
   head(15) |>
-  mutate(so = fct_reorder(so, n)) |>
-  ggplot(aes(x = n, y = so)) +
+  mutate(source_display_name = fct_reorder(source_display_name, n)) |>
+  ggplot(aes(x = n, y = source_display_name)) +
   geom_col(fill = palette_sci(1)) +
   labs(x = "Highly cited papers", y = NULL) +
   theme_sci()

@@ -39,9 +39,9 @@ source(here::here("R", "sci_palette.R"))
 #| label: define-journals
 journals <- tribble(
   ~short_name,        ~source_id,
-  "Scientometrics",   "S39224261",
+  "Scientometrics",   "S148561398",
   "J. Informetrics",  "S205292342",
-  "JASIST",           "S112952864"
+  "JASIST",           "S4210197613"
 )
 ```
 

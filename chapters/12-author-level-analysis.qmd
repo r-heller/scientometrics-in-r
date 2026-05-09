@@ -88,7 +88,7 @@ author_works <- oa_fetch(
 )
 
 works_slim <- author_works |>
-  select(id, display_name, publication_date, cited_by_count, type, so) |>
+  select(id, display_name, publication_date, cited_by_count, type, source_display_name) |>
   mutate(year = year(publication_date))
 
 cat(glue("Works retrieved: {nrow(works_slim)}\n"))
@@ -153,11 +153,11 @@ ggplot(annual, aes(x = year)) +
 #| fig-width: 6
 #| fig-height: 4
 venue_counts <- works_slim |>
-  filter(!is.na(so)) |>
-  count(so, sort = TRUE) |>
+  filter(!is.na(source_display_name)) |>
+  count(source_display_name, sort = TRUE) |>
   head(10)
 
-ggplot(venue_counts, aes(x = n, y = reorder(so, n))) +
+ggplot(venue_counts, aes(x = n, y = reorder(source_display_name, n))) +
   geom_col(fill = palette_sci(1)) +
   labs(x = "Number of articles", y = NULL) +
   theme_sci()

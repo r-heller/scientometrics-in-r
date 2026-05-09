@@ -29,6 +29,7 @@ After completing this chapter, you will be able to:
 #| message: false
 library(tidyverse)
 library(openalexR)
+library(tidytext)
 library(glue)
 
 set.seed(20260509)
@@ -62,7 +63,7 @@ We use a corpus of works from the journal *Scientometrics* to demonstrate each l
 #| cache: true
 works <- oa_fetch(
   entity = "works",
-  primary_location.source.id = "S39224261",
+  primary_location.source.id = "S148561398",
   from_publication_date = "2015-01-01",
   to_publication_date = "2023-12-31",
   options = list(sample = 500, seed = 42)
@@ -76,9 +77,9 @@ We unnest authors and count the number of papers per author in this sample.
 ```{r}
 #| label: lotka-data
 author_prod <- works |>
-  select(id, author) |>
-  unnest(author, names_sep = "_") |>
-  count(author_au_display_name, name = "n_papers") |>
+  select(id, authorships) |>
+  unnest(authorships, names_sep = "_") |>
+  count(authorships_display_name, name = "n_papers") |>
   count(n_papers, name = "n_authors") |>
   arrange(n_papers)
 
@@ -124,8 +125,8 @@ broad_works <- oa_fetch(
 )
 
 journal_counts <- broad_works |>
-  filter(!is.na(so)) |>
-  count(so, name = "articles", sort = TRUE) |>
+  filter(!is.na(source_display_name)) |>
+  count(source_display_name, name = "articles", sort = TRUE) |>
   mutate(
     cum_articles = cumsum(articles),
     rank = row_number()
