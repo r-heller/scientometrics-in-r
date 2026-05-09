@@ -51,18 +51,23 @@ institutions <- tribble(
 #| label: fetch-inst-data
 #| cache: true
 fetch_works <- function(inst_id) {
-  oa_fetch(
-    entity = "works",
-    authorships.institutions.id = inst_id,
-    from_publication_date = "2020-01-01",
-    to_publication_date = "2022-12-31",
-    type = "article",
-    options = list(sample = 300, seed = 42)
+  res <- tryCatch(
+    oa_fetch(
+      entity = "works",
+      authorships.institutions.id = inst_id,
+      from_publication_date = "2020-01-01",
+      to_publication_date = "2022-12-31",
+      type = "article",
+      options = list(sample = 300, seed = 42)
+    ),
+    error = function(e) NULL
   )
+  if (is.null(res)) tibble() else res
 }
 
 inst_data <- institutions |>
-  mutate(works = map(oa_id, fetch_works))
+  mutate(works = map(oa_id, fetch_works)) |>
+  filter(map_int(works, nrow) > 0)
 ```
 
 ## Publication volume

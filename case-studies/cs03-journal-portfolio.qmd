@@ -23,6 +23,7 @@ Compare three information-science journals on citation impact, aging patterns, a
 #| message: false
 library(tidyverse)
 library(openalexR)
+library(tidytext)
 library(glue)
 library(gt)
 
