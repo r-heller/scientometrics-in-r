@@ -111,7 +111,7 @@ We fetch a sample of authors associated with scientometrics research who have at
 #| cache: true
 authors_raw <- oa_fetch(
   entity = "authors",
-  search = "scientometrics",
+  topics.id = "T10102",
   works_count = ">50",
   options = list(sample = 30, seed = 42)
 )
