@@ -144,7 +144,7 @@ cr_meta <- cr_results$data |>
         substr(deposited, 1, 4)
       )
     ),
-    cited_by = is.referenced.by.count,
+    cited_by = as.integer(is.referenced.by.count),
     has_abstract = !is.na(abstract),
     type = type
   )
@@ -196,7 +196,7 @@ comparison_wide |>
 #| fig-height: 5
 cite_compare <- comparison |>
   select(short_doi, source, cited_by) |>
-  pivot_wider(names_from = source, values_from = cited_by)
+  pivot_wider(names_from = source, values_from = cited_by, values_fn = first)
 
 if (nrow(cite_compare) > 0 && all(c("OpenAlex", "Crossref") %in% names(cite_compare))) {
   max_cite <- max(c(cite_compare$OpenAlex, cite_compare$Crossref), na.rm = TRUE)
