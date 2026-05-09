@@ -66,8 +66,8 @@ works <- oa_fetch(
 )
 
 funded <- works |>
-  select(id, display_name, cited_by_count, grants) |>
-  filter(map_lgl(grants, \(g) !is.null(g) && length(g) > 0))
+  select(id, display_name, cited_by_count, funders) |>
+  filter(map_lgl(funders, \(g) !is.null(g) && length(g) > 0))
 
 cat(glue("Works with funder data: {nrow(funded)} / {nrow(works)} ({scales::percent(nrow(funded)/nrow(works))})\n"))
 ```
@@ -75,8 +75,8 @@ cat(glue("Works with funder data: {nrow(funded)} / {nrow(works)} ({scales::perce
 ```{r}
 #| label: unnest-funders
 funder_data <- funded |>
-  unnest(grants, names_sep = "_") |>
-  select(work_id = id, funder = grants_funder_display_name,
+  unnest(funders, names_sep = "_") |>
+  select(work_id = id, funder = funders_display_name,
          cited_by_count)
 
 cat(glue("Funder-work pairs: {nrow(funder_data)}\n"))
@@ -130,7 +130,7 @@ funder_impact |> head(10) |> gt()
 #| fig-width: 5
 #| fig-height: 3.5
 works |>
-  mutate(has_funding = map_lgl(grants, \(g) !is.null(g) && length(g) > 0)) |>
+  mutate(has_funding = map_lgl(funders, \(g) !is.null(g) && length(g) > 0)) |>
   ggplot(aes(x = has_funding, y = cited_by_count + 1)) +
   geom_boxplot(fill = palette_sci(1), alpha = 0.7) +
   scale_y_log10() +

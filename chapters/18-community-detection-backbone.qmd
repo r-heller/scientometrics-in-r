@@ -149,7 +149,7 @@ sweep_results <- map_dfr(resolutions, function(res) {
   tibble(
     resolution = res,
     n_communities = length(unique(membership(comm))),
-    modularity = round(modularity(comm), 3),
+    modularity = round(modularity(g_backbone, membership(comm)), 3),
     max_size = max(table(membership(comm))),
     min_size = min(table(membership(comm)))
   )

@@ -78,6 +78,13 @@ nrow(works)
 ```{r}
 #| label: convert-to-bib
 bib_df <- oa2bibliometrix(works)
+
+for (col in names(bib_df)) {
+  if (length(bib_df[[col]]) != nrow(bib_df)) {
+    bib_df[[col]] <- rep(NA_character_, nrow(bib_df))
+  }
+}
+
 cat(glue("Records: {nrow(bib_df)}\n"))
 cat(glue("Fields: {ncol(bib_df)}\n"))
 ```

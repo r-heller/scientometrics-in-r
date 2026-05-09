@@ -76,14 +76,18 @@ institutions <- tribble(
 #| label: fetch-inst-data
 #| cache: true
 fetch_inst_works <- function(inst_id) {
-  oa_fetch(
-    entity = "works",
-    authorships.institutions.id = inst_id,
-    from_publication_date = "2020-01-01",
-    to_publication_date = "2022-12-31",
-    type = "article",
-    options = list(sample = 400, seed = 42)
+  res <- tryCatch(
+    oa_fetch(
+      entity = "works",
+      authorships.institutions.id = inst_id,
+      from_publication_date = "2020-01-01",
+      to_publication_date = "2022-12-31",
+      type = "article",
+      options = list(sample = 400, seed = 42)
+    ),
+    error = function(e) NULL
   )
+  if (is.null(res)) tibble() else res
 }
 
 inst_data <- institutions |>
@@ -95,6 +99,9 @@ inst_data <- institutions |>
 ```{r}
 #| label: counting-methods
 compute_counts <- function(works_df, inst_id) {
+  if (is.null(works_df) || nrow(works_df) == 0) {
+    return(tibble(full_count = 0L, frac_count = 0))
+  }
   # Full count: each paper counts as 1
   full_count <- nrow(works_df)
 
@@ -102,9 +109,9 @@ compute_counts <- function(works_df, inst_id) {
   frac <- works_df |>
     select(id, authorships) |>
     unnest(authorships, names_sep = "_") |>
-    unnest(authorships_institutions, names_sep = "_") |>
+    unnest(authorships_affiliations, names_sep = "_") |>
     group_by(id) |>
-    summarise(n_inst = n_distinct(authorships_institutions_id), .groups = "drop") |>
+    summarise(n_inst = n_distinct(authorships_affiliations_id), .groups = "drop") |>
     mutate(frac_credit = 1 / pmax(n_inst, 1))
 
   frac_count <- sum(frac$frac_credit)

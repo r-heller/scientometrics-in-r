@@ -33,6 +33,7 @@ library(tidyverse)
 library(openalexR)
 library(quanteda)
 library(quanteda.textstats)
+library(tidytext)
 library(glue)
 library(gt)
 

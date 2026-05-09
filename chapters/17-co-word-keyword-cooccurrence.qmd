@@ -80,7 +80,7 @@ works <- oa_fetch(
 keywords <- works |>
   select(id, topics) |>
   unnest(topics, names_sep = "_") |>
-  filter(topics_name != "") |>
+  filter(topics_display_name != "") |>
   select(work_id = id, keyword = topics_display_name) |>
   mutate(keyword = str_to_lower(str_trim(keyword))) |>
   filter(!is.na(keyword), nchar(keyword) >= 3)
@@ -150,7 +150,7 @@ communities <- cluster_leiden(g_kw, resolution_parameter = 0.8,
 V(g_kw)$community <- as.factor(membership(communities))
 
 cat(glue("Communities: {length(unique(membership(communities)))}\n"))
-cat(glue("Modularity: {round(modularity(communities), 3)}\n"))
+cat(glue("Modularity: {round(modularity(g_kw, membership(communities)), 3)}\n"))
 ```
 
 ```{r}

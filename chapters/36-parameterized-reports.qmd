@@ -108,8 +108,9 @@ summary_stats <- works |>
     mean_citations = round(mean(cited_by_count), 1),
     median_citations = median(cited_by_count),
     h_index = compute_h_index(cited_by_count),
-    oa_rate = scales::percent(mean(oa_status != "closed", na.rm = TRUE))
+    oa_rate = round(mean(oa_status != "closed", na.rm = TRUE) * 100, 1)
   ) |>
+  mutate(across(everything(), as.character)) |>
   pivot_longer(everything(), names_to = "Metric", values_to = "Value")
 
 summary_stats |> gt()

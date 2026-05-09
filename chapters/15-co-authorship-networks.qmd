@@ -160,7 +160,7 @@ leiden_result <- cluster_leiden(giant, resolution_parameter = 1.0,
 V(giant)$community_leiden <- membership(leiden_result)
 
 cat(glue("Leiden communities: {length(unique(membership(leiden_result)))}\n"))
-cat(glue("Leiden modularity: {round(modularity(leiden_result), 3)}\n"))
+cat(glue("Leiden modularity: {round(modularity(giant, membership(leiden_result)), 3)}\n"))
 ```
 
 ### Comparing community assignments
