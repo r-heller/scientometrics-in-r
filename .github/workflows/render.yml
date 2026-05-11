@@ -14,28 +14,21 @@ concurrency:
   group: render-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  # Disable renv autoload — we manage the library ourselves in CI so that
-  # the user-lib install path is honoured across steps. With autoload on,
-  # renv/activate.R overrides .libPaths() to the empty renv project lib
-  # and breaks every subsequent step.
-  RENV_CONFIG_AUTOLOADER_ENABLED: "FALSE"
-
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      RENV_CONFIG_AUTOLOADER_ENABLED: "FALSE"
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Disable renv in CI
+      - name: Disable renv autoloader in CI
         # The project .Rprofile sources renv/activate.R, which keeps
-        # re-activating an empty project library across steps. We install
-        # packages into R_LIBS_USER and let R use that. Remove the
-        # auto-loader so every Rscript step starts cleanly.
+        # re-activating an empty project library across steps and hides
+        # whatever setup-r-dependencies installs into R_LIBS_USER.
+        # Removing the file makes every Rscript step use the standard
+        # user-lib search path.
         run: rm -f .Rprofile
 
       - name: Install system dependencies
@@ -54,27 +47,20 @@ jobs:
           r-version: "4.4.1"
           use-public-rspm: true
 
-      - name: Cache R library
-        uses: actions/cache@v4
+      - name: Setup R dependencies via pak (lockfile + book deps)
+        uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          path: ${{ env.R_LIBS_USER || '/home/runner/work/_temp/Library' }}
-          key: rlib-${{ runner.os }}-r4.4.1-${{ hashFiles('renv.lock') }}
-          restore-keys: |
-            rlib-${{ runner.os }}-r4.4.1-
-
-      - name: Install renv and restore lockfile to user lib
-        run: |
-          options(renv.config.autoloader.enabled = FALSE)
-          if (!requireNamespace("renv", quietly = TRUE)) {
-            install.packages(
-              "renv",
-              repos = "https://packagemanager.posit.co/cran/__linux__/noble/latest"
-            )
-          }
-          # Install into the first .libPaths() (user lib), not the renv
-          # project library, so subsequent steps see the packages.
-          renv::restore(library = .libPaths()[1], prompt = FALSE)
-        shell: Rscript {0}
+          cache-version: 2
+          # Force-install bookdown and the rest of the render-time deps
+          # explicitly, in case DESCRIPTION-detection misses any.
+          extra-packages: |
+            any::bookdown
+            any::rmarkdown
+            any::knitr
+            any::downlit
+            any::xml2
+            any::sessioninfo
+            any::tinytex
 
       - uses: r-lib/actions/setup-tinytex@v2
 
