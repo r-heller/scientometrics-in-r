@@ -1,0 +1,201 @@
+---
+title: "Reproducibility, RRIDs, and Badges"
+---
+
+## Learning objectives {#repro-objectives}
+
+After completing this chapter, you will be able to:
+
+- Define reproducibility indicators and explain their role in research evaluation
+- Search for data availability statements and open badges in bibliometric metadata
+- Analyse the prevalence of reproducibility practices across journals and fields
+- Discuss the relationship between transparency practices and citation impact
+- Recognise the gap between reproducibility signalling and actual reproducibility
+
+## Setup {#repro-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#repro-background}
+
+The "replication crisis" has prompted widespread adoption of transparency practices: open data, open code, pre-registration, and registered reports. Bibliometrics can measure the uptake of these practices at scale, providing evidence for policy interventions.
+
+**Open badges** are visual indicators (icons) attached to published papers that certify the availability of data, materials, or pre-registration. Journals like *Psychological Science* pioneered their use. Studies suggest that badges increase data sharing rates, though the quality of shared data varies.
+
+**Research Resource Identifiers (RRIDs)** are persistent identifiers for research resources: antibodies, cell lines, model organisms, and software tools. Including RRIDs in methods sections improves reproducibility by enabling precise identification of the materials used. The RRID initiative has been adopted by over 1,000 journals.
+
+**Data availability statements (DAS)** declare whether the data underlying a study are available and where to find them. Mandatory DAS policies have become common, but many statements say "data available upon request" without providing actual access. The presence of a DAS is easy to detect bibliometrically; the quality of actual data sharing is much harder to assess.
+
+**Code availability** is increasingly expected, especially in computational fields. Journals like *Nature* require code availability statements. Platforms like GitHub, Zenodo, and Code Ocean facilitate code sharing, and DOIs for code repositories enable citation and tracking.
+
+These practices are measurable proxies for reproducibility, but they are not reproducibility itself. A paper with an open badge may have unusable data; a paper without one may be perfectly reproducible. @hicks2015 warn against using transparency indicators as mechanical evaluation criteria.
+
+## Worked example {#repro-example}
+
+### Analysing data availability patterns
+
+```{r}
+#| label: fetch-repro-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S148561398",
+  from_publication_date = "2018-01-01",
+  to_publication_date = "2023-12-31",
+  type = "article",
+  options = list(sample = 400, seed = 42)
+)
+
+works_repro <- works |>
+  transmute(
+    id, display_name,
+    year = year(publication_date),
+    cited_by_count,
+    oa_status,
+    type,
+    has_abstract = !is.na(abstract)
+  )
+
+cat(glue("Works: {nrow(works_repro)}\n"))
+```
+
+### OA as a transparency proxy
+
+```{r}
+#| label: fig-repro-oa-trend
+#| fig-cap: "Proportion of open access articles by year as a transparency indicator."
+#| fig-alt: "Line chart showing the proportion of OA articles over time, used as a proxy for transparency practices."
+#| fig-width: 5
+#| fig-height: 3.5
+works_repro |>
+  group_by(year) |>
+  summarise(oa_rate = mean(oa_status != "closed", na.rm = TRUE),
+            .groups = "drop") |>
+  ggplot(aes(x = year, y = oa_rate)) +
+  geom_line(linewidth = 1, colour = palette_sci(1)) +
+  geom_point(size = 2, colour = palette_sci(1)) +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+  labs(x = "Year", y = "OA rate") +
+  theme_sci()
+```
+
+### Abstract availability as metadata completeness
+
+```{r}
+#| label: fig-repro-abstract
+#| fig-cap: "Abstract availability rate by year."
+#| fig-alt: "Line chart showing the proportion of articles with available abstracts over time."
+#| fig-width: 5
+#| fig-height: 3.5
+works_repro |>
+  group_by(year) |>
+  summarise(abstract_rate = mean(has_abstract), .groups = "drop") |>
+  ggplot(aes(x = year, y = abstract_rate)) +
+  geom_line(linewidth = 1, colour = palette_sci(1)) +
+  geom_point(size = 2, colour = palette_sci(1)) +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+  labs(x = "Year", y = "Abstract available") +
+  theme_sci()
+```
+
+### Transparency and citation impact
+
+```{r}
+#| label: fig-repro-impact
+#| fig-cap: "Citation count by OA status, a proxy for the transparency–impact relationship."
+#| fig-alt: "Box plot comparing citation counts for OA vs. closed papers, illustrating whether transparent papers receive more citations."
+#| fig-width: 5
+#| fig-height: 3.5
+works_repro |>
+  mutate(is_oa = ifelse(oa_status != "closed", "OA", "Closed")) |>
+  ggplot(aes(x = is_oa, y = cited_by_count + 1)) +
+  geom_boxplot(fill = palette_sci(1), alpha = 0.7) +
+  scale_y_log10() +
+  labs(x = "Access status", y = "Citations (log scale)") +
+  theme_sci()
+```
+
+### Summary statistics
+
+```{r}
+#| label: repro-summary
+works_repro |>
+  mutate(is_oa = oa_status != "closed") |>
+  group_by(is_oa) |>
+  summarise(
+    n = n(),
+    mean_cites = round(mean(cited_by_count), 1),
+    abstract_rate = scales::percent(mean(has_abstract)),
+    .groups = "drop"
+  ) |>
+  gt()
+```
+
+## Diagnostics and interpretation {#repro-diagnostics}
+
+- **Proxy vs. reality**: OA status and abstract availability are proxies for transparency, not direct measures of reproducibility. Actual data and code sharing require checking external repositories.
+- **Journal policies**: Changes in journal policies (mandatory DAS, badge adoption) can cause step changes in transparency indicators. Control for journal when comparing across time.
+- **Selection effects**: Papers with open data may be of higher quality (authors confident enough to share), creating a spurious transparency–citation correlation.
+- **Field differences**: Data sharing norms vary enormously. Genomics shares data routinely; clinical research often cannot due to privacy. Compare within fields.
+
+## Limitations and responsible use {#repro-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- **Signals are not substance.** A data availability statement does not guarantee the data are actually available, usable, or correct. Badges certify process, not outcome.
+- **Mandates inflate compliance without improving practice.** When journals require DAS, compliance rises but "available upon request" becomes the default, not genuine sharing.
+- **Reproducibility is multidimensional.** No single indicator captures it. Data availability, code availability, methods transparency, pre-registration, and statistical rigour all contribute independently.
+- **Do not penalise fields where sharing is constrained.** Clinical data (privacy), indigenous data (sovereignty), and sensitive social data cannot be freely shared. Mandating open data policies uniformly across fields is inappropriate [@hicks2015].
+</div>
+
+## Common pitfalls {#repro-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Equating open data with reproducibility.** Data can be open but undocumented, incorrectly formatted, or insufficient to reproduce the analysis.
+- **Counting badges without checking quality.** A badge means the journal certified availability at publication time. The link may be broken or the data may have been removed.
+- **Ignoring negative results.** Reproducibility also requires publishing null results and failed replications. These are poorly captured by current transparency indicators.
+- **Using transparency metrics as performance indicators.** Transparency practices should be valued, but mechanically rewarding them creates perverse incentives (superficial compliance).
+</div>
+
+## Exercises {#repro-exercises}
+
+1. **DAS detection.** For papers with full abstracts, search for keywords like "data availability", "code availability", or "github.com" in the abstract text. What proportion mention data or code sharing?
+
+2. **Cross-journal comparison.** Compare abstract availability and OA rates for three journals. Do journals with higher OA rates also have better metadata completeness?
+
+3. **Temporal trends.** Track the proportion of papers with abstracts, OA status, and high citation counts over time. Are transparency proxies correlated with citation impact within years?
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#repro-reading}
+
+- @hicks2015 --- The Leiden Manifesto: responsible use of metrics, including transparency indicators.
+- @priem2022 --- OpenAlex metadata as a basis for reproducibility analysis.
+- @dora2012 --- DORA: assessment should consider research practices, not just outputs.
+
+## Session info {#repro-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

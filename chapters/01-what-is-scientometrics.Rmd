@@ -1,0 +1,257 @@
+---
+title: "What Is Scientometrics?"
+---
+
+## Learning objectives {#what-objectives}
+
+After completing this chapter, you will be able to:
+
+- Define scientometrics, bibliometrics, and informetrics and explain how the three fields relate
+- Trace the historical development of scientometrics from Garfield's citation indexes through Price's quantitative studies to the present day
+- Identify the types of research questions that scientometric methods can address
+- Retrieve a small sample of scholarly works from OpenAlex and produce basic descriptive statistics in R
+- Create simple visualisations of publication trends and journal distributions
+
+## Setup {#what-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(glue)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#what-background}
+
+**Scientometrics** is the quantitative study of science itself — its growth, structure, productivity, and impact. Where scientists in most disciplines study the natural or social world, scientometricians turn the lens inward: they study the system that produces scientific knowledge.
+
+The term sits within a family of overlapping labels. **Bibliometrics**, the oldest sibling, focuses on the statistical analysis of publications — books, journal articles, and their metadata such as authors, citations, and keywords. The word was coined by Alan Pritchard in 1969 to replace the earlier "statistical bibliography". **Informetrics** is the broadest umbrella, encompassing any quantitative study of information transfer, including web analytics, patent analysis, and library usage statistics. In practice, the three terms are often used interchangeably, but it helps to remember that bibliometrics emphasises the *document*, scientometrics emphasises the *science*, and informetrics emphasises the *information*.
+
+### A brief history
+
+The intellectual roots of the field trace back to at least 1955, when Eugene @garfield1955 proposed the idea of a citation index for science. Garfield argued that citations create an "association of ideas" — a traceable web of intellectual influence — and that indexing these links would transform how scholars discover literature. His vision was realised in the Science Citation Index (SCI), launched in 1964 by the Institute for Scientific Information (ISI). For the first time, researchers could systematically trace who cited whom across the entire scientific literature.
+
+A few years later, Derek de Solla Price gave the field its quantitative backbone. In *Little Science, Big Science* [@price1963], Price marshalled data to show that science was growing exponentially — in the number of journals, articles, and scientists — and that this growth followed remarkably regular statistical patterns. He estimated that the volume of scientific literature doubles approximately every 15 years, a regularity so striking that it came to be known as "Price's Law." Price's work established that science could be studied with the same empirical rigour that it applies to other phenomena.
+
+These foundations were reinforced by earlier statistical regularities. Alfred @lotka1926 had already shown that the distribution of scientific productivity follows a power law: a small number of authors produce the majority of papers. Samuel @bradford1934 demonstrated a similar pattern for journal coverage: a core set of journals in any field accounts for a disproportionate share of the relevant literature. These laws, which we explore in detail in the next chapter, remain cornerstones of scientometric theory.
+
+From these beginnings, scientometrics expanded rapidly through the latter half of the twentieth century. The h-index [@hirsch2005], journal impact factors, co-citation networks, and science maps became standard tools in research evaluation and science policy. Landmark declarations such as the Leiden Manifesto [@hicks2015] and DORA [@dora2012] later established principles for responsible use of these tools, warning against mechanical reliance on any single indicator.
+
+### The modern era
+
+Today the field is undergoing another transformation. The launch of **OpenAlex** [@priem2022] — a fully open index of over 250 million scholarly works, built from Crossref, PubMed, institutional repositories, and other open sources — has democratised access to the raw data that powers scientometric research. Researchers no longer need expensive subscriptions to Web of Science or Scopus to conduct large-scale analyses. This book takes advantage of that openness: every example uses data that any reader can reproduce for free.
+
+### Scope of this book
+
+This book teaches you to do scientometrics in R. It covers:
+
+- **Data acquisition** — querying OpenAlex, Crossref, and PubMed programmatically.
+- **Core bibliometrics** — computing productivity, impact, and citation indicators.
+- **Network analysis** — building and analysing co-authorship, co-citation, and keyword co-occurrence networks.
+- **Text and topic analysis** — extracting themes and trends from titles, abstracts, and full texts.
+- **Advanced topics** — altmetrics, open science, gender equity, retraction analysis, and more.
+- **Production** — building reproducible pipelines, dashboards, and reports.
+
+Each chapter follows the same pattern: conceptual background, a fully reproducible worked example, diagnostics, limitations, and exercises.
+
+## Worked example {#what-example}
+
+To make things concrete from the very first chapter, we fetch a small sample of recent works from OpenAlex and compute some basic descriptive statistics. Think of this as a first taste of the workflows that the rest of the book will develop in depth.
+
+### Fetching a sample from OpenAlex
+
+We search for works whose title or abstract mentions "scientometrics", published between 2014 and 2023, and draw a random sample of 500 records.
+
+```{r}
+#| label: fetch-sample
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  search = "scientometrics",
+  from_publication_date = "2014-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 500, seed = 42)
+)
+
+cat(glue("Fetched {nrow(works)} works\n"))
+glimpse(works)
+```
+
+Each row is a scholarly work. Key columns include `display_name` (the title), `publication_date`, `cited_by_count`, `doi`, and `source_display_name` (the source or journal name).
+
+### Basic descriptive statistics
+
+How many works did we retrieve, and what does the citation distribution look like?
+
+```{r}
+#| label: descriptives
+works_summary <- works |>
+  summarise(
+    n_works       = n(),
+    doi_coverage  = scales::percent(mean(!is.na(doi))),
+    median_cites  = median(cited_by_count, na.rm = TRUE),
+    mean_cites    = round(mean(cited_by_count, na.rm = TRUE), 1),
+    max_cites     = max(cited_by_count, na.rm = TRUE),
+    zero_cites    = sum(cited_by_count == 0)
+  )
+
+works_summary
+```
+
+The large gap between the mean and median is a hallmark of citation distributions: most papers receive few citations while a small number accumulate many. This skewness is one of the most robust empirical regularities in scientometrics, and we will return to its theoretical basis in \@ref(theory-background).
+
+### Top journals
+
+Which journals appear most often in our sample?
+
+```{r}
+#| label: top-journals
+top_journals <- works |>
+  filter(!is.na(source_display_name)) |>
+  count(source_display_name, sort = TRUE) |>
+  head(10)
+
+top_journals
+```
+
+### Publication trend over time
+
+```{r}
+#| label: fig-what-pub-trend
+#| fig-cap: "Annual publication counts for sampled works related to scientometrics (2014--2023)."
+#| fig-alt: "Bar chart showing the number of sampled publications per year from 2014 to 2023, illustrating the growth trend in scientometrics research."
+#| fig-width: 6
+#| fig-height: 4
+works |>
+  mutate(year = year(publication_date)) |>
+  count(year) |>
+  ggplot(aes(x = year, y = n)) +
+  geom_col(fill = palette_sci(1)) +
+  labs(
+    x = "Publication year",
+    y = "Number of works (sampled)"
+  ) +
+  theme_sci()
+```
+
+The trend shows a growing volume of scientometrics-related publications over the past decade — consistent with the broader exponential growth of science documented by @price1963.
+
+### Top journals visualised
+
+```{r}
+#| label: fig-what-top-journals
+#| fig-cap: "Top 10 journals by number of works in the sampled scientometrics corpus."
+#| fig-alt: "Horizontal bar chart showing the 10 journals that contribute the most works to the sampled corpus, with Scientometrics leading."
+#| fig-width: 7
+#| fig-height: 5
+top_journals |>
+  mutate(source_display_name = fct_reorder(source_display_name, n)) |>
+  ggplot(aes(x = n, y = source_display_name)) +
+  geom_col(fill = palette_sci(1)) +
+  labs(
+    x = "Number of works",
+    y = NULL
+  ) +
+  theme_sci()
+```
+
+### Citation distribution
+
+```{r}
+#| label: fig-what-citation-dist
+#| fig-cap: "Citation distribution of sampled scientometrics works (log-scaled x-axis)."
+#| fig-alt: "Histogram of citation counts on a logarithmic x-axis, revealing the heavily right-skewed distribution characteristic of citation data."
+#| fig-width: 6
+#| fig-height: 4
+works |>
+  filter(cited_by_count > 0) |>
+  ggplot(aes(x = cited_by_count)) +
+  geom_histogram(bins = 40, fill = palette_sci(1), colour = "white") +
+  scale_x_log10() +
+  labs(
+    x = "Citation count (log scale)",
+    y = "Number of works"
+  ) +
+  theme_sci()
+```
+
+This right-skewed citation distribution is a universal feature of scholarly communication. In Chapter 2, we will see that it connects to deeper theoretical regularities: Lotka's Law, Bradford's Law, and the Matthew Effect.
+
+## Diagnostics and interpretation {#what-diagnostics}
+
+Even for a simple descriptive analysis, a few diagnostic checks are essential:
+
+- **Sample vs. population.** We drew a random sample of 500 works. The publication trend reflects the underlying population only if the sampling was truly random within the date window. OpenAlex's `sample` parameter does this, but always verify the date range of returned results.
+- **Source coverage.** OpenAlex is strongest in English-language, peer-reviewed journal articles. Conference proceedings, book chapters, and grey literature may be underrepresented. Our "top journals" list reflects what OpenAlex indexes, not the full universe of scientometrics publishing.
+- **Citation counts are snapshots.** The `cited_by_count` field reflects the current citation total at the time of the API query. Older papers have had more time to accumulate citations, so direct comparisons across years are misleading without normalization.
+
+```{r}
+#| label: diagnostics
+cat(glue("Date range: {min(works$publication_date)} to {max(works$publication_date)}\n"))
+cat(glue("Works with zero citations: {sum(works$cited_by_count == 0)}\n"))
+cat(glue("Unique journals: {n_distinct(works$source_display_name, na.rm = TRUE)}\n"))
+```
+
+## Limitations and responsible use {#what-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- **Descriptive statistics are not evaluations.** Counting publications and citations describes *activity*, not *quality*. A high publication count may reflect salami slicing; a high citation count may reflect controversy rather than excellence.
+- **Data source bias.** OpenAlex, like all databases, has systematic coverage gaps. English-language STEM journals are overrepresented; social sciences, humanities, and non-English scholarship are underrepresented. Always report the data source and its known limitations.
+- **Ecological fallacy.** Aggregate statistics about a field do not apply to individual researchers. A growing field does not mean every researcher in it is productive.
+- **The Leiden Manifesto** [@hicks2015] and **DORA** [@dora2012] provide essential guardrails. Quantitative data should support, never replace, expert qualitative judgement.
+</div>
+
+## Common pitfalls {#what-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Confusing scientometrics with research evaluation.** Scientometrics provides tools for studying science; it does not provide verdicts on the value of individual researchers or papers.
+- **Treating OpenAlex counts as ground truth.** OpenAlex counts may differ from Web of Science or Scopus due to different coverage, deduplication, and metadata parsing. Always triangulate when precision matters.
+- **Ignoring the citation window.** Comparing raw citation counts across publication years is misleading. A 2023 paper with 5 citations may be performing better than a 2015 paper with 20. Field- and time-normalised indicators (covered in Chapter 10) address this.
+- **Overgeneralising from a sample.** A random sample of 500 works is useful for learning and prototyping. Drawing conclusions about an entire field requires a comprehensive corpus.
+- **Forgetting to set a seed.** Random samples are only reproducible if you set the seed both in R (`set.seed()`) and in the API call (`seed` parameter). Without this, every render produces different results.
+</div>
+
+## Exercises {#what-exercises}
+
+1. **Explore a different field.** Replace the search term "scientometrics" with a topic of your choice (e.g., "machine learning", "climate change"). Fetch 500 works and compare the publication trend and top journals to those we found above. What differences do you notice?
+
+2. **Uncited works.** What fraction of the sampled works have zero citations? Filter to uncited works and examine their publication years. Is there a pattern? *(Hint: very recent works are more likely to be uncited.)*
+
+3. **Open Access status.** OpenAlex records an `is_oa` field. Compute the proportion of open-access works in your sample and plot how it has changed over time. What trend do you observe?
+
+4. **Growth curve.** Extend the publication trend analysis to 2000--2023. Does the annual publication count follow an exponential growth pattern, as @price1963 predicted? *(Hint: plot on a log-scaled y-axis and check for linearity.)*
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#what-reading}
+
+- @garfield1955 — The foundational paper proposing citation indexes for science; the intellectual starting point for the entire field.
+- @price1963 — *Little Science, Big Science*; the first systematic quantitative study of the growth of science.
+- @priem2022 — The OpenAlex paper; describes the open data infrastructure that powers the examples in this book.
+- @hicks2015 — The Leiden Manifesto; ten principles for the responsible use of research metrics.
+- @dora2012 — The San Francisco Declaration on Research Assessment; a landmark call to improve research evaluation.
+- @aria2017 — The `bibliometrix` R package; a comprehensive tool for science mapping and bibliometric analysis.
+- @hirsch2005 — The h-index paper; illustrates how a single indicator reshaped research evaluation discourse.
+- @lotka1926 — The foundational study of scientific productivity distributions; a bridge to Chapter 2.
+
+## Session info {#what-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

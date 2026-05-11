@@ -1,0 +1,193 @@
+---
+title: "Retraction Analysis"
+---
+
+## Learning objectives {#retraction-objectives}
+
+After completing this chapter, you will be able to:
+
+- Identify retracted works in OpenAlex using type and metadata filters
+- Analyse retraction rates by year, journal, and field
+- Examine citation patterns before and after retraction
+- Discuss the limitations of bibliometric approaches to research integrity
+- Explain why retracted papers continue to accumulate citations
+
+## Setup {#retraction-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#retraction-background}
+
+Retraction is the formal mechanism by which the scholarly record corrects itself. A paper is retracted when it is found to contain fabricated data, serious errors, plagiarism, or ethical violations. In theory, retraction should halt the influence of flawed work. In practice, retracted papers continue to be cited --- sometimes for years or decades after retraction.
+
+The growth in retractions has been dramatic: from a few dozen per year in the 1990s to over 10,000 in recent years. This increase reflects both more misconduct detection (plagiarism software, image forensics) and more publications overall. Retraction rates vary by field: biomedical sciences have the highest absolute numbers, partly because of larger publication volumes and greater scrutiny.
+
+**Citation persistence** is the most studied bibliometric aspect of retractions. Studies consistently find that retracted papers continue to accumulate positive citations (i.e., citations that treat the retracted work as valid) long after retraction. This occurs because: (1) citing authors may not be aware of the retraction; (2) database retraction notices are inconsistently displayed; (3) citations in already-published papers are not retroactively removed.
+
+OpenAlex marks retracted works with a specific type or retraction flag, though coverage depends on publisher reporting. The Retraction Watch database provides the most comprehensive curated list of retractions but is not directly integrated into most bibliometric databases.
+
+Bibliometric analysis of retractions must be approached carefully. The goal is to improve the self-correction mechanism, not to stigmatise individuals or institutions.
+
+## Worked example {#retraction-example}
+
+### Finding retracted works
+
+```{r}
+#| label: fetch-retraction-data
+#| cache: true
+retracted <- oa_fetch(
+  entity = "works",
+  is_retracted = "true",
+  from_publication_date = "2010-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 200, seed = 42)
+)
+
+cat(glue("Retracted works retrieved: {nrow(retracted)}\n"))
+```
+
+```{r}
+#| label: retraction-by-year
+retraction_years <- retracted |>
+  mutate(year = year(publication_date)) |>
+  count(year, sort = FALSE)
+
+retraction_years |> gt()
+```
+
+### Citation counts of retracted papers
+
+```{r}
+#| label: fig-retraction-citations
+#| fig-cap: "Citation count distribution of retracted papers."
+#| fig-alt: "Histogram showing how many citations retracted papers have accumulated, revealing that many retracted papers continue to be cited."
+#| fig-width: 5
+#| fig-height: 3.5
+ggplot(retracted, aes(x = cited_by_count)) +
+  geom_histogram(binwidth = 5, fill = palette_sci(1), colour = "white") +
+  labs(x = "Citations received", y = "Number of retracted papers") +
+  theme_sci()
+```
+
+```{r}
+#| label: retraction-cite-stats
+cite_stats <- retracted |>
+  summarise(
+    n = n(),
+    mean_cites = round(mean(cited_by_count), 1),
+    median_cites = median(cited_by_count),
+    max_cites = max(cited_by_count),
+    pct_uncited = scales::percent(mean(cited_by_count == 0))
+  )
+
+cite_stats |> gt()
+```
+
+### Retracted papers by source
+
+```{r}
+#| label: fig-retraction-sources
+#| fig-cap: "Top journals with the most retracted papers in the sample."
+#| fig-alt: "Horizontal bar chart showing which journals have the most retracted papers in the retrieved sample."
+#| fig-width: 6
+#| fig-height: 4
+retracted |>
+  filter(!is.na(source_display_name)) |>
+  count(source_display_name, sort = TRUE) |>
+  head(10) |>
+  mutate(source_display_name = fct_reorder(source_display_name, n)) |>
+  ggplot(aes(x = n, y = source_display_name)) +
+  geom_col(fill = palette_sci(1)) +
+  labs(x = "Retracted papers", y = NULL) +
+  theme_sci()
+```
+
+### Citation persistence over time
+
+```{r}
+#| label: fig-retraction-persistence
+#| fig-cap: "Mean citations by publication age for retracted papers."
+#| fig-alt: "Line chart showing the mean citation count of retracted papers by years since publication, demonstrating that citations continue to accumulate."
+#| fig-width: 6
+#| fig-height: 4
+retracted |>
+  mutate(age = 2024 - year(publication_date)) |>
+  filter(age >= 1, age <= 12) |>
+  group_by(age) |>
+  summarise(mean_cites = mean(cited_by_count), n = n(), .groups = "drop") |>
+  ggplot(aes(x = age, y = mean_cites)) +
+  geom_line(linewidth = 1, colour = palette_sci(1)) +
+  geom_point(size = 2, colour = palette_sci(1)) +
+  labs(x = "Years since publication", y = "Mean citations") +
+  theme_sci()
+```
+
+## Diagnostics and interpretation {#retraction-diagnostics}
+
+- **Coverage**: OpenAlex retraction coverage depends on publisher metadata. Not all retractions are flagged. Cross-check with Retraction Watch for comprehensive coverage.
+- **Retraction vs. publication date**: The publication date is when the paper was published, not when it was retracted. The gap between these dates varies from months to decades.
+- **Positive vs. negative citations**: Citation counts do not distinguish between "this paper found X" (positive, problematic) and "this paper was retracted for Y" (negative, appropriate). Manual checking of citing contexts is needed.
+- **Denominator**: Retraction *rates* require the total number of publications as denominator. Raw retraction counts favour large journals.
+
+## Limitations and responsible use {#retraction-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- **Retractions are not all equal.** Some retractions reflect honest error, others fraud. The reason for retraction matters for interpretation but is often not coded in bibliometric databases.
+- **Stigmatisation risk.** Listing authors or institutions with high retraction counts can be stigmatising. Report aggregate patterns, not individual-level data, unless specifically studying misconduct.
+- **Database lag.** Retraction notices may take months or years to propagate through databases. Recent retraction data is incomplete.
+- **Self-correction is broader than retraction.** Corrections, expressions of concern, and errata also contribute to self-correction but are harder to track bibliometrically.
+- **Do not equate retractions with research quality.** Fields with more scrutiny detect more problems. A high retraction rate may indicate effective oversight, not worse science [@hicks2015].
+</div>
+
+## Common pitfalls {#retraction-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Counting retractions without denominators.** A journal with 10 retractions from 50,000 papers has a lower retraction rate than one with 5 from 1,000.
+- **Assuming all post-retraction citations are problematic.** Some citing papers may specifically discuss the retraction or cite the paper for methodology that remains valid despite data issues.
+- **Ignoring retraction reasons.** Honest errors should be distinguished from misconduct in any analysis of research integrity.
+- **Using retraction analysis for individual evaluation.** Authors of retracted papers may be victims of co-author misconduct. Never use retraction counts as performance indicators.
+</div>
+
+## Exercises {#retraction-exercises}
+
+1. **Retraction rate by field.** Fetch retracted works from two different fields. Compare the retraction rate (retractions per 1,000 publications). Account for corpus size.
+
+2. **Citation trajectory.** For a retracted paper with many citations, examine when the citations accumulated. Were most citations received before or after the retraction?
+
+3. **Retraction-citation correlation.** Is there a relationship between a paper's citation count at the time of retraction and the number of post-retraction citations it receives?
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#retraction-reading}
+
+- @fang2012 --- Large-scale analysis of retraction patterns and their causes.
+- @hicks2015 --- The Leiden Manifesto: responsible use of metrics in the context of research integrity.
+- @garfield1955 --- Citation indexing: the infrastructure that makes retraction tracking possible.
+
+## Session info {#retraction-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

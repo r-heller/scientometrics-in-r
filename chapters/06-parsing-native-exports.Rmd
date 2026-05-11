@@ -1,0 +1,183 @@
+---
+title: "Parsing Native Exports"
+---
+
+## Learning objectives {#parsing-objectives}
+
+After completing this chapter, you will be able to:
+
+- Parse BibTeX files using `bib2df` and `RefManageR`
+- Import Web of Science plain-text and Scopus CSV exports via `bibliometrix`
+- Standardize field names across formats into a unified schema
+- Diagnose common parsing failures and missing fields
+
+## Setup {#parsing-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(bib2df)
+library(RefManageR)
+library(bibliometrix)
+library(glue)
+
+set.seed(20260509)
+
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#parsing-background}
+
+Not all bibliometric data comes from an API. Researchers frequently begin with files exported from database search interfaces: BibTeX (`.bib`) from Google Scholar or Zotero, RIS (`.ris`) from Scopus or PubMed, plain text from Web of Science, or CSV from Scopus. Each format encodes the same information — authors, title, year, journal, DOI — in different structures.
+
+The `bibliometrix` package [@aria2017] provides `convert2df()`, a versatile function that reads multiple export formats and returns a standardized data frame. For BibTeX specifically, `bib2df` and `RefManageR` offer complementary parsing capabilities. The key challenge is not parsing per se but *standardization*: ensuring that author names, journal titles, and identifiers are represented consistently regardless of the source format.
+
+## Worked example {#parsing-example}
+
+### Parsing a BibTeX string
+
+We construct a small BibTeX string inline to demonstrate parsing without external files.
+
+```{r}
+#| label: parse-bibtex
+bib_text <- '
+@article{smith2023,
+  author = {Smith, John A. and Doe, Jane B.},
+  title = {Advances in Bibliometric Methods},
+  journal = {Journal of Informetrics},
+  year = {2023},
+  volume = {17},
+  pages = {101--115},
+  doi = {10.1234/example.2023}
+}
+@article{chen2022,
+  author = {Chen, Wei and Li, Xiao},
+  title = {Citation Networks in Computer Science},
+  journal = {Scientometrics},
+  year = {2022},
+  volume = {127},
+  pages = {3201--3220},
+  doi = {10.1234/example.2022}
+}
+'
+
+tmp_bib <- tempfile(fileext = ".bib")
+writeLines(bib_text, tmp_bib)
+
+bib_df <- bib2df(tmp_bib)
+glimpse(bib_df)
+```
+
+### Parsing with RefManageR
+
+```{r}
+#| label: parse-refmanager
+bib_rm <- ReadBib(tmp_bib)
+as.data.frame(bib_rm) |> select(title, author, year, journal, doi)
+```
+
+### Parsing WoS plain text with bibliometrix
+
+```{r}
+#| label: parse-wos-demo
+#| eval: false
+# Requires a WoS export file — not bundled
+# wos_df <- convert2df("savedrecs.txt", dbsource = "wos", format = "plaintext")
+# glimpse(wos_df)
+```
+
+### Standardizing field names
+
+```{r}
+#| label: standardize-fields
+standardize_bib <- function(df) {
+  df |>
+    transmute(
+      title = TITLE,
+      authors = AUTHOR,
+      year = as.integer(YEAR),
+      journal = JOURNAL,
+      doi = DOI
+    )
+}
+
+bib_df |> standardize_bib()
+```
+
+### Visualization
+
+```{r}
+#| label: fig-parsing-fields
+#| fig-cap: "Field completeness in the parsed BibTeX records."
+#| fig-alt: "Horizontal bar chart showing which metadata fields are present in the parsed BibTeX records."
+#| fig-width: 6
+#| fig-height: 3
+completeness <- bib_df |>
+  summarise(across(everything(), ~ mean(!is.na(.)))) |>
+  pivot_longer(everything(), names_to = "field", values_to = "present") |>
+  filter(present > 0) |>
+  mutate(field = fct_reorder(field, present))
+
+ggplot(completeness, aes(x = present, y = field)) +
+  geom_col(fill = palette_sci(1)) +
+  scale_x_continuous(labels = scales::percent) +
+  labs(x = "Completeness", y = NULL) +
+  theme_sci()
+```
+
+## Diagnostics and interpretation {#parsing-diagnostics}
+
+After parsing, always check:
+
+- **Row count**: Does the number of records match the export? Missing entries may indicate parsing errors.
+- **Field completeness**: Which fields are populated? Abstracts and keywords are often missing in BibTeX exports.
+- **Author format**: Names may appear as "Last, First" or "First Last" depending on the source. Standardize before analysis.
+- **Encoding**: Non-ASCII characters (diacritics, CJK) can corrupt during parsing. Ensure UTF-8 encoding.
+
+## Limitations and responsible use {#parsing-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- Export files are snapshots: they reflect the database state at export time and become stale immediately.
+- Field mapping between formats is imperfect. Some formats lack fields (RIS has no standard abstract tag across all databases).
+- Parsing errors are silent — always validate record counts and spot-check metadata against the source [@hicks2015].
+</div>
+
+## Common pitfalls {#parsing-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Encoding mismatches**: Exporting as Latin-1 and reading as UTF-8 (or vice versa) corrupts names and titles.
+- **Truncated exports**: Many databases cap exports at 500 or 1,000 records per file. Large corpora require multiple export batches.
+- **Inconsistent author delimiters**: BibTeX uses "and", RIS uses newlines, CSV uses semicolons. Parsing must handle each.
+- **Assuming format from extension**: A `.txt` file may be WoS plain text or something else entirely. Check the first few lines.
+</div>
+
+## Exercises {#parsing-exercises}
+
+1. **Export and parse.** Export 50 records from Google Scholar as BibTeX. Parse them with `bib2df`. How many fields are populated?
+
+2. **Format comparison.** Export the same set of records from Scopus as both CSV and RIS. Parse both and compare the fields available.
+
+3. **Standardization function.** Write a function that takes a data frame from `convert2df()` and returns a tibble with columns: `doi`, `title`, `authors`, `year`, `journal`, `cited_by`.
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#parsing-reading}
+
+- @aria2017 — The `bibliometrix` package, including `convert2df()` for multi-format parsing.
+- @priem2022 — OpenAlex as an API-first alternative to file-based workflows.
+
+## Session info {#parsing-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

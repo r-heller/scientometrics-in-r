@@ -1,0 +1,177 @@
+---
+title: "Working with Full Text"
+---
+
+## Learning objectives {#fulltext-objectives}
+
+After completing this chapter, you will be able to:
+
+- Extract text from PDF files using `pdftools`
+- Apply OCR to scanned documents with `tesseract`
+- Perform basic text preprocessing (tokenization, stopword removal)
+- Assess when full-text analysis adds value over metadata-only approaches
+- Navigate the legal landscape of text and data mining
+
+## Setup {#fulltext-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(pdftools)
+library(quanteda)
+library(glue)
+
+set.seed(20260509)
+
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#fulltext-background}
+
+Most bibliometric analyses operate on metadata: titles, abstracts, keywords, and citation links. But metadata captures only a fraction of a paper's content. Full-text analysis opens the door to richer methods: section-level citation context, method extraction, data-availability statements, and fine-grained topic modeling.
+
+The technical pipeline involves three stages: (1) **acquisition** — obtaining PDF files, subject to access rights and TDM (text and data mining) provisions; (2) **extraction** — converting PDF content to machine-readable text; and (3) **preprocessing** — tokenization, normalization, and feature extraction.
+
+`pdftools` wraps the Poppler library to extract text from born-digital PDFs. For scanned documents, `tesseract` provides OCR (optical character recognition). `tabulizer` (based on Tabula) specializes in extracting tables from PDFs. For text preprocessing, `quanteda` and `tm` offer comprehensive toolkits.
+
+Legal frameworks vary by jurisdiction. The EU Copyright Directive (2019/790) provides a TDM exception for research. In the US, TDM is generally considered fair use in research contexts, but publisher terms of service may impose additional restrictions.
+
+## Worked example {#fulltext-example}
+
+### Extracting text from a PDF
+
+We demonstrate with a programmatically created PDF to keep this example self-contained.
+
+```{r}
+#| label: create-demo-pdf
+demo_text <- paste(
+  "Title: A Review of Bibliometric Methods",
+  "",
+  "Abstract: This paper reviews current methods in bibliometrics.",
+  "We focus on citation analysis, co-authorship networks, and topic modeling.",
+  "",
+  "1. Introduction",
+  "Bibliometrics has grown rapidly since the work of Garfield (1955).",
+  "Modern tools enable large-scale analysis of scholarly communication.",
+  "",
+  "2. Methods",
+  "We surveyed 500 papers published between 2020 and 2023.",
+  "Data were obtained from OpenAlex.",
+  "",
+  "3. Conclusions",
+  "The field continues to evolve with open data and new computational methods.",
+  sep = "\n"
+)
+
+tmp_pdf <- tempfile(fileext = ".pdf")
+pdf(tmp_pdf, width = 8.5, height = 11)
+plot.new()
+text(0.05, 0.95, demo_text, adj = c(0, 1), family = "mono", cex = 0.8)
+dev.off()
+```
+
+```{r}
+#| label: extract-pdf-text
+extracted <- pdf_text(tmp_pdf)
+cat(substr(extracted[1], 1, 500))
+```
+
+### Basic text preprocessing
+
+```{r}
+#| label: preprocess-text
+corp <- corpus(extracted)
+toks <- tokens(corp, remove_punct = TRUE, remove_numbers = TRUE) |>
+  tokens_tolower() |>
+  tokens_remove(stopwords("en"))
+
+dfmat <- dfm(toks)
+topfeatures(dfmat, 15)
+```
+
+### Word frequency visualization
+
+```{r}
+#| label: fig-fulltext-wordfreq
+#| fig-cap: "Top 15 words extracted from the demo PDF after preprocessing."
+#| fig-alt: "Horizontal bar chart showing the most frequent words extracted from the PDF, after removing stopwords."
+#| fig-width: 6
+#| fig-height: 4
+top_words <- topfeatures(dfmat, 15) |>
+  enframe(name = "word", value = "count") |>
+  mutate(word = fct_reorder(word, count))
+
+ggplot(top_words, aes(x = count, y = word)) +
+  geom_col(fill = palette_sci(1)) +
+  labs(x = "Frequency", y = NULL) +
+  theme_sci()
+```
+
+### OCR with tesseract
+
+```{r}
+#| label: ocr-demo
+#| eval: false
+# Requires tesseract system library and a scanned PDF
+# library(tesseract)
+# ocr_text <- ocr(scanned_pdf_path, engine = tesseract("eng"))
+# cat(substr(ocr_text, 1, 500))
+```
+
+## Diagnostics and interpretation {#fulltext-diagnostics}
+
+Full-text extraction quality varies dramatically:
+
+- **Born-digital PDFs**: `pdftools` produces clean text, but column layouts may interleave columns.
+- **Scanned PDFs**: OCR accuracy depends on scan quality, resolution, and language. Expect 90–98% character accuracy for clean English scans.
+- **Figures and equations**: These are lost in text extraction. Do not expect mathematical notation or chart data.
+- **Headers and footers**: Page numbers, journal headers, and running titles pollute the extracted text. Consider filtering by position.
+
+## Limitations and responsible use {#fulltext-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- **Access rights**: Not all PDFs are legally available for TDM. Respect publisher terms and licensing. Open-access articles under CC licenses are generally safe.
+- **Extraction errors**: Two-column layouts, ligatures, and non-standard fonts cause parsing artifacts. Always spot-check extracted text.
+- **Scalability**: Full-text analysis is orders of magnitude more expensive than metadata analysis. Consider whether the additional information justifies the cost.
+- **Bias**: Full text is only available for a subset of publications (typically open access). Analyses based on full text may not generalise to the broader literature [@hicks2015].
+</div>
+
+## Common pitfalls {#fulltext-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Assuming clean extraction.** Even `pdftools` produces artifacts. Always inspect a sample of extracted text before bulk analysis.
+- **Skipping preprocessing.** Raw extracted text contains headers, page numbers, and hyphenated line breaks that must be cleaned.
+- **Mixing OCR and digital extraction.** Some PDFs contain both digital text and scanned images. Detect which pages need OCR before processing.
+- **Ignoring encoding issues.** PDFs may encode characters in non-standard ways. Check for garbled text, especially in references sections.
+</div>
+
+## Exercises {#fulltext-exercises}
+
+1. **Extract and compare.** Download an open-access PDF. Extract text with `pdftools`. Compare the extracted abstract with the abstract in OpenAlex. How accurate is the extraction?
+
+2. **Section detection.** Write a function that splits extracted PDF text into sections based on numbered headings ("1. Introduction", "2. Methods", etc.).
+
+3. **Table extraction.** If you have `tabulizer` installed, extract a table from a PDF and convert it to a tibble. What cleaning steps are needed?
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#fulltext-reading}
+
+- @aria2017 — `bibliometrix` supports some full-text features alongside metadata analysis.
+- @priem2022 — OpenAlex provides abstracts for many works, often sufficient without full-text extraction.
+
+## Session info {#fulltext-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
