@@ -51,10 +51,13 @@ jobs:
             rlib-Linux-r4.4.1-renvlock-
 
       - name: Install renv and restore lockfile
-        # With .Rprofile removed, renv won't auto-activate a project
-        # library. install.packages defaults to .libPaths()[1] which is
-        # R_LIBS_USER. We bootstrap renv there, then use renv::restore to
-        # install everything in renv.lock into the same path.
+        # renv normally installs into renv/library/<R>/<platform>. We
+        # need packages reachable by every Rscript step, so override
+        # RENV_PATHS_LIBRARY to point straight at R_LIBS_USER. That way
+        # restore() installs to /home/runner/work/_temp/Library, which
+        # is also where .libPaths()[1] points without .Rprofile active.
+        env:
+          RENV_PATHS_LIBRARY: /home/runner/work/_temp/Library
         run: |
           options(install.packages.check.source = "no")
           if (!requireNamespace("renv", quietly = TRUE)) {
@@ -63,7 +66,10 @@ jobs:
               repos = "https://packagemanager.posit.co/cran/__linux__/noble/latest"
             )
           }
-          renv::restore(prompt = FALSE)
+          renv::restore(library = .libPaths()[1], prompt = FALSE)
+          cat("--- .libPaths() ---\n"); print(.libPaths())
+          cat("--- bookdown ---\n")
+          print(find.package("bookdown", quiet = TRUE))
         shell: Rscript {0}
 
       - uses: r-lib/actions/setup-tinytex@v2
