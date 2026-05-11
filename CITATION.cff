@@ -1,17 +1,13 @@
 cff-version: 1.2.0
-title: "Scientometrics in R: Bibliometrics, Network Science, and Research Evaluation"
 message: "If you use this book or its code, please cite it as below."
-type: software
+title: "Scientometrics in R: Bibliometrics, Network Science, and Research Evaluation"
+type: book
 authors:
   - family-names: "Heller"
     given-names: "Raban"
     orcid: "https://orcid.org/0000-0001-8006-9742"
-identifiers:
-  - type: doi
-    value: "10.5281/zenodo.XXXXXXX"
-    description: "Zenodo archive DOI (update after first deposit)"
 repository-code: "https://github.com/r-heller/scientometrics-in-r"
 url: "https://r-heller.github.io/scientometrics-in-r/"
-license: CC-BY-SA-4.0
-version: 0.1.0
-date-released: "2026-05-09"
+license: "CC-BY-SA-4.0"
+version: "0.1.0"
+date-released: "2026-05-11"
