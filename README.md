@@ -1,3 +1,5 @@
+<p align="center"><a href="https://r-heller.github.io/scientometrics-in-r/"><img src="images/cover.png" alt="Scientometrics in R cover" width="280"></a></p>
+
 # Scientometrics in R
 
 **Bibliometrics, Network Science, and Research Evaluation — A Quarto Book**

@@ -1,5 +1,7 @@
 # Preface {.unnumbered}
 
+![](images/cover.png){width=55% fig-align="center" fig-alt="Cover of Scientometrics in R"}
+
 Welcome to **Scientometrics in R** — a hands-on guide to bibliometrics, network science, and research evaluation using the R programming language.
 
 ## Who this book is for
