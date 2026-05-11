@@ -71,7 +71,16 @@ jobs:
           base_rec <- rownames(installed.packages(
             lib.loc = .Library, priority = c("base", "recommended")
           ))
-          pkgs <- setdiff(pkgs, c("renv", base_rec))
+          # Packages used by chapters but not pinned in renv.lock —
+          # quanteda extras, OCR / PDF / SQL / NLP utilities the lockfile
+          # missed. Discovered by grep-ing library() calls in chapters/.
+          extras <- c(
+            "quanteda.textstats", "quanteda.textplots",
+            "stopwords", "wordcloud", "textstem", "textrecipes",
+            "RPostgres", "tabulapdf", "udpipe", "word2vec",
+            "networkD3", "gender"
+          )
+          pkgs <- setdiff(unique(c(pkgs, extras)), c("renv", base_rec))
           cat("Installing", length(pkgs), "packages\n")
           install.packages(pkgs, dependencies = TRUE, lib = .libPaths()[1])
           cat("--- .libPaths() ---\n"); print(.libPaths())
