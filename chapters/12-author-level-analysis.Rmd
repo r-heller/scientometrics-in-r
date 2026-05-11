@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#author-setup}
 
 ```{r}
-#| label: setup
+#| label: 12-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -46,7 +46,7 @@ Author-level analysis also raises ethical concerns. The Leiden Manifesto [@hicks
 We retrieve the OpenAlex profile for a well-known scientometrician.
 
 ```{r}
-#| label: fetch-author
+#| label: 12-fetch-author
 #| cache: true
 author_entity <- oa_fetch(
   entity = "authors",
@@ -65,7 +65,7 @@ cat(glue("Cited by count: {author_info$cited_by_count}\n"))
 ### Fetching the author's works
 
 ```{r}
-#| label: fetch-author-works
+#| label: 12-fetch-author-works
 #| cache: true
 author_works <- oa_fetch(
   entity = "works",
@@ -84,7 +84,7 @@ cat(glue("Works retrieved: {nrow(works_slim)}\n"))
 ### Author-level statistics
 
 ```{r}
-#| label: author-stats
+#| label: 12-author-stats
 h_idx <- compute_h_index(works_slim$cited_by_count)
 
 stats <- tibble(
@@ -108,7 +108,7 @@ stats |> gt()
 ### Publication timeline
 
 ```{r}
-#| label: fig-author-timeline
+#| label: 12-fig-author-timeline
 #| fig-cap: "Annual publication output and cumulative citation count."
 #| fig-alt: "Dual-axis chart showing the number of publications per year as bars and cumulative citations as a line, illustrating career trajectory over time."
 #| fig-width: 6
@@ -134,7 +134,7 @@ ggplot(annual, aes(x = year)) +
 ### Top venues
 
 ```{r}
-#| label: fig-author-venues
+#| label: 12-fig-author-venues
 #| fig-cap: "Top 10 venues by number of publications for this author."
 #| fig-alt: "Horizontal bar chart showing the 10 journals or venues where the author published the most articles."
 #| fig-width: 6
@@ -153,7 +153,7 @@ ggplot(venue_counts, aes(x = n, y = reorder(source_display_name, n))) +
 ### Checking for name variants
 
 ```{r}
-#| label: name-variants
+#| label: 12-name-variants
 if ("display_name_alternatives" %in% names(author_info)) {
   cat("Known name variants:\n")
   print(author_info$display_name_alternatives)
@@ -225,6 +225,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#author-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 12-session-info
 sessionInfo()
 ```

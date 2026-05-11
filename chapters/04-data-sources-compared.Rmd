@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#datasources-setup}
 
 ```{r}
-#| label: setup
+#| label: 04-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -75,7 +75,7 @@ We now compare what OpenAlex and Crossref return for the same set of DOIs. This 
 We start with a small set of well-known scientometrics papers whose DOIs we know.
 
 ```{r}
-#| label: define-dois
+#| label: 04-define-dois
 dois <- c(
   "10.1038/520429a",            # Hicks et al. 2015, Leiden Manifesto
   "10.1073/pnas.0507655102",    # Hirsch 2005, h-index
@@ -91,7 +91,7 @@ dois <- c(
 ### Fetching from OpenAlex
 
 ```{r}
-#| label: fetch-openalex
+#| label: 04-fetch-openalex
 #| cache: true
 oa_results <- oa_fetch(
   entity = "works",
@@ -115,7 +115,7 @@ glimpse(oa_meta)
 ### Fetching from Crossref
 
 ```{r}
-#| label: fetch-crossref
+#| label: 04-fetch-crossref
 #| cache: true
 cr_results <- cr_works(dois = dois)
 
@@ -141,7 +141,7 @@ glimpse(cr_meta)
 ### Comparing metadata completeness
 
 ```{r}
-#| label: compare-metadata
+#| label: 04-compare-metadata
 comparison <- bind_rows(oa_meta, cr_meta) |>
   mutate(short_doi = str_extract(doi, "[^/]+/[^/]+$"))
 
@@ -175,7 +175,7 @@ comparison_wide |>
 ### Visualization: citation count comparison
 
 ```{r}
-#| label: fig-datasources-citation-comparison
+#| label: 04-fig-datasources-citation-comparison
 #| fig-cap: "Citation counts reported by OpenAlex vs. Crossref for the same set of DOIs. Points above the diagonal indicate higher counts in OpenAlex."
 #| fig-alt: "Scatter plot comparing citation counts from OpenAlex (y-axis) and Crossref (x-axis) for eight papers. A dashed diagonal line marks equality."
 #| fig-width: 6
@@ -205,7 +205,7 @@ if (nrow(cite_compare) > 0 && all(c("OpenAlex", "Crossref") %in% names(cite_comp
 ### Summary comparison table
 
 ```{r}
-#| label: tbl-datasources-comparison
+#| label: 04-tbl-datasources-comparison
 #| tbl-cap: "Comparison of twelve major bibliographic data sources for scientometric research."
 tribble(
   ~Source, ~Coverage, ~`Access model`, ~API, ~`Citation data`, ~Strengths,
@@ -306,6 +306,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#datasources-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 04-session-info
 sessionInfo()
 ```

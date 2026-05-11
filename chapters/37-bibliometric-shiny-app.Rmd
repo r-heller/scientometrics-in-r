@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#shiny-setup}
 
 ```{r}
-#| label: setup
+#| label: 37-setup
 #| message: false
 library(tidyverse)
 library(shiny)
@@ -51,7 +51,7 @@ We demonstrate the key components of a bibliometric Shiny app. The code below sh
 ### UI definition
 
 ```{r}
-#| label: shiny-ui
+#| label: 37-shiny-ui
 #| eval: false
 ui <- fluidPage(
   titlePanel("Bibliometric Explorer"),
@@ -88,7 +88,7 @@ ui <- fluidPage(
 ### Server logic
 
 ```{r}
-#| label: shiny-server
+#| label: 37-shiny-server
 #| eval: false
 server <- function(input, output, session) {
 
@@ -167,7 +167,7 @@ server <- function(input, output, session) {
 ### Running the app
 
 ```{r}
-#| label: run-app
+#| label: 37-run-app
 #| eval: false
 shinyApp(ui = ui, server = server)
 ```
@@ -175,7 +175,7 @@ shinyApp(ui = ui, server = server)
 ### biblioshiny as an alternative
 
 ```{r}
-#| label: biblioshiny
+#| label: 37-biblioshiny
 #| eval: false
 # bibliometrix provides a ready-made Shiny interface:
 # library(bibliometrix)
@@ -237,6 +237,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#shiny-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 37-session-info
 sessionInfo()
 ```

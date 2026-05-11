@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#patent-setup}
 
 ```{r}
-#| label: setup
+#| label: 31-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -42,7 +42,7 @@ OpenAlex records whether a work has been cited in patents and provides the count
 ### Identifying patent-cited papers
 
 ```{r}
-#| label: fetch-patent-data
+#| label: 31-fetch-patent-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -67,7 +67,7 @@ cat(glue("Total works: {nrow(works_patent)}\n"))
 ### Citation distribution analysis
 
 ```{r}
-#| label: fig-patent-citedist
+#| label: 31-fig-patent-citedist
 #| fig-cap: "Citation count distribution, highlighting the most-cited papers as potential patent-cited candidates."
 #| fig-alt: "Histogram of citation counts with a vertical line marking the 90th percentile, indicating the most-cited papers that are most likely to appear in patent references."
 #| fig-width: 5
@@ -86,7 +86,7 @@ ggplot(works_patent, aes(x = cited_by_count)) +
 ### Journals producing highly cited papers
 
 ```{r}
-#| label: fig-patent-journals
+#| label: 31-fig-patent-journals
 #| fig-cap: "Top 15 journals by number of highly cited papers (above 90th percentile)."
 #| fig-alt: "Horizontal bar chart of the journals with the most papers above the citation 90th percentile — these are the journals most likely to be cited in patents."
 #| fig-width: 7
@@ -105,7 +105,7 @@ works_patent |>
 ### Citation impact by document characteristics
 
 ```{r}
-#| label: patent-characteristics
+#| label: 31-patent-characteristics
 works_patent |>
   mutate(high_cite = cited_by_count >= p90) |>
   group_by(high_cite) |>
@@ -170,6 +170,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#patent-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 31-session-info
 sessionInfo()
 ```

@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#theory-setup}
 
 ```{r}
-#| label: setup
+#| label: 02-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -47,7 +47,7 @@ We use a corpus of works from the journal *Scientometrics* to demonstrate each l
 ### Fetching the data
 
 ```{r}
-#| label: fetch-theory-data
+#| label: 02-fetch-theory-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -63,7 +63,7 @@ works <- oa_fetch(
 We unnest authors and count the number of papers per author in this sample.
 
 ```{r}
-#| label: lotka-data
+#| label: 02-lotka-data
 author_prod <- works |>
   select(id, authorships) |>
   unnest(authorships, names_sep = "_") |>
@@ -75,7 +75,7 @@ author_prod
 ```
 
 ```{r}
-#| label: fig-theory-lotka
+#| label: 02-fig-theory-lotka
 #| fig-cap: "Author productivity distribution. The dashed line shows the inverse-square law predicted by Lotka."
 #| fig-alt: "Log-log scatter plot of the number of authors versus the number of papers they published, with a dashed reference line showing the inverse-square law."
 #| fig-width: 6
@@ -102,7 +102,7 @@ The data approximate the inverse-square pattern, though real distributions often
 We count how many articles each journal source contributes (across a broader query).
 
 ```{r}
-#| label: bradford-data
+#| label: 02-bradford-data
 #| cache: true
 broad_works <- oa_fetch(
   entity = "works",
@@ -122,7 +122,7 @@ journal_counts <- broad_works |>
 ```
 
 ```{r}
-#| label: fig-theory-bradford
+#| label: 02-fig-theory-bradford
 #| fig-cap: "Bradford plot: cumulative articles vs. log journal rank."
 #| fig-alt: "Line plot showing cumulative article count on the y-axis versus journal rank on a logarithmic x-axis. The characteristic S-shaped Bradford curve is visible, with a steep rise for core journals."
 #| fig-width: 6
@@ -140,7 +140,7 @@ journal_counts |>
 We extract title words and examine their frequency distribution.
 
 ```{r}
-#| label: zipf-data
+#| label: 02-zipf-data
 word_freq <- works |>
   select(display_name) |>
   unnest_tokens(word, display_name, token = "words") |>
@@ -150,7 +150,7 @@ word_freq <- works |>
 ```
 
 ```{r}
-#| label: fig-theory-zipf
+#| label: 02-fig-theory-zipf
 #| fig-cap: "Word frequency vs. rank for article titles, approximating Zipf's law."
 #| fig-alt: "Log-log scatter plot of word frequency versus rank, showing an approximately linear relationship consistent with Zipf's law."
 #| fig-width: 6
@@ -168,7 +168,7 @@ word_freq |>
 ### Price's growth law
 
 ```{r}
-#| label: fig-theory-growth
+#| label: 02-fig-theory-growth
 #| fig-cap: "Annual publication counts for sampled works, illustrating the growth of bibliometrics literature."
 #| fig-alt: "Bar chart showing increasing annual publication counts from 2015 to 2023."
 #| fig-width: 6
@@ -242,6 +242,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#theory-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 02-session-info
 sessionInfo()
 ```

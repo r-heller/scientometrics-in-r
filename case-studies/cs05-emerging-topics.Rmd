@@ -7,7 +7,7 @@ Identify emerging topics in scientometrics research (2015–2023) using keyword 
 ## Setup
 
 ```{r}
-#| label: setup
+#| label: cs05-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -28,7 +28,7 @@ source(here::here("R", "sci_palette.R"))
 ## Data acquisition
 
 ```{r}
-#| label: fetch-emerging-data
+#| label: cs05-fetch-emerging-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -65,7 +65,7 @@ toks <- tokens(corp, remove_punct = TRUE, remove_numbers = TRUE) |>
 
 dfmat <- dfm(toks) |> dfm_trim(min_termfreq = 10, min_docfreq = 5)
 
-kw_by_year <- convert(dfm_group(dfmat, groups = year), to = "data.frame") |>
+kw_by_year <- quanteda::convert(dfm_group(dfmat, groups = year), to = "data.frame") |>
   pivot_longer(-doc_id, names_to = "term", values_to = "count") |>
   rename(year = doc_id) |>
   mutate(year = as.integer(year))
@@ -87,7 +87,7 @@ recent_growth <- growth |>
 ```
 
 ```{r}
-#| label: fig-cs05-growth
+#| label: cs05-fig-cs05-growth
 #| fig-cap: "Top 15 fastest-growing keywords (2021–2023)."
 #| fig-alt: "Bar chart showing keywords with the highest mean growth rate in recent years."
 #| fig-width: 6
@@ -105,7 +105,7 @@ recent_growth |>
 ## Keyword trajectories
 
 ```{r}
-#| label: fig-cs05-trajectories
+#| label: cs05-fig-cs05-trajectories
 #| fig-cap: "Temporal trajectories of selected emerging keywords."
 #| fig-alt: "Line chart showing frequency over time for keywords identified as growing rapidly."
 #| fig-width: 7
@@ -127,7 +127,7 @@ kw_by_year |>
 ```{r}
 #| label: cs05-lda
 #| cache: true
-dtm <- convert(dfmat, to = "topicmodels")
+dtm <- quanteda::convert(dfmat, to = "topicmodels")
 lda <- LDA(dtm, k = 8, control = list(seed = 42))
 
 lda_topics <- tidy(lda, matrix = "beta") |>
@@ -137,7 +137,7 @@ lda_topics <- tidy(lda, matrix = "beta") |>
 ```
 
 ```{r}
-#| label: fig-cs05-lda
+#| label: cs05-fig-cs05-lda
 #| fig-cap: "Top terms per LDA topic."
 #| fig-alt: "Faceted bar chart showing the 8 most probable words in each of 8 LDA topics."
 #| fig-width: 8
@@ -156,7 +156,7 @@ lda_topics |>
 ## Topic prevalence by year
 
 ```{r}
-#| label: fig-cs05-prevalence
+#| label: cs05-fig-cs05-prevalence
 #| fig-cap: "Topic prevalence over time."
 #| fig-alt: "Line chart showing how the proportion of each topic changes across publication years."
 #| fig-width: 7

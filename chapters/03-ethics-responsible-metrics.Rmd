@@ -14,7 +14,7 @@ After completing this chapter, you will be able to:
 ## Setup {#ethics-setup}
 
 ```{r}
-#| label: setup
+#| label: 03-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -92,7 +92,7 @@ We now demonstrate a practical analysis: computing self-citation rates for a sam
 We fetch a sample of authors associated with scientometrics research who have at least 50 works, ensuring we have enough output to compute meaningful self-citation rates.
 
 ```{r}
-#| label: fetch-authors
+#| label: 03-fetch-authors
 #| cache: true
 authors_raw <- oa_fetch(
   entity = "authors",
@@ -113,7 +113,7 @@ glimpse(authors)
 For each author, we retrieve a sample of their recent works and examine how many of the citations come from the author's own papers. OpenAlex provides `cited_by_count` at the work level and allows us to query an author's works directly.
 
 ```{r}
-#| label: compute-self-citations
+#| label: 03-compute-self-citations
 #| cache: true
 
 # For a manageable demonstration, pick 10 authors
@@ -181,7 +181,7 @@ self_cite_results <- map2_dfr(
 ### Summarizing results
 
 ```{r}
-#| label: self-cite-summary
+#| label: 03-self-cite-summary
 self_cite_results |>
   filter(!is.na(self_cite_rate)) |>
   arrange(desc(self_cite_rate)) |>
@@ -204,7 +204,7 @@ self_cite_results |>
 ### Visualization
 
 ```{r}
-#| label: fig-ethics-self-citation
+#| label: 03-fig-ethics-self-citation
 #| fig-cap: "Distribution of self-citation rates across sampled scientometrics authors. The dashed line marks the sample median."
 #| fig-alt: "Histogram showing the distribution of self-citation rates for sampled authors. A dashed vertical line indicates the median self-citation rate."
 #| fig-width: 6
@@ -235,7 +235,7 @@ if (nrow(self_cite_clean) > 0) {
 ### A per-author comparison
 
 ```{r}
-#| label: fig-ethics-self-cite-bar
+#| label: 03-fig-ethics-self-cite-bar
 #| fig-cap: "Self-citation rates by author, sorted from highest to lowest."
 #| fig-alt: "Horizontal bar chart showing each sampled author's self-citation rate, ordered from highest to lowest."
 #| fig-width: 7
@@ -314,6 +314,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#ethics-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 03-session-info
 sessionInfo()
 ```

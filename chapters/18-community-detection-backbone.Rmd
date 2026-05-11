@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#backbone-setup}
 
 ```{r}
-#| label: setup
+#| label: 18-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -49,7 +49,7 @@ Once the backbone is extracted, **community detection** identifies groups of nod
 We construct a bibliographic coupling network from scientometrics articles.
 
 ```{r}
-#| label: fetch-backbone-data
+#| label: 18-fetch-backbone-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -83,7 +83,7 @@ cat(glue("Density: {round(graph.density(g_full), 4)}\n"))
 ### Backbone extraction: disparity filter
 
 ```{r}
-#| label: disparity-filter
+#| label: 18-disparity-filter
 disparity_filter <- function(g, alpha = 0.05) {
   el <- as_data_frame(g, what = "edges")
   node_strength <- strength(g)
@@ -113,7 +113,7 @@ cat(glue("Edge retention: {scales::percent(ecount(g_backbone) / ecount(g_full))}
 ### Threshold filtering for comparison
 
 ```{r}
-#| label: threshold-filter
+#| label: 18-threshold-filter
 threshold <- quantile(E(g_full)$weight, 0.75)
 g_threshold <- subgraph.edges(
   g_full,
@@ -127,7 +127,7 @@ cat(glue("Threshold (75th pctile = {threshold}): {vcount(g_threshold)} nodes, {e
 ### Community detection at multiple resolutions
 
 ```{r}
-#| label: resolution-sweep
+#| label: 18-resolution-sweep
 resolutions <- c(0.5, 0.8, 1.0, 1.5, 2.0)
 
 sweep_results <- map_dfr(resolutions, function(res) {
@@ -146,7 +146,7 @@ sweep_results |> gt()
 ```
 
 ```{r}
-#| label: fig-backbone-resolution
+#| label: 18-fig-backbone-resolution
 #| fig-cap: "Number of communities and modularity as a function of resolution parameter."
 #| fig-alt: "Dual-axis line chart showing how the number of detected communities increases and modularity changes as the Leiden resolution parameter increases."
 #| fig-width: 6
@@ -168,7 +168,7 @@ ggplot(sweep_results, aes(x = resolution)) +
 ### Comparing backbone vs. full network communities
 
 ```{r}
-#| label: compare-backbone
+#| label: 18-compare-backbone
 comm_full <- cluster_leiden(g_full, resolution_parameter = 1.0,
                             objective_function = "modularity")
 comm_backbone <- cluster_leiden(g_backbone, resolution_parameter = 1.0,
@@ -187,7 +187,7 @@ cat(glue("Communities in backbone: {length(unique(membership(comm_backbone)))}\n
 ### Visualisation
 
 ```{r}
-#| label: fig-backbone-network
+#| label: 18-fig-backbone-network
 #| fig-cap: "Backbone network with Leiden communities (resolution = 1.0)."
 #| fig-alt: "Network graph showing the backbone of the bibliographic coupling network. Nodes coloured by community, sized by degree. Only statistically significant edges are shown."
 #| fig-width: 6
@@ -266,6 +266,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#backbone-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 18-session-info
 sessionInfo()
 ```

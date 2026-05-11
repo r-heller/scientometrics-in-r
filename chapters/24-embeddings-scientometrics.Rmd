@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#embed-setup}
 
 ```{r}
-#| label: setup
+#| label: 24-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -50,7 +50,7 @@ The trade-off is interpretability: while TF-IDF features are directly readable (
 ### Preparing text data
 
 ```{r}
-#| label: fetch-embed-data
+#| label: 24-fetch-embed-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -76,7 +76,7 @@ cat(glue("Documents for embedding: {nrow(text_df)}\n"))
 ### Training word2vec embeddings
 
 ```{r}
-#| label: train-word2vec
+#| label: 24-train-word2vec
 #| cache: true
 clean_text <- text_df$text |>
   str_to_lower() |>
@@ -90,7 +90,7 @@ cat(glue("Vocabulary size: {nrow(as.matrix(model))}\n"))
 ```
 
 ```{r}
-#| label: word-similarity
+#| label: 24-word-similarity
 if ("citation" %in% rownames(as.matrix(model))) {
   nn <- predict(model, newdata = "citation", type = "nearest", top_n = 10)
   cat("Nearest neighbours of 'citation':\n")
@@ -101,7 +101,7 @@ if ("citation" %in% rownames(as.matrix(model))) {
 ### Computing document embeddings via mean pooling
 
 ```{r}
-#| label: document-embeddings
+#| label: 24-document-embeddings
 word_matrix <- as.matrix(model)
 
 doc_embed <- function(text, wm) {
@@ -125,7 +125,7 @@ cat(glue("Valid document embeddings: {nrow(embed_mat)}\n"))
 ### Dimensionality reduction with UMAP
 
 ```{r}
-#| label: umap-projection
+#| label: 24-umap-projection
 #| cache: true
 umap_result <- umap(embed_mat, n_neighbors = 15, min_dist = 0.1,
                     n_components = 2, ret_model = FALSE)
@@ -135,7 +135,7 @@ text_df_valid$umap_y <- umap_result[, 2]
 ```
 
 ```{r}
-#| label: fig-embed-umap
+#| label: 24-fig-embed-umap
 #| fig-cap: "UMAP projection of document embeddings, coloured by publication year."
 #| fig-alt: "Scatter plot showing documents positioned by semantic similarity in UMAP space. Colour indicates publication year, revealing whether temporal patterns correspond to semantic clusters."
 #| fig-width: 6
@@ -151,7 +151,7 @@ ggplot(text_df_valid, aes(x = umap_x, y = umap_y, colour = factor(year))) +
 ### Document similarity search
 
 ```{r}
-#| label: similarity-search
+#| label: 24-similarity-search
 cosine_sim <- function(a, b) sum(a * b) / (sqrt(sum(a^2)) * sqrt(sum(b^2)))
 
 query_idx <- 1
@@ -170,7 +170,7 @@ walk(top_similar, \(i) {
 ### Embedding clusters vs. citation impact
 
 ```{r}
-#| label: fig-embed-impact
+#| label: 24-fig-embed-impact
 #| fig-cap: "UMAP embedding coloured by citation impact (log scale)."
 #| fig-alt: "Scatter plot in UMAP space with documents coloured by log citation count, showing whether highly cited papers cluster together semantically."
 #| fig-width: 6
@@ -238,6 +238,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#embed-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 24-session-info
 sessionInfo()
 ```

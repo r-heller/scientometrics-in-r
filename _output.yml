@@ -9,7 +9,7 @@ bookdown::bs4_book:
   repo:
     base: https://github.com/r-heller/scientometrics-in-r
     branch: main
-  css: style/style.css
+  css: [style/style.css, style/font-awesome.min.css]
   includes:
     in_header: style/header.html
     after_body: style/after-body.html

@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#openscience-setup}
 
 ```{r}
-#| label: setup
+#| label: 27-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -44,7 +44,7 @@ Measuring open science is important for policy. Funders increasingly require OA 
 ### OA rates by year
 
 ```{r}
-#| label: fetch-openscience-data
+#| label: 27-fetch-openscience-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -66,7 +66,7 @@ cat(glue("Works: {nrow(works_oa)}\n"))
 ```
 
 ```{r}
-#| label: fig-openscience-oa-trend
+#| label: 27-fig-openscience-oa-trend
 #| fig-cap: "Open access rates by year and OA type."
 #| fig-alt: "Stacked bar chart showing the proportion of articles in each OA category (gold, green, hybrid, bronze, closed) for each publication year from 2015 to 2023."
 #| fig-width: 7
@@ -88,7 +88,7 @@ ggplot(oa_by_year, aes(x = factor(year), y = pct, fill = oa_status)) +
 ### OA citation advantage
 
 ```{r}
-#| label: oa-advantage
+#| label: 27-oa-advantage
 oa_cites <- works_oa |>
   filter(!is.na(oa_status)) |>
   mutate(is_oa = oa_status != "closed") |>
@@ -106,7 +106,7 @@ oa_cites |> gt()
 ### Document type breakdown
 
 ```{r}
-#| label: fig-openscience-types
+#| label: 27-fig-openscience-types
 #| fig-cap: "OA status by document type."
 #| fig-alt: "Grouped bar chart showing how OA status varies across document types (article, review, etc.)."
 #| fig-width: 6
@@ -127,7 +127,7 @@ works |>
 ### Summary table
 
 ```{r}
-#| label: oa-summary-table
+#| label: 27-oa-summary-table
 works_oa |>
   count(oa_status, sort = TRUE) |>
   mutate(pct = scales::percent(n / sum(n))) |>
@@ -187,6 +187,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#openscience-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 27-session-info
 sessionInfo()
 ```

@@ -12,7 +12,7 @@ After completing this chapter, you will be able to:
 ## Setup {#indicators-setup}
 
 ```{r}
-#| label: setup
+#| label: 10-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -43,7 +43,7 @@ The Leiden Manifesto [@hicks2015] and the San Francisco Declaration on Research 
 We fetch a sample of works and their citation counts from OpenAlex.
 
 ```{r}
-#| label: fetch-indicator-data
+#| label: 10-fetch-indicator-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -63,7 +63,7 @@ summary(works_slim$cited_by_count)
 ### Computing the h-index
 
 ```{r}
-#| label: compute-h-index
+#| label: 10-compute-h-index
 h <- compute_h_index(works_slim$cited_by_count)
 cat(glue("h-index for this corpus: {h}\n"))
 ```
@@ -73,7 +73,7 @@ The h-index tells us that {h} papers in this sample have each been cited at leas
 ### Computing the g-index
 
 ```{r}
-#| label: compute-g-index
+#| label: 10-compute-g-index
 compute_g_index <- function(citations) {
   sorted <- sort(citations, decreasing = TRUE)
   cumsum_cites <- cumsum(sorted)
@@ -91,7 +91,7 @@ cat(glue("g-index for this corpus: {g}\n"))
 The m-quotient normalizes the h-index by career length (here, publication span).
 
 ```{r}
-#| label: compute-m-quotient
+#| label: 10-compute-m-quotient
 career_years <- as.numeric(
   difftime(max(works_slim$publication_date),
            min(works_slim$publication_date),
@@ -107,7 +107,7 @@ cat(glue("m-quotient: {round(m_quotient, 3)} (over {round(career_years, 1)} year
 To compute MNCS, we need field averages. We simulate field means here; in a real analysis these would come from the OpenAlex snapshot or a reference dataset.
 
 ```{r}
-#| label: compute-mncs
+#| label: 10-compute-mncs
 field_means_by_year <- works_slim |>
   group_by(year) |>
   summarise(field_mean = mean(cited_by_count), .groups = "drop")
@@ -125,7 +125,7 @@ An MNCS of 1.0 means the entity performs at exactly the world average. Values ab
 ### PP(top 10%)
 
 ```{r}
-#| label: compute-pp-top10
+#| label: 10-compute-pp-top10
 works_with_pct <- works_normalized |>
   group_by(year) |>
   mutate(
@@ -141,7 +141,7 @@ cat(glue("PP(top 10%): {scales::percent(pp_top10, accuracy = 0.1)}\n"))
 ### Visualization
 
 ```{r}
-#| label: fig-indicators-citation-dist
+#| label: 10-fig-indicators-citation-dist
 #| fig-cap: "Citation distribution of sampled works, with the h-index threshold marked."
 #| fig-alt: "Histogram of citation counts with a vertical dashed line at the h-index value, showing the long-tailed distribution typical of citation data."
 #| fig-width: 6
@@ -157,7 +157,7 @@ works_slim |>
 ```
 
 ```{r}
-#| label: fig-indicators-mncs-by-year
+#| label: 10-fig-indicators-mncs-by-year
 #| fig-cap: "Mean Normalized Citation Score by publication year."
 #| fig-alt: "Line chart showing the MNCS trend across publication years, with a horizontal reference line at 1.0 representing the world average."
 #| fig-width: 6
@@ -176,7 +176,7 @@ works_normalized |>
 ### Summary table
 
 ```{r}
-#| label: tbl-indicators-summary
+#| label: 10-tbl-indicators-summary
 #| tbl-cap: "Summary of computed indicators."
 tibble(
   Indicator = c("h-index", "g-index", "m-quotient", "MNCS", "PP(top 10%)"),
@@ -264,6 +264,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#indicators-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 10-session-info
 sessionInfo()
 ```

@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#emerging-setup}
 
 ```{r}
-#| label: setup
+#| label: 25-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -47,7 +47,7 @@ An **emerging topic** is a research area experiencing rapid growth in attention 
 ### Preparing temporal keyword data
 
 ```{r}
-#| label: fetch-emerging-data
+#| label: 25-fetch-emerging-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -70,7 +70,7 @@ cat(glue("Year range: {min(text_df$year)}--{max(text_df$year)}\n"))
 ```
 
 ```{r}
-#| label: build-keyword-timeseries
+#| label: 25-build-keyword-timeseries
 corp <- corpus(text_df, docid_field = "doc_id", text_field = "text")
 docvars(corp, "year") <- text_df$year
 
@@ -83,7 +83,7 @@ toks <- tokens(corp, remove_punct = TRUE, remove_numbers = TRUE) |>
 dfmat <- dfm(toks) |>
   dfm_trim(min_termfreq = 10, min_docfreq = 5)
 
-kw_by_year <- convert(dfm_group(dfmat, groups = year), to = "data.frame") |>
+kw_by_year <- quanteda::convert(dfm_group(dfmat, groups = year), to = "data.frame") |>
   pivot_longer(-doc_id, names_to = "term", values_to = "count") |>
   rename(year = doc_id) |>
   mutate(year = as.integer(year))
@@ -94,7 +94,7 @@ cat(glue("Terms tracked: {n_distinct(kw_by_year$term)}\n"))
 ### Growth rate detection
 
 ```{r}
-#| label: growth-rates
+#| label: 25-growth-rates
 growth <- kw_by_year |>
   group_by(term) |>
   arrange(year) |>
@@ -122,7 +122,7 @@ recent_growth |>
 ### Simple burst detection
 
 ```{r}
-#| label: burst-detection
+#| label: 25-burst-detection
 detect_burst <- function(counts, threshold = 2) {
   mean_count <- mean(counts)
   sd_count <- sd(counts)
@@ -154,7 +154,7 @@ burst_summary |> head(15) |> gt()
 ### Visualising keyword trajectories
 
 ```{r}
-#| label: fig-emerging-trajectories
+#| label: 25-fig-emerging-trajectories
 #| fig-cap: "Temporal trajectories of emerging keywords with burst periods highlighted."
 #| fig-alt: "Line chart showing the frequency of several keywords over time. Burst periods (unusually high frequency) are highlighted with background shading."
 #| fig-width: 7
@@ -179,7 +179,7 @@ ggplot(burst_plot_data, aes(x = year, y = count)) +
 ### Rolling-window topic tracking
 
 ```{r}
-#| label: rolling-window
+#| label: 25-rolling-window
 window_size <- 3
 years <- sort(unique(text_df$year))
 windows <- years[1:(length(years) - window_size + 1)]
@@ -196,7 +196,7 @@ window_top_terms <- map_dfr(windows, function(start_year) {
 ```
 
 ```{r}
-#| label: fig-emerging-windows
+#| label: 25-fig-emerging-windows
 #| fig-cap: "Top terms in each 3-year rolling window, showing vocabulary evolution."
 #| fig-alt: "Heatmap or faceted bar chart showing the top terms for each rolling time window, revealing which terms gain or lose prominence."
 #| fig-width: 7
@@ -269,6 +269,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#emerging-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 25-session-info
 sessionInfo()
 ```

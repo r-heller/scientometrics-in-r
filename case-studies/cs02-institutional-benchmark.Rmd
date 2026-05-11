@@ -7,7 +7,7 @@ Compare publication output, citation impact, and research profiles of five unive
 ## Setup
 
 ```{r}
-#| label: setup
+#| label: cs02-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -24,7 +24,7 @@ source(here::here("R", "sci_palette.R"))
 ## Data acquisition
 
 ```{r}
-#| label: define-institutions
+#| label: cs02-define-institutions
 institutions <- tribble(
   ~short_name,    ~oa_id,
   "MIT",          "I63966007",
@@ -36,7 +36,7 @@ institutions <- tribble(
 ```
 
 ```{r}
-#| label: fetch-inst-data
+#| label: cs02-fetch-inst-data
 #| cache: true
 fetch_works <- function(inst_id) {
   res <- tryCatch(
@@ -61,7 +61,7 @@ inst_data <- institutions |>
 ## Publication volume
 
 ```{r}
-#| label: fig-cs02-volume
+#| label: cs02-fig-cs02-volume
 #| fig-cap: "Sampled publication counts by institution."
 #| fig-alt: "Bar chart comparing sampled publication volumes for five universities."
 #| fig-width: 6
@@ -119,7 +119,7 @@ counting |> gt()
 ```
 
 ```{r}
-#| label: fig-cs02-counting
+#| label: cs02-fig-cs02-counting
 #| fig-cap: "Full vs. fractional publication counts."
 #| fig-alt: "Grouped bar chart showing how fractional counting reduces output for highly collaborative institutions."
 #| fig-width: 6
@@ -137,7 +137,7 @@ counting |>
 ## OA rates
 
 ```{r}
-#| label: fig-cs02-oa
+#| label: cs02-fig-cs02-oa
 #| fig-cap: "Open access rate by institution."
 #| fig-alt: "Bar chart comparing OA rates across five universities."
 #| fig-width: 5

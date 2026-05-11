@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#kwextract-setup}
 
 ```{r}
-#| label: setup
+#| label: 23-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -50,7 +50,7 @@ Evaluating keyword extraction requires ground truth. Author keywords are the mos
 ### Fetching data with keywords
 
 ```{r}
-#| label: fetch-keyword-data
+#| label: 23-fetch-keyword-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -75,7 +75,7 @@ cat(glue("Documents with abstracts: {nrow(text_df)}\n"))
 ### RAKE keyword extraction
 
 ```{r}
-#| label: rake-extraction
+#| label: 23-rake-extraction
 rake_extract <- function(text, n_keywords = 10) {
   toks <- tokens(text, remove_punct = TRUE, remove_numbers = TRUE) |>
     tokens_tolower() |>
@@ -99,7 +99,7 @@ text_df |>
 ### TF-IDF based keyword extraction
 
 ```{r}
-#| label: tfidf-keywords
+#| label: 23-tfidf-keywords
 corp <- corpus(text_df, docid_field = "doc_id", text_field = "text")
 
 toks <- tokens(corp, remove_punct = TRUE, remove_numbers = TRUE) |>
@@ -124,7 +124,7 @@ text_df$tfidf_keywords <- tfidf_keywords
 ### Corpus-level keyword frequency
 
 ```{r}
-#| label: fig-kwextract-frequency
+#| label: 23-fig-kwextract-frequency
 #| fig-cap: "Top 20 keywords by total extraction frequency across the corpus."
 #| fig-alt: "Horizontal bar chart showing the 20 most frequently extracted keywords and how often they appear across documents."
 #| fig-width: 6
@@ -147,7 +147,7 @@ all_kw |>
 ### Comparing extraction methods
 
 ```{r}
-#| label: compare-methods
+#| label: 23-compare-methods
 overlap <- map2_dbl(text_df$rake_keywords, text_df$tfidf_keywords,
                     \(r, t) length(intersect(r, t)) / length(union(r, t)))
 
@@ -155,7 +155,7 @@ cat(glue("Mean Jaccard overlap (RAKE vs TF-IDF): {round(mean(overlap, na.rm = TR
 ```
 
 ```{r}
-#| label: fig-kwextract-overlap
+#| label: 23-fig-kwextract-overlap
 #| fig-cap: "Distribution of Jaccard similarity between RAKE and TF-IDF keyword sets."
 #| fig-alt: "Histogram showing the distribution of Jaccard similarity scores between the two extraction methods. Most documents show moderate overlap."
 #| fig-width: 5
@@ -220,6 +220,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#kwextract-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 23-session-info
 sessionInfo()
 ```
