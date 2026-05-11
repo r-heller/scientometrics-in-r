@@ -1,6 +1,4 @@
----
-title: "Funding Analysis and Grant-to-Publication Linkage"
----
+# Funding Analysis and Grant-to-Publication Linkage
 
 ## Learning objectives {#funding-objectives}
 

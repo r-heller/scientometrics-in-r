@@ -1,6 +1,4 @@
----
-title: "Case Study 4: Gender Gap in Scientific Publishing"
----
+# Case Study 4: Gender Gap in Scientific Publishing
 
 ## Objective
 

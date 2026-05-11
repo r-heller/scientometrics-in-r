@@ -1,6 +1,4 @@
----
-title: "Science Mapping and Overlay Maps"
----
+# Science Mapping and Overlay Maps
 
 ## Learning objectives {#scimap-objectives}
 

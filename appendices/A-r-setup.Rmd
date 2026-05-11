@@ -1,6 +1,4 @@
----
-title: "R Setup, renv, and Docker"
----
+# R Setup, renv, and Docker
 
 <!-- verify_chunks: skip-file
      Setup-instruction snippets are reference code shown to readers, not

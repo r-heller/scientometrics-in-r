@@ -1,6 +1,4 @@
----
-title: "Institutional and Country Analysis"
----
+# Institutional and Country Analysis
 
 ## Learning objectives {#instcountry-objectives}
 

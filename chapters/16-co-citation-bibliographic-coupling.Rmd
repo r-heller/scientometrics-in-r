@@ -1,6 +1,4 @@
----
-title: "Co-citation and Bibliographic Coupling"
----
+# Co-citation and Bibliographic Coupling
 
 ## Learning objectives {#cocit-objectives}
 

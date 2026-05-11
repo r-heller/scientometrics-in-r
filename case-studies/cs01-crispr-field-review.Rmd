@@ -1,6 +1,4 @@
----
-title: "Case Study 1: CRISPR Field Review (2010–2024)"
----
+# Case Study 1: CRISPR Field Review (2010–2024)
 
 ## Objective
 

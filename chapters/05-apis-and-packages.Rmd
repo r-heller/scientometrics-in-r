@@ -1,6 +1,4 @@
----
-title: "APIs and Packages"
----
+# APIs and Packages
 
 ## Learning objectives {#apis-objectives}
 

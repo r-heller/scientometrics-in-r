@@ -1,6 +1,4 @@
----
-title: "Parsing Native Exports"
----
+# Parsing Native Exports
 
 ## Learning objectives {#parsing-objectives}
 

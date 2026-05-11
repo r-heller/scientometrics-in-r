@@ -1,6 +1,4 @@
----
-title: "Case Study 2: Institutional Benchmarking"
----
+# Case Study 2: Institutional Benchmarking
 
 ## Objective
 

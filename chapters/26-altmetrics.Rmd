@@ -1,6 +1,4 @@
----
-title: "Altmetrics"
----
+# Altmetrics
 
 ## Learning objectives {#altmetrics-objectives}
 

@@ -1,6 +1,4 @@
----
-title: "Chapter Title"
----
+# Chapter Title
 
 <!-- TEMPLATE: Copy this file to create a new chapter. Replace all placeholder
      content. Delete these HTML comments before committing. Every chapter must

@@ -1,6 +1,4 @@
----
-title: "Community Detection and Backbone Extraction"
----
+# Community Detection and Backbone Extraction
 
 ## Learning objectives {#backbone-objectives}
 

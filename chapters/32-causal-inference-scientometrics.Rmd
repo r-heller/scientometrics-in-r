@@ -1,6 +1,4 @@
----
-title: "Causal Inference in Scientometrics"
----
+# Causal Inference in Scientometrics
 
 ## Learning objectives {#causal-objectives}
 

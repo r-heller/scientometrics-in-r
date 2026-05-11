@@ -1,6 +1,4 @@
----
-title: "What Is Scientometrics?"
----
+# What Is Scientometrics?
 
 ## Learning objectives {#what-objectives}
 

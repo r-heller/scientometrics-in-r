@@ -1,6 +1,4 @@
----
-title: "Journal Metrics"
----
+# Journal Metrics
 
 ## Learning objectives {#jmetrics-objectives}
 

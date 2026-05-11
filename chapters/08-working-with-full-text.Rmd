@@ -1,6 +1,4 @@
----
-title: "Working with Full Text"
----
+# Working with Full Text
 
 ## Learning objectives {#fulltext-objectives}
 

@@ -1,6 +1,4 @@
----
-title: "Gender and Equity Analysis"
----
+# Gender and Equity Analysis
 
 ## Learning objectives {#gender-objectives}
 

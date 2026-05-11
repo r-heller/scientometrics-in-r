@@ -1,6 +1,4 @@
----
-title: "Building a Bibliometric Shiny App"
----
+# Building a Bibliometric Shiny App
 
 ## Learning objectives {#shiny-objectives}
 

@@ -1,6 +1,4 @@
----
-title: "Keyword Extraction"
----
+# Keyword Extraction
 
 ## Learning objectives {#kwextract-objectives}
 

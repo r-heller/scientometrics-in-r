@@ -1,6 +1,4 @@
----
-title: "Topic Modeling"
----
+# Topic Modeling
 
 ## Learning objectives {#topicmodel-objectives}
 

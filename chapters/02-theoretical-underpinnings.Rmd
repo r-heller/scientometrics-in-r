@@ -1,6 +1,4 @@
----
-title: "Theoretical Underpinnings"
----
+# Theoretical Underpinnings
 
 ## Learning objectives {#theory-objectives}
 
