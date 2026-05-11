@@ -14,11 +14,19 @@ concurrency:
   group: render-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Disable renv autoload — we manage the library ourselves in CI so that
+  # the user-lib install path is honoured across steps. With autoload on,
+  # renv/activate.R overrides .libPaths() to the empty renv project lib
+  # and breaks every subsequent step.
+  RENV_CONFIG_AUTOLOADER_ENABLED: "FALSE"
+
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      RENV_CONFIG_AUTOLOADER_ENABLED: "FALSE"
 
     steps:
       - uses: actions/checkout@v4
@@ -39,10 +47,27 @@ jobs:
           r-version: "4.4.1"
           use-public-rspm: true
 
-      - name: Setup R dependencies (renv-aware)
-        uses: r-lib/actions/setup-r-dependencies@v2
+      - name: Cache R library
+        uses: actions/cache@v4
         with:
-          cache-version: 2
+          path: ${{ env.R_LIBS_USER || '/home/runner/work/_temp/Library' }}
+          key: rlib-${{ runner.os }}-r4.4.1-${{ hashFiles('renv.lock') }}
+          restore-keys: |
+            rlib-${{ runner.os }}-r4.4.1-
+
+      - name: Install renv and restore lockfile to user lib
+        run: |
+          options(renv.config.autoloader.enabled = FALSE)
+          if (!requireNamespace("renv", quietly = TRUE)) {
+            install.packages(
+              "renv",
+              repos = "https://packagemanager.posit.co/cran/__linux__/noble/latest"
+            )
+          }
+          # Install into the first .libPaths() (user lib), not the renv
+          # project library, so subsequent steps see the packages.
+          renv::restore(library = .libPaths()[1], prompt = FALSE)
+        shell: Rscript {0}
 
       - uses: r-lib/actions/setup-tinytex@v2
 
