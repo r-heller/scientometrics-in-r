@@ -2,6 +2,10 @@
 title: "R Setup, renv, and Docker"
 ---
 
+<!-- verify_chunks: skip-file
+     Setup-instruction snippets are reference code shown to readers, not
+     run at build time. -->
+
 ## R installation
 
 Install the latest R release from [CRAN](https://cran.r-project.org/). This book was developed with R 4.4.x. We recommend [RStudio](https://posit.co/download/rstudio-desktop/) or [VS Code with the R extension](https://marketplace.visualstudio.com/items?itemName=REditorSupport.r) as your IDE.

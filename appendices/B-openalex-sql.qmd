@@ -2,6 +2,10 @@
 title: "SQL Primer for the OpenAlex Snapshot"
 ---
 
+<!-- verify_chunks: skip-file
+     Snippets require a populated PostgreSQL OpenAlex snapshot, which is not
+     available at book build time. -->
+
 ## When to use the snapshot
 
 The OpenAlex API (Chapter 5) is ideal for moderate queries. For analyses requiring millions of records — full-database bibliographic coupling, global co-authorship networks, or exhaustive field delineation — the [OpenAlex snapshot](https://docs.openalex.org/download-all-data/openalex-snapshot) is more practical. The snapshot is a full database dump released monthly in compressed JSON-lines format.

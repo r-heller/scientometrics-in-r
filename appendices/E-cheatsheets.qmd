@@ -2,6 +2,9 @@
 title: "Cheatsheets and Quick Reference"
 ---
 
+<!-- verify_chunks: skip-file
+     Cheatsheet snippets are reference code, not evaluated at build time. -->
+
 ## openalexR quick reference
 
 ```{r}
