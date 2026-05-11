@@ -150,7 +150,7 @@ ggraph(layout) +
     n_distinct(V(g_journals)$cluster)
   )) +
   labs(colour = "Cluster") +
-  theme_graph() +
+  theme_void(base_family = "sans", base_size = 11) +
   theme(legend.position = "bottom")
 ```
 
@@ -207,7 +207,7 @@ ggraph(layout_overlay) +
     n_distinct(V(g_journals)$cluster)
   )) +
   labs(colour = "Cluster") +
-  theme_graph() +
+  theme_void(base_family = "sans", base_size = 11) +
   theme(legend.position = "bottom")
 ```
 

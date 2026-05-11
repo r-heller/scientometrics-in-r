@@ -131,7 +131,7 @@ plots <- map2(layouts, layout_names, function(algo, name) {
       n_distinct(V(giant)$community)
     ), guide = "none") +
     labs(title = name) +
-    theme_graph()
+    theme_void(base_family = "sans", base_size = 11)
 })
 
 patchwork::wrap_plots(plots, ncol = 2)
@@ -197,6 +197,8 @@ cat(glue("VOSviewer network: {net_path}\n"))
 #| label: fig-viz-interactive
 #| fig-cap: "Interactive co-authorship network (zoom, pan, and hover for details)."
 #| fig-alt: "Interactive network visualisation where nodes can be hovered for author names and communities can be explored by zooming."
+#| eval: !expr knitr::is_html_output(excludes = c("epub","epub2","epub3"))
+# HTML widget — only rendered for HTML output (PDF/EPUB skip this chunk).
 vis_nodes <- tibble(
   id = V(giant)$name,
   label = ifelse(V(giant)$degree > quantile(V(giant)$degree, 0.9),
@@ -238,7 +240,7 @@ ggraph(tg, layout = "fr") +
     n_distinct(V(giant)$community)
   )) +
   labs(colour = "Community") +
-  theme_graph() +
+  theme_void(base_family = "sans", base_size = 11) +
   theme(legend.position = "bottom")
 ```
 

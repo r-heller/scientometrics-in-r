@@ -86,6 +86,8 @@ cat(glue("Dashboard data: {nrow(dash_data)} records\n"))
 #| fig-alt: "Interactive line chart showing annual publication counts with tooltips on hover."
 #| fig-width: 6
 #| fig-height: 3.5
+#| eval: !expr knitr::is_html_output(excludes = c("epub","epub2","epub3"))
+# Interactive plotly widget — only rendered for HTML output.
 trend <- dash_data |>
   count(year)
 
@@ -106,6 +108,8 @@ ggplotly(p)
 #| fig-alt: "Interactive histogram of citation counts where hovering reveals bin details."
 #| fig-width: 6
 #| fig-height: 3.5
+#| eval: !expr knitr::is_html_output(excludes = c("epub","epub2","epub3"))
+# Interactive plotly widget — only rendered for HTML output.
 p2 <- ggplot(dash_data, aes(x = cited_by_count)) +
   geom_histogram(binwidth = 5, fill = palette_sci(1), colour = "white") +
   labs(x = "Citation count", y = "Papers") +
@@ -118,6 +122,8 @@ ggplotly(p2)
 
 ```{r}
 #| label: data-table
+#| eval: !expr knitr::is_html_output(excludes = c("epub","epub2","epub3"))
+# Interactive DT widget — only rendered for HTML output.
 dash_data |>
   select(title, year, cited_by_count, oa_status) |>
   arrange(desc(cited_by_count)) |>
@@ -136,6 +142,8 @@ dash_data |>
 #| fig-alt: "Interactive stacked bar chart showing OA status proportions by year."
 #| fig-width: 6
 #| fig-height: 4
+#| eval: !expr knitr::is_html_output(excludes = c("epub","epub2","epub3"))
+# Interactive plotly widget — only rendered for HTML output.
 oa_trend <- dash_data |>
   count(year, oa_status)
 

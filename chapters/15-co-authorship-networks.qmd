@@ -211,7 +211,7 @@ ggraph(layout) +
     n_distinct(giant_tidy |> pull(community), na.rm = TRUE)
   )) +
   labs(colour = "Community") +
-  theme_graph() +
+  theme_void(base_family = "sans", base_size = 11) +
   theme(legend.position = "bottom")
 ```
 

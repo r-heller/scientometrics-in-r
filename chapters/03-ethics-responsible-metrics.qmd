@@ -148,7 +148,7 @@ estimate_self_citation <- function(author_id, author_name) {
     error = function(e) tibble()
   )
 
-  if (nrow(works) == 0) {
+  if (is.null(works) || nrow(works) == 0) {
     return(tibble(
       author_id = author_id,
       author_name = author_name,
