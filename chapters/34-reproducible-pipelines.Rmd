@@ -1,0 +1,208 @@
+# Reproducible Pipelines
+
+## Learning objectives {#pipeline-objectives}
+
+After completing this chapter, you will be able to:
+
+- Explain why ad hoc scripts are insufficient for reproducible bibliometric analysis
+- Define a targets pipeline with dependency tracking and selective re-execution
+- Use renv to snapshot and restore R package environments
+- Understand how Docker containers ensure cross-platform reproducibility
+- Structure a bibliometric project for long-term reproducibility
+
+## Setup {#pipeline-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(glue)
+
+set.seed(20260509)
+
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#pipeline-background}
+
+A bibliometric analysis is a multi-step process: fetch data from an API, clean and deduplicate records, compute indicators, build networks, fit models, and generate figures. Each step depends on earlier ones. When the upstream data changes (a new API query, an updated corpus), downstream results must be regenerated — but only the affected parts.
+
+**Ad hoc scripts** (running scripts manually in sequence) fail at scale: they do not track dependencies, they re-run everything even when only one input changed, and they break when run on a different machine with different package versions.
+
+**`targets`** is an R pipeline tool that solves the dependency problem. You define each analysis step as a "target" (a function that takes inputs and produces outputs). `targets` builds a dependency graph, executes only the targets whose inputs have changed, and caches results. This is both faster (no unnecessary re-computation) and safer (no stale intermediate results).
+
+**`renv`** snapshots the exact package versions used in your analysis into a `renv.lock` file. A collaborator (or your future self) can restore the identical package environment with `renv::restore()`. This eliminates the "works on my machine" problem for R packages.
+
+**Docker** takes reproducibility further by containerising the entire compute environment: operating system, R version, system libraries, and package versions. A `Dockerfile` defines the environment declaratively; anyone with Docker can rebuild it identically. Docker is essential for long-term reproducibility, since R versions and system libraries evolve.
+
+These tools complement each other: `targets` manages the computation, `renv` manages the packages, and Docker manages the environment. Together, they make a bibliometric analysis fully reproducible years after it was originally run.
+
+## Worked example {#pipeline-example}
+
+### Defining a targets pipeline
+
+The `_targets.R` file defines the pipeline. Here we show the structure for a typical bibliometric analysis.
+
+```{r}
+#| label: targets-example
+#| eval: false
+# _targets.R — pipeline definition
+library(targets)
+
+tar_option_set(packages = c("tidyverse", "openalexR", "igraph"))
+
+list(
+  tar_target(raw_works, {
+    oa_fetch(
+      entity = "works",
+      primary_location.source.id = "S148561398",
+      from_publication_date = "2020-01-01",
+      to_publication_date = "2023-12-31",
+      options = list(sample = 300, seed = 42)
+    )
+  }),
+
+  tar_target(clean_works, {
+    raw_works |>
+      filter(!is.na(doi)) |>
+      distinct(doi, .keep_all = TRUE) |>
+      mutate(year = year(publication_date))
+  }),
+
+  tar_target(citation_stats, {
+    clean_works |>
+      group_by(year) |>
+      summarise(
+        n = n(),
+        mean_cites = mean(cited_by_count),
+        .groups = "drop"
+      )
+  }),
+
+  tar_target(fig_trends, {
+    ggplot(citation_stats, aes(x = year, y = mean_cites)) +
+      geom_line() + geom_point() +
+      labs(x = "Year", y = "Mean citations")
+  })
+)
+```
+
+### Running and inspecting the pipeline
+
+```{r}
+#| label: run-pipeline
+#| eval: false
+# Run the pipeline
+targets::tar_make()
+
+# Visualise the dependency graph
+targets::tar_visnetwork()
+
+# Read a specific target
+targets::tar_read(citation_stats)
+```
+
+### Project structure
+
+```{r}
+#| label: project-structure
+#| eval: false
+# Recommended project layout:
+#
+# my-bibliometric-project/
+# ├── _targets.R          # Pipeline definition
+# ├── R/                  # Helper functions
+# │   ├── fetch.R
+# │   ├── clean.R
+# │   └── analyse.R
+# ├── renv.lock           # Package snapshot
+# ├── Dockerfile          # Environment definition
+# ├── data/               # Cached data (Parquet)
+# ├── output/             # Figures and tables
+# └── report.qmd          # Quarto report consuming targets
+```
+
+### Using renv
+
+```{r}
+#| label: renv-example
+#| eval: false
+# Initialise renv in a new project
+renv::init()
+
+# Snapshot current package state
+renv::snapshot()
+
+# Restore packages on a new machine
+renv::restore()
+```
+
+### Dockerfile for bibliometric analysis
+
+```{r}
+#| label: dockerfile-example
+#| eval: false
+# Example Dockerfile (not R code — shown for reference)
+#
+# FROM rocker/verse:4.4.1
+# RUN install2.r targets renv openalexR igraph
+# COPY renv.lock /project/renv.lock
+# WORKDIR /project
+# RUN R -e "renv::restore()"
+# CMD ["R", "-e", "targets::tar_make()"]
+```
+
+## Diagnostics and interpretation {#pipeline-diagnostics}
+
+- **Target status**: `tar_outdated()` lists which targets need re-running. If everything is up to date, `tar_make()` completes instantly.
+- **Pipeline visualisation**: `tar_visnetwork()` shows the dependency graph. Disconnected subgraphs indicate independent analysis streams.
+- **Cache management**: Targets stores cached results in `_targets/`. This directory can grow large. Use `tar_prune()` to remove unused targets.
+- **renv consistency**: Run `renv::status()` to check if your lockfile matches the installed packages.
+
+## Limitations and responsible use {#pipeline-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- **API rate limits**: targets will re-run API calls when inputs change. Use file-based caching (Parquet) to avoid hitting API rate limits on every pipeline run.
+- **Docker learning curve**: Docker adds complexity. For solo projects, renv alone may suffice. Docker becomes essential for team reproducibility and long-term archiving.
+- **Overhead for small projects**: A 50-line analysis script does not need targets. Use pipelines when the analysis has 5+ interdependent steps or will be re-run multiple times.
+- **Reproducibility is not eternal**: Even with Docker, operating system patches and hardware changes can affect results. Archive final outputs alongside the pipeline.
+</div>
+
+## Common pitfalls {#pipeline-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Not separating data retrieval from analysis.** API calls in analysis targets re-fetch data on every change. Separate fetching into its own target with file-based caching.
+- **Forgetting to commit renv.lock.** The lockfile is the reproducibility guarantee. Always version-control it.
+- **Ignoring the _targets/ directory in .gitignore.** Cached results should not be committed to git (they can be regenerated). Add `_targets/` to `.gitignore`.
+- **Writing monolithic targets.** Each target should do one thing. Fine-grained targets enable selective re-execution.
+</div>
+
+## Exercises {#pipeline-exercises}
+
+1. **Build a pipeline.** Create a `_targets.R` file for a simple bibliometric analysis: fetch → clean → summarise → plot. Run it and verify that changing the summary function only re-runs downstream targets.
+
+2. **renv snapshot.** Initialise renv in a project, install a new package, and snapshot. Delete the package and restore from the lockfile.
+
+3. **Branching.** Use `tar_target()` with dynamic branching to run the same analysis across multiple journals in parallel.
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#pipeline-reading}
+
+- @hicks2015 --- The Leiden Manifesto: transparency and reproducibility in research evaluation.
+- @priem2022 --- OpenAlex as a reproducible data source for bibliometric pipelines.
+
+## Session info {#pipeline-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

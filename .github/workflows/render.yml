@@ -1,32 +1,27 @@
-name: Render and Deploy Book
+name: Render and deploy book
 
 on:
   push:
-    branches: [main]
-  pull_request:
     branches: [main]
   workflow_dispatch:
   schedule:
     - cron: "0 2 * * 0"
 
+permissions:
+  contents: write
+
 concurrency:
   group: render-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 jobs:
-  render:
+  build:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Install system dependencies
         run: |
@@ -37,26 +32,33 @@ jobs:
             libpoppler-cpp-dev libtesseract-dev libleptonica-dev \
             libudunits2-dev libgdal-dev libmagick++-dev default-jdk
 
-      - name: Setup R
-        uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
         with:
           r-version: "4.4.1"
           use-public-rspm: true
 
       - name: Bootstrap renv
         # setup-renv@v2 runs `install.packages("renv")` without setting a
-        # repo; on this runner that fails with "trying to use CRAN without
-        # setting a mirror" because the project .Rprofile sources
-        # renv/activate.R, which short-circuits the normal RSPM hookup.
-        # Install renv ourselves with an explicit repo, then activate.
+        # repo; here we install it explicitly from the Posit mirror, then
+        # let the project .Rprofile activate it.
         run: |
           install.packages("renv", repos = "https://packagemanager.posit.co/cran/__linux__/noble/latest")
         shell: Rscript {0}
 
-      - name: Restore renv library
-        run: |
-          renv::restore(prompt = FALSE)
+      - name: Cache renv library
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/R/renv
+          key: renv-${{ runner.os }}-${{ hashFiles('renv.lock') }}
+          restore-keys: renv-${{ runner.os }}-
+
+      - name: Restore renv
+        run: renv::restore(prompt = FALSE)
         shell: Rscript {0}
+
+      - uses: r-lib/actions/setup-tinytex@v2
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -71,36 +73,15 @@ jobs:
             sentence-transformers bertopic umap-learn hdbscan
           echo "RETICULATE_PYTHON=/opt/scientometrics-py/bin/python" >> $GITHUB_ENV
 
-      - name: Install Quarto
-        uses: quarto-dev/quarto-actions/setup@v2
+      - name: Render book (HTML + PDF + EPUB)
+        run: Rscript -e 'bookdown::render_book("index.Rmd", output_format = "all")'
 
-      - name: Render book
-        run: quarto render
+      - name: Render per-chapter PDFs
+        run: Rscript scripts/render-chapter-pdfs.R
 
-      - name: Upload PDF and EPUB artifacts
+      - name: Deploy to gh-pages
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v4
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          name: book-outputs
-          path: |
-            _book/*.pdf
-            _book/*.epub
-          if-no-files-found: ignore
-
-      - name: Upload Pages artifact
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./_book
-
-  deploy:
-    needs: render
-    if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          branch: gh-pages
+          folder: docs

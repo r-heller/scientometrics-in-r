@@ -1,0 +1,3980 @@
+# Exercise Solutions
+
+<!-- verify_chunks: skip-file
+     Every chunk in this appendix is intentionally not evaluated; solutions
+     reference data built during the corresponding chapter. -->
+
+# Exercise Solutions {#solutions}
+
+This appendix provides suggested solutions for all chapter exercises.
+The code sketches below are meant to guide you toward a working answer; they are
+not the only valid approach.
+Because each solution references data built during the corresponding chapter,
+code chunks are **not evaluated** here --- run them inside the chapter project
+after completing the worked example.
+
+## Chapter 1 --- What Is Scientometrics? {-}
+
+**1. Explore a different field.**
+Swap the search term and fetch a fresh sample. Comparing the publication trend
+and top journals reveals how different fields vary in volume, growth rate, and
+journal concentration.
+
+```{r}
+#| label: sol-ch01-1
+#| eval: false
+library(openalexR)
+library(tidyverse)
+
+works_ml <- oa_fetch(
+ entity = "works",
+ search = "machine learning",
+ from_publication_date = "2013-01-01",
+ to_publication_date = "2023-12-31",
+ count_only = FALSE,
+ per_page = 200
+) |> slice_sample(n = 500)
+
+works_ml |>
+ count(publication_year) |>
+ ggplot(aes(publication_year, n)) +
+ geom_col() +
+ labs(title = "Machine-learning publications per year",
+      x = "Year", y = "Works")
+```
+
+*Key insight:* High-growth fields like machine learning show steeper annual
+increases and a broader spread across journals compared to a niche field like
+scientometrics.
+
+**2. Uncited works.**
+Filter to zero-citation records and examine the year distribution.
+
+```{r}
+#| label: sol-ch01-2
+#| eval: false
+works |>
+ filter(cited_by_count == 0) |>
+ count(publication_year) |>
+ mutate(pct = n / sum(n)) |>
+ ggplot(aes(publication_year, pct)) +
+ geom_col() +
+ scale_y_continuous(labels = scales::percent) +
+ labs(title = "Distribution of uncited works by year",
+      x = "Year", y = "Share of uncited works")
+```
+
+*Key insight:* Recent publication years dominate because papers need time to
+accumulate citations --- a window effect.
+
+**3. Open Access status.**
+Compute yearly OA proportions to reveal the trend.
+
+```{r}
+#| label: sol-ch01-3
+#| eval: false
+works |>
+ mutate(year = publication_year) |>
+ group_by(year) |>
+ summarise(oa_share = mean(is_oa, na.rm = TRUE)) |>
+ ggplot(aes(year, oa_share)) +
+ geom_line() +
+ geom_point() +
+ scale_y_continuous(labels = scales::percent) +
+ labs(title = "Open-access share over time",
+      x = "Year", y = "OA proportion")
+```
+
+*Key insight:* OA proportions have risen steadily, driven by funder mandates and
+the growth of gold OA journals.
+
+**4. Growth curve.**
+Plot annual counts on a log scale; linearity implies exponential growth.
+
+```{r}
+#| label: sol-ch01-4
+#| eval: false
+works |>
+ filter(publication_year >= 2000, publication_year <= 2023) |>
+ count(publication_year) |>
+ ggplot(aes(publication_year, n)) +
+ geom_point() +
+ geom_smooth(method = "lm") +
+ scale_y_log10() +
+ labs(title = "Publication growth (log scale)",
+      x = "Year", y = "Works (log)")
+```
+
+*Key insight:* If the points fall roughly on a straight line, growth is
+approximately exponential, consistent with Price's law.
+
+## Chapter 2 --- Theoretical Underpinnings {-}
+
+**1. Lotka exponent.**
+Fit a linear model in log-log space to estimate the exponent.
+
+```{r}
+#| label: sol-ch02-1
+#| eval: false
+library(tidyverse)
+
+author_prod <- works |>
+ unnest(author) |>
+ count(au_id, name = "n_papers")
+
+freq_tbl <- author_prod |>
+ count(n_papers, name = "n_authors")
+
+fit <- lm(log(n_authors) ~ log(n_papers), data = freq_tbl)
+coef(fit)  # slope ≈ -2 if Lotka holds
+
+ggplot(freq_tbl, aes(n_papers, n_authors)) +
+ geom_point() +
+ scale_x_log10() +
+ scale_y_log10() +
+ geom_smooth(method = "lm", se = FALSE) +
+ labs(title = "Lotka's law fit",
+      x = "Papers per author (log)", y = "Number of authors (log)")
+```
+
+*Key insight:* Lotka predicted an exponent near 2; empirical values typically
+range from 1.5 to 3.5, depending on the field and time window.
+
+**2. Bradford zones.**
+Divide journals into three zones of roughly equal article counts.
+
+```{r}
+#| label: sol-ch02-2
+#| eval: false
+journal_counts <- works |>
+ count(so, sort = TRUE) |>
+ mutate(cum = cumsum(n),
+        total = sum(n),
+        zone = case_when(
+         cum <= total / 3 ~ "Core",
+         cum <= 2 * total / 3 ~ "Mid",
+         TRUE ~ "Periphery"
+        ))
+
+journal_counts |> count(zone)
+```
+
+*Key insight:* The core zone contains very few journals; the periphery contains
+many. The ratio between successive zone sizes should approximate Bradford's
+multiplier.
+
+**3. Your field's Zipf distribution.**
+Extract title words and plot rank vs. frequency on log-log axes.
+
+```{r}
+#| label: sol-ch02-3
+#| eval: false
+library(tidytext)
+
+word_freq <- works |>
+ select(id, display_name) |>
+ unnest_tokens(word, display_name) |>
+ anti_join(stop_words, by = "word") |>
+ count(word, sort = TRUE) |>
+ mutate(rank = row_number())
+
+ggplot(word_freq, aes(rank, n)) +
+ geom_line() +
+ scale_x_log10() +
+ scale_y_log10() +
+ labs(title = "Zipf's law for title words",
+      x = "Rank (log)", y = "Frequency (log)")
+```
+
+*Key insight:* A roughly linear relationship on log-log axes confirms Zipf's
+law. Domain-specific terms dominate the top ranks.
+
+**4. Matthew Effect simulation.**
+Simulate preferential attachment and compare the resulting distribution to
+Lotka's law.
+
+```{r}
+#| label: sol-ch02-4
+#| eval: false
+set.seed(20260509)
+n_authors <- 100
+papers <- rep(1, n_authors)
+
+for (step in seq_len(50)) {
+ probs <- papers / sum(papers)
+ winner <- sample(n_authors, 1, prob = probs)
+ papers[winner] <- papers[winner] + 1
+}
+
+tibble(papers = papers) |>
+ count(papers, name = "n_authors") |>
+ ggplot(aes(papers, n_authors)) +
+ geom_point() +
+ scale_x_log10() +
+ scale_y_log10() +
+ labs(title = "Simulated preferential attachment",
+      x = "Papers (log)", y = "Authors (log)")
+```
+
+*Key insight:* Preferential attachment generates a skewed distribution
+resembling Lotka's law, illustrating the Matthew Effect.
+
+## Chapter 3 --- Ethics and Responsible Metrics {-}
+
+**1. Leiden Manifesto audit.**
+This is a qualitative exercise. Evaluate a real hiring policy against the ten
+principles.
+
+```{r}
+#| label: sol-ch03-1
+#| eval: false
+# No code required. Suggested structure:
+# For each of the 10 Leiden Manifesto principles:
+#   1. State the principle
+#   2. Quote the relevant policy text (if any)
+#   3. Assess: satisfied / partially satisfied / violated
+#   4. Explain your reasoning
+# Summarise overall compliance in a paragraph.
+```
+
+*Key insight:* Most policies rely heavily on the h-index or JIF, violating
+principles 6 (field variation) and 7 (qualitative portfolio assessment).
+
+**2. Self-citation across fields.**
+Compare self-citation rates between two different fields.
+
+```{r}
+#| label: sol-ch03-2
+#| eval: false
+library(openalexR)
+library(tidyverse)
+
+fields <- c("bibliometrics", "genomics")
+results <- map(fields, \(term) {
+ w <- oa_fetch(entity = "works", search = term,
+               from_publication_date = "2020-01-01",
+               to_publication_date = "2023-12-31") |>
+   slice_sample(n = 200)
+ w |> mutate(field = term)
+}) |> list_rbind()
+
+# Self-citation proxy: papers citing other papers by the same first author
+results |>
+ group_by(field) |>
+ summarise(mean_cites = mean(cited_by_count, na.rm = TRUE),
+           median_cites = median(cited_by_count, na.rm = TRUE))
+```
+
+*Key insight:* Self-citation baselines differ by field. Higher self-citation in
+some fields is structural (smaller communities) rather than manipulative.
+
+**3. DORA compliance check.**
+A research exercise using the DORA signatory database.
+
+```{r}
+#| label: sol-ch03-3
+#| eval: false
+# No code required. Visit https://sfdora.org/signers/
+# Select three major funders and compare their grant evaluation
+# criteria against DORA commitments:
+#   - Do they avoid using JIF in evaluation?
+#   - Do they assess research outputs on their own merit?
+#   - Do they consider a broad range of impact measures?
+```
+
+*Key insight:* Many signatories still reference journal prestige in practice,
+revealing a gap between stated commitments and implementation.
+
+**4. Goodhart's Law thought experiment.**
+Propose a new indicator and analyse potential gaming strategies.
+
+```{r}
+#| label: sol-ch03-4
+#| eval: false
+# Example indicator: "Replication Impact Score"
+#   = fraction of a researcher's papers that have been independently replicated
+#
+# Potential gaming strategies:
+#   - Publish trivially replicable results
+#   - Arrange replication exchanges with collaborators
+#   - Focus on small, easily replicated studies rather than ambitious work
+#
+# The numerator (replications) and denominator (total papers) are both gameable.
+# This illustrates Goodhart's Law: once a measure becomes a target,
+# it ceases to be a good measure.
+```
+
+*Key insight:* Any ratio-based metric can be gamed on both numerator and
+denominator. Indicator design must anticipate behavioural responses.
+
+## Chapter 4 --- Data Sources Compared {-}
+
+**1. Coverage gap analysis.**
+Query the same DOIs in OpenAlex and Crossref and compare.
+
+```{r}
+#| label: sol-ch04-1
+#| eval: false
+library(openalexR)
+library(rcrossref)
+library(tidyverse)
+
+dois <- works |> slice_sample(n = 20) |> pull(doi) |> na.omit()
+
+oa_results <- map(dois, \(d) {
+ tryCatch(oa_fetch(entity = "works", doi = d), error = \(e) NULL)
+}) |> compact()
+oa_found <- length(oa_results)
+
+cr_results <- map(dois, \(d) {
+ tryCatch(cr_works(d)$data, error = \(e) NULL)
+}) |> compact()
+cr_found <- length(cr_results)
+
+tibble(
+ Source = c("OpenAlex", "Crossref"),
+ Found = c(oa_found, cr_found),
+ Total = length(dois),
+ Coverage = Found / Total
+)
+```
+
+*Key insight:* OpenAlex generally has high DOI coverage because it ingests
+Crossref data, but abstract availability may differ.
+
+**2. Disciplinary bias.**
+Compare indexed works across contrasting fields.
+
+```{r}
+#| label: sol-ch04-2
+#| eval: false
+fields <- list(
+ biology = "https://openalex.org/C86803240",
+ philosophy = "https://openalex.org/C138885662"
+)
+
+coverage <- imap(fields, \(concept_id, name) {
+ oa_fetch(entity = "works", concept.id = concept_id,
+          count_only = TRUE) |>
+   mutate(field = name)
+}) |> list_rbind()
+
+coverage
+```
+
+*Key insight:* STEM fields are substantially better covered than humanities,
+reflecting the historical journal-centricity of bibliometric databases.
+
+**3. Citation count concordance.**
+Correlate citation counts from two sources.
+
+```{r}
+#| label: sol-ch04-3
+#| eval: false
+library(rcrossref)
+
+comparison <- works |>
+ slice_sample(n = 50) |>
+ filter(!is.na(doi)) |>
+ rowwise() |>
+ mutate(cr_cites = tryCatch(
+   cr_works(doi)$data$is_referenced_by_count,
+   error = \(e) NA_integer_
+ )) |>
+ ungroup()
+
+cor(comparison$cited_by_count, comparison$cr_cites,
+    use = "complete.obs", method = "spearman")
+
+ggplot(comparison, aes(cited_by_count, cr_cites)) +
+ geom_point() +
+ geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+ labs(x = "OpenAlex citations", y = "Crossref citations",
+      title = "Citation count concordance")
+```
+
+*Key insight:* Counts correlate strongly but are not identical; differences
+arise from coverage scope and update frequency.
+
+**4. Preprint tracking.**
+Check whether bioRxiv DOIs appear in OpenAlex with published links.
+
+```{r}
+#| label: sol-ch04-4
+#| eval: false
+biorxiv_dois <- c(
+ "10.1101/2023.01.01.123456",
+ "10.1101/2023.02.15.234567"
+ # ... add 8 more real bioRxiv DOIs
+)
+
+preprint_status <- map(biorxiv_dois, \(d) {
+ tryCatch({
+   w <- oa_fetch(entity = "works", doi = d)
+   tibble(doi = d, found = TRUE,
+          has_published = !is.null(w$ids$doi))
+ }, error = \(e) tibble(doi = d, found = FALSE, has_published = FALSE))
+}) |> list_rbind()
+
+mean(preprint_status$found)
+mean(preprint_status$has_published)
+```
+
+*Key insight:* Most recent bioRxiv preprints appear in OpenAlex; the proportion
+linked to a published version depends on recency and field.
+
+**5. Source selection exercise.**
+This is a qualitative exercise requiring no code.
+
+```{r}
+#| label: sol-ch04-5
+#| eval: false
+# Recommended answer structure:
+# 1. OpenAlex: free, broad coverage, good for large-scale analysis
+#    - Limitation: may under-represent regional journals
+# 2. African Journals Online (AJOL): specialised coverage of
+#    Sub-Saharan African journals
+# 3. Combination approach: use OpenAlex for global context,
+#    supplement with AJOL for regional coverage
+#
+# Justification should address:
+#   - Coverage of nursing literature
+#   - Representation of Sub-Saharan African journals
+#   - Cost (OpenAlex is free; Scopus/WoS require subscriptions)
+#   - Reproducibility (OpenAlex is open; others are proprietary)
+```
+
+*Key insight:* No single source is sufficient; combining an open global database
+with a regional index maximises both coverage and reproducibility.
+
+## Chapter 5 --- APIs and Packages {-}
+
+**1. Fetch works by institution.**
+Find your institution in OpenAlex and retrieve its works.
+
+```{r}
+#| label: sol-ch05-1
+#| eval: false
+library(openalexR)
+library(tidyverse)
+
+# Step 1: find the institution
+my_inst <- oa_fetch(entity = "institutions",
+                    search = "University of Example")
+my_inst_id <- my_inst$id[1]
+
+# Step 2: fetch works
+inst_works <- oa_fetch(entity = "works",
+                       authorships.institutions.lineage = my_inst_id,
+                       from_publication_date = "2020-01-01")
+
+nrow(inst_works)
+mean(!is.na(inst_works$doi))  # DOI coverage rate
+```
+
+*Key insight:* DOI coverage varies by institution; institutions publishing more
+in regional or non-English journals tend to have lower DOI rates.
+
+**2. Compare Crossref metadata.**
+Retrieve the same work from both APIs and compare.
+
+```{r}
+#| label: sol-ch05-2
+#| eval: false
+library(rcrossref)
+
+sample_doi <- inst_works$doi[1]
+
+oa_meta <- oa_fetch(entity = "works", doi = sample_doi)
+cr_meta <- cr_works(sample_doi)$data
+
+tibble(
+ field = c("citations", "title_match"),
+ OpenAlex = c(oa_meta$cited_by_count,
+              oa_meta$display_name),
+ Crossref = c(cr_meta$is_referenced_by_count,
+              cr_meta$title)
+)
+```
+
+*Key insight:* Citation counts differ because each database has a different
+citation graph. Crossref counts only DOI-based citations; OpenAlex resolves more.
+
+**3. Build a multi-year corpus.**
+Fetch all works from a journal across multiple years.
+
+```{r}
+#| label: sol-ch05-3
+#| eval: false
+journal_works <- oa_fetch(
+ entity = "works",
+ primary_location.source.id = "S4210174107",  # example journal ID
+ from_publication_date = "2015-01-01",
+ to_publication_date = "2023-12-31"
+)
+
+journal_works |>
+ group_by(publication_year) |>
+ summarise(n = n(), median_cites = median(cited_by_count)) |>
+ pivot_longer(c(n, median_cites)) |>
+ ggplot(aes(publication_year, value)) +
+ geom_line() +
+ geom_point() +
+ facet_wrap(~name, scales = "free_y") +
+ labs(title = "Journal trend: publications and citations",
+      x = "Year", y = NULL)
+```
+
+*Key insight:* Median citation counts typically decrease for recent years due to
+the citation time window, while publication counts may rise if the journal is
+growing.
+
+## Chapter 6 --- Parsing Native Exports {-}
+
+**1. Export and parse.**
+Parse a BibTeX file from Google Scholar using `bib2df`.
+
+```{r}
+#| label: sol-ch06-1
+#| eval: false
+library(bib2df)
+library(tidyverse)
+
+bib <- bib2df("scholar_export.bib")
+ncol(bib)
+map_int(bib, \(x) sum(!is.na(x))) |>
+ enframe("field", "populated") |>
+ arrange(desc(populated))
+```
+
+*Key insight:* Google Scholar BibTeX exports often lack abstracts and keywords,
+making them less useful for text-based analyses.
+
+**2. Format comparison.**
+Parse the same records from CSV and RIS formats and compare fields.
+
+```{r}
+#| label: sol-ch06-2
+#| eval: false
+library(bibliometrix)
+
+csv_data <- read_csv("scopus_export.csv")
+ris_data <- convert2df("scopus_export.ris", dbsource = "scopus",
+                       format = "plaintext")
+
+cat("CSV columns:", ncol(csv_data), "\n")
+cat("RIS columns:", ncol(ris_data), "\n")
+
+# Compare overlapping fields
+intersect(names(csv_data), names(ris_data))
+```
+
+*Key insight:* RIS files typically include structured reference data and
+keywords that CSV exports may omit; CSVs are easier to manipulate in R.
+
+**3. Standardization function.**
+Write a reusable function to normalise columns.
+
+```{r}
+#| label: sol-ch06-3
+#| eval: false
+standardise_biblio <- function(df) {
+ tibble(
+   doi       = df$DI %||% NA_character_,
+   title     = df$TI %||% df$Title %||% NA_character_,
+   authors   = df$AU %||% NA_character_,
+   year      = as.integer(df$PY %||% df$Year),
+   journal   = df$SO %||% df$`Source title` %||% NA_character_,
+   cited_by  = as.integer(df$TC %||% df$`Cited by` %||% 0L)
+ )
+}
+
+# Usage:
+# standardise_biblio(ris_data)
+```
+
+*Key insight:* A standardisation layer decouples downstream analysis from the
+input format, improving reproducibility.
+
+## Chapter 7 --- Building Reproducible Corpora {-}
+
+**1. DOI coverage by year.**
+Compute the DOI coverage rate per publication year.
+
+```{r}
+#| label: sol-ch07-1
+#| eval: false
+library(tidyverse)
+
+works |>
+ group_by(publication_year) |>
+ summarise(doi_rate = mean(!is.na(doi))) |>
+ ggplot(aes(publication_year, doi_rate)) +
+ geom_line() +
+ geom_point() +
+ scale_y_continuous(labels = scales::percent) +
+ labs(title = "DOI coverage by year", x = "Year", y = "Coverage")
+```
+
+*Key insight:* DOI coverage tends to improve for recent years as DOI assignment
+became standard practice after the mid-2000s.
+
+**2. Name variants.**
+Detect potential author name duplicates.
+
+```{r}
+#| label: sol-ch07-2
+#| eval: false
+library(stringdist)
+
+author_names <- works |>
+ unnest(author) |>
+ distinct(au_id, au_display_name) |>
+ pull(au_display_name)
+
+# Find pairs with low string distance
+combos <- combn(author_names[1:200], 2, simplify = FALSE)
+similar <- map(combos, \(pair) {
+ d <- stringdist(pair[1], pair[2], method = "jw")
+ if (d < 0.15) tibble(name1 = pair[1], name2 = pair[2], dist = d)
+ else NULL
+}) |> compact() |> list_rbind()
+
+similar |> arrange(dist) |> head(20)
+```
+
+*Key insight:* Common heuristics include Jaro-Winkler distance, initial
+matching, and shared co-author overlap. OpenAlex author IDs help but are not
+always correct.
+
+**3. ROR lookup.**
+Use the ROR API to resolve institutions.
+
+```{r}
+#| label: sol-ch07-3
+#| eval: false
+library(httr2)
+
+top_insts <- works |>
+ unnest(authorships) |>
+ unnest(institutions) |>
+ count(display_name, sort = TRUE) |>
+ head(5)
+
+ror_lookup <- function(name) {
+ resp <- request("https://api.ror.org/organizations") |>
+   req_url_query(query = name) |>
+   req_perform() |>
+   resp_body_json()
+ if (length(resp$items) > 0)
+   tibble(name = name, ror_id = resp$items[[1]]$id,
+          ror_name = resp$items[[1]]$name)
+ else
+   tibble(name = name, ror_id = NA, ror_name = NA)
+}
+
+map(top_insts$display_name, ror_lookup) |> list_rbind()
+```
+
+*Key insight:* ROR provides stable, disambiguated identifiers; matching by name
+alone can produce false positives for common institutional names.
+
+## Chapter 8 --- Working with Full Text {-}
+
+**1. Extract and compare.**
+Download a PDF, extract text, and compare the abstract.
+
+```{r}
+#| label: sol-ch08-1
+#| eval: false
+library(pdftools)
+library(tidyverse)
+
+pdf_text_raw <- pdf_text("sample_paper.pdf")
+extracted_abstract <- str_extract(
+ paste(pdf_text_raw, collapse = "\n"),
+ "(?i)abstract\\s*\\.?\\s*(.+?)(?=\\n\\s*(introduction|keywords|1\\.))",
+)
+
+# Compare with OpenAlex abstract
+oa_abstract <- works |> filter(doi == "10.xxxx/example") |> pull(ab)
+
+cat("Extracted:\n", str_trunc(extracted_abstract, 300), "\n")
+cat("OpenAlex:\n", str_trunc(oa_abstract, 300), "\n")
+```
+
+*Key insight:* PDF extraction often introduces line-break artefacts and header/
+footer noise. The OpenAlex abstract (from publisher metadata) is typically
+cleaner.
+
+**2. Section detection.**
+Write a function to split extracted text into sections.
+
+```{r}
+#| label: sol-ch08-2
+#| eval: false
+split_sections <- function(text) {
+ lines <- str_split(text, "\n")[[1]]
+ # Match numbered headings like "1. Introduction" or "2 Methods"
+ heading_idx <- str_which(lines, "^\\s*\\d+\\.?\\s+[A-Z]")
+
+ if (length(heading_idx) < 2) return(list(full_text = text))
+
+ sections <- map2(heading_idx, c(heading_idx[-1] - 1, length(lines)),
+                  \(start, end) {
+   list(
+     heading = str_trim(lines[start]),
+     text = paste(lines[(start + 1):end], collapse = "\n")
+   )
+ })
+ set_names(
+   map_chr(sections, "text"),
+   map_chr(sections, "heading")
+ )
+}
+
+sections <- split_sections(paste(pdf_text_raw, collapse = "\n"))
+names(sections)
+```
+
+*Key insight:* Heading detection is fragile; two-column layouts, supplementary
+materials, and non-standard numbering all break simple regex patterns.
+
+**3. Table extraction.**
+Extract a table from a PDF using `tabulizer`.
+
+```{r}
+#| label: sol-ch08-3
+#| eval: false
+# tabulapdf needs Java (rJava); shown for reference, not executed.
+# Install: install.packages("tabulapdf"); requires a working Java runtime.
+
+tables <- extract_tables("sample_paper.pdf", pages = 3)
+tbl <- as_tibble(tables[[1]], .name_repair = "unique")
+
+# Typical cleaning steps:
+tbl <- tbl |>
+ row_to_names(row_number = 1) |>   # janitor::row_to_names
+ mutate(across(where(is.character), str_trim)) |>
+ filter(if_any(everything(), \(x) x != ""))
+```
+
+*Key insight:* Extracted tables almost always need header row promotion,
+whitespace trimming, and removal of empty or merged-cell artefact rows.
+
+## Chapter 9 --- Descriptive Bibliometrics {-}
+
+**1. Lotka's law.**
+Fit Lotka's law using `bibliometrix`.
+
+```{r}
+#| label: sol-ch09-1
+#| eval: false
+library(bibliometrix)
+library(tidyverse)
+
+bib_df <- convert2df(works)  # or use the already-converted object
+lotka_result <- lotka(biblioAnalysis(bib_df))
+
+# Plot observed vs expected
+plot(lotka_result)
+```
+
+*Key insight:* If the Kolmogorov-Smirnov test p-value is above 0.05, the
+observed distribution is consistent with the theoretical inverse-square law.
+
+**2. Bradford's law.**
+Identify core, mid, and peripheral journal zones.
+
+```{r}
+#| label: sol-ch09-2
+#| eval: false
+library(openalexR)
+library(bibliometrix)
+
+ml_works <- oa_fetch(entity = "works", search = "machine learning",
+                     from_publication_date = "2020-01-01",
+                     to_publication_date = "2023-12-31") |>
+ slice_sample(n = 500)
+
+bib_df <- convert2df(ml_works)
+brad <- bradford(biblioAnalysis(bib_df))
+brad$table |> head(20)
+```
+
+*Key insight:* The core zone typically contains very few journals that account
+for a disproportionate share of articles --- Bradford's law in action.
+
+**3. Three-field exploration.**
+Use country instead of author name on the left field.
+
+```{r}
+#| label: sol-ch09-3
+#| eval: false
+library(bibliometrix)
+
+threeFieldsPlot(bib_df, fields = c("AU_CO", "SO", "DE"),
+                n = c(10, 10, 10))
+```
+
+*Key insight:* Country-level Sankey diagrams reveal geographic specialisation
+patterns: certain countries cluster around specific journals and keywords.
+
+**4. Annual growth rate.**
+Compute the compound annual growth rate (CAGR).
+
+```{r}
+#| label: sol-ch09-4
+#| eval: false
+annual <- works |>
+ count(publication_year) |>
+ filter(publication_year >= 2010, publication_year <= 2023)
+
+first_year <- annual$n[1]
+last_year  <- annual$n[nrow(annual)]
+n_years    <- nrow(annual) - 1
+
+cagr <- (last_year / first_year)^(1 / n_years) - 1
+cat(sprintf("CAGR: %.1f%%\n", cagr * 100))
+```
+
+*Key insight:* A positive CAGR indicates the field is growing; compare against
+the global average (~4-5% for all scientific literature) to assess relative
+growth.
+
+## Chapter 10 --- Productivity and Impact Indicators {-}
+
+**1. Career h-index.**
+Compute h-index, g-index, and m-quotient for a specific author.
+
+```{r}
+#| label: sol-ch10-1
+#| eval: false
+library(openalexR)
+library(tidyverse)
+
+author_works <- oa_fetch(
+ entity = "works",
+ author.id = "A5023888391",  # replace with target author
+ per_page = 200
+)
+
+cites <- sort(author_works$cited_by_count, decreasing = TRUE)
+
+# h-index
+h <- sum(cites >= seq_along(cites))
+
+# g-index
+cum_cites <- cumsum(cites)
+g <- max(which(cum_cites >= seq_along(cites)^2))
+
+# m-quotient
+career_years <- max(author_works$publication_year) -
+               min(author_works$publication_year) + 1
+m <- h / career_years
+
+tibble(h_index = h, g_index = g, m_quotient = round(m, 2))
+```
+
+*Key insight:* The h-index rewards consistency, the g-index rewards highly cited
+papers, and the m-quotient adjusts for career length.
+
+**2. Self-citation sensitivity.**
+Pseudocode for removing self-citations from the h-index.
+
+```{r}
+#| label: sol-ch10-2
+#| eval: false
+# Pseudocode:
+# 1. For each paper by the author, fetch its citing works
+# 2. Check if any citing work shares the same author ID
+# 3. Count only non-self-citations
+# 4. Recompute h-index with adjusted citation counts
+#
+# Implementation sketch (expensive API calls):
+# author_id <- "A5023888391"
+# adjusted_cites <- map_int(author_works$id, \(work_id) {
+#   citing <- oa_fetch(entity = "works", cites = work_id)
+#   citing |>
+#     unnest(author) |>
+#     filter(au_id != author_id) |>
+#     distinct(id) |>
+#     nrow()
+# })
+# h_adjusted <- sum(sort(adjusted_cites, decreasing = TRUE) >=
+#                   seq_along(adjusted_cites))
+```
+
+*Key insight:* Self-citation removal typically reduces the h-index by 1-3 points
+for most researchers but can have large effects for prolific self-citers.
+
+**3. Bootstrap uncertainty for MNCS.**
+Use bootstrap resampling to compute a confidence interval for MNCS.
+
+```{r}
+#| label: sol-ch10-3
+#| eval: false
+set.seed(20260509)
+
+mncs_boot <- replicate(1000, {
+ idx <- sample(nrow(works), replace = TRUE)
+ boot_sample <- works[idx, ]
+ compute_mncs(boot_sample$cited_by_count,
+              boot_sample$publication_year)
+})
+
+quantile(mncs_boot, c(0.025, 0.975))
+```
+
+*Key insight:* Small samples produce wide confidence intervals; MNCS values
+should always be reported with uncertainty estimates.
+
+**4. PP(top 10%) vs. MNCS.**
+Compare two indicators by year.
+
+```{r}
+#| label: sol-ch10-4
+#| eval: false
+yearly_indicators <- works |>
+ group_by(publication_year) |>
+ summarise(
+   mncs = compute_mncs(cited_by_count, publication_year),
+   pp_top10 = mean(cited_by_count >= quantile(cited_by_count, 0.9))
+ )
+
+ggplot(yearly_indicators, aes(mncs, pp_top10)) +
+ geom_point() +
+ geom_text(aes(label = publication_year), nudge_y = 0.01) +
+ labs(x = "MNCS", y = "PP(top 10%)",
+      title = "MNCS vs PP(top 10%) by year")
+```
+
+*Key insight:* The two indicators usually agree but can diverge when a few
+extremely highly cited papers inflate MNCS without affecting the 10% threshold.
+
+## Chapter 11 --- Journal Metrics {-}
+
+**1. Four-year CiteScore proxy.**
+Extend the citation window to four years.
+
+```{r}
+#| label: sol-ch11-1
+#| eval: false
+library(openalexR)
+library(tidyverse)
+
+journal_id <- "S4210174107"  # example journal
+target_year <- 2023
+
+# Fetch articles published in the 4-year window
+window_works <- oa_fetch(
+ entity = "works",
+ primary_location.source.id = journal_id,
+ from_publication_date = paste0(target_year - 4, "-01-01"),
+ to_publication_date   = paste0(target_year - 1, "-12-31")
+)
+
+citescore_4yr <- sum(window_works$cited_by_count) / nrow(window_works)
+cat(sprintf("4-year CiteScore proxy: %.2f\n", citescore_4yr))
+```
+
+*Key insight:* A wider window captures slower-to-cite fields more fairly but
+dilutes the signal for fast-moving fields.
+
+**2. Rank correlation.**
+Compare JIF and SNIP proxies with Spearman correlation.
+
+```{r}
+#| label: sol-ch11-2
+#| eval: false
+journal_metrics <- works |>
+ group_by(so) |>
+ summarise(
+   jif_proxy  = mean(cited_by_count[publication_year >= 2021]),
+   snip_proxy = jif_proxy / mean(cited_by_count)  # simplified
+ ) |>
+ filter(!is.na(jif_proxy), !is.na(snip_proxy))
+
+cor(journal_metrics$jif_proxy, journal_metrics$snip_proxy,
+    method = "spearman")
+```
+
+*Key insight:* Rank correlation is typically positive but imperfect, showing that
+field normalisation reorders journals.
+
+**3. Field comparison.**
+Compare journals across two disciplines.
+
+```{r}
+#| label: sol-ch11-3
+#| eval: false
+physics_journals <- c("S137773608", "S71048024")
+sociology_journals <- c("S64468286", "S128732326")
+
+compute_jif <- function(jid) {
+ w <- oa_fetch(entity = "works",
+               primary_location.source.id = jid,
+               from_publication_date = "2021-01-01",
+               to_publication_date = "2022-12-31")
+ sum(w$cited_by_count) / nrow(w)
+}
+
+tibble(
+ journal = c(physics_journals, sociology_journals),
+ field = c(rep("Physics", 2), rep("Sociology", 2)),
+ jif_proxy = map_dbl(journal, compute_jif)
+) |>
+ ggplot(aes(field, jif_proxy)) +
+ geom_boxplot() +
+ labs(title = "Raw JIF proxy by field")
+```
+
+*Key insight:* Raw JIF values are much higher in fields with faster citation
+accumulation; SNIP-style normalisation reduces this gap.
+
+**4. Self-citation share.**
+Estimate the proportion of journal self-citations.
+
+```{r}
+#| label: sol-ch11-4
+#| eval: false
+# Approximation: among citing works of this journal's papers,
+# how many are also published in the same journal?
+journal_works <- oa_fetch(
+ entity = "works",
+ primary_location.source.id = journal_id,
+ from_publication_date = "2021-01-01",
+ to_publication_date = "2022-12-31"
+)
+
+# Sample a subset and check citing works
+sample_ids <- journal_works |> slice_sample(n = 20) |> pull(id)
+
+self_cite_rates <- map_dbl(sample_ids, \(wid) {
+ citing <- tryCatch(
+   oa_fetch(entity = "works", cites = wid),
+   error = \(e) tibble()
+ )
+ if (nrow(citing) == 0) return(NA_real_)
+ mean(citing$so == journal_works$so[1], na.rm = TRUE)
+})
+
+mean(self_cite_rates, na.rm = TRUE)
+```
+
+*Key insight:* Journal self-citation rates above 20-30% are considered unusually
+high and may warrant investigation.
+
+## Chapter 12 --- Author-Level Analysis {-}
+
+**1. Profile comparison.**
+Compare two researchers on multiple indicators.
+
+```{r}
+#| label: sol-ch12-1
+#| eval: false
+library(openalexR)
+library(tidyverse)
+
+ids <- c("A5023888391", "A5048491430")  # two author IDs
+
+profiles <- map(ids, \(aid) {
+ w <- oa_fetch(entity = "works", author.id = aid)
+ cites <- sort(w$cited_by_count, decreasing = TRUE)
+ tibble(
+   author_id = aid,
+   n_papers  = nrow(w),
+   h_index   = sum(cites >= seq_along(cites)),
+   mean_cites = mean(w$cited_by_count)
+ )
+}) |> list_rbind()
+
+profiles
+```
+
+*Key insight:* An author with many papers but a modest h-index publishes
+frequently but with less consistent impact; high mean citations suggest a few
+highly cited papers.
+
+**2. ORCID validation.**
+Compare works fetched by OpenAlex ID vs. ORCID filtering.
+
+```{r}
+#| label: sol-ch12-2
+#| eval: false
+oa_by_id <- oa_fetch(entity = "works",
+                     author.id = "A5023888391")
+
+oa_by_orcid <- oa_fetch(entity = "works",
+                        author.orcid = "0000-0001-2345-6789")
+
+cat("By ID:", nrow(oa_by_id), "works\n")
+cat("By ORCID:", nrow(oa_by_orcid), "works\n")
+
+# Find discrepancies
+only_id <- setdiff(oa_by_id$id, oa_by_orcid$id)
+only_orcid <- setdiff(oa_by_orcid$id, oa_by_id$id)
+cat("Only in ID set:", length(only_id), "\n")
+cat("Only in ORCID set:", length(only_orcid), "\n")
+```
+
+*Key insight:* Discrepancies arise from incomplete ORCID claiming, name
+disambiguation errors, and delayed metadata updates.
+
+**3. Name variant detection.**
+Search for a common name and assess disambiguation.
+
+```{r}
+#| label: sol-ch12-3
+#| eval: false
+wang_wei <- oa_fetch(entity = "authors",
+                     search = "Wang Wei")
+
+nrow(wang_wei)  # many entities
+
+wang_wei |>
+ select(id, display_name, works_count, cited_by_count) |>
+ arrange(desc(works_count)) |>
+ head(20)
+
+# Heuristics for identifying the correct author:
+# - Match institutional affiliation
+# - Check ORCID linkage
+# - Verify co-author overlap with known collaborators
+# - Inspect topic/concept alignment
+```
+
+*Key insight:* Common names generate hundreds of author entities; institutional
+affiliation and ORCID are the most reliable disambiguation features.
+
+**4. Fractional productivity.**
+Recompute productivity using fractional counting.
+
+```{r}
+#| label: sol-ch12-4
+#| eval: false
+author_works <- oa_fetch(entity = "works",
+                         author.id = "A5023888391")
+
+fractional <- author_works |>
+ mutate(n_authors = map_int(author, nrow),
+        frac_credit = 1 / n_authors) |>
+ group_by(publication_year) |>
+ summarise(full_count = n(),
+           frac_count = sum(frac_credit))
+
+ggplot(fractional, aes(publication_year)) +
+ geom_line(aes(y = full_count, colour = "Full")) +
+ geom_line(aes(y = frac_count, colour = "Fractional")) +
+ labs(title = "Full vs. fractional productivity",
+      x = "Year", y = "Papers", colour = "Counting")
+```
+
+*Key insight:* Fractional counting penalises hyper-authored papers. Authors who
+collaborate broadly see a larger gap between full and fractional counts.
+
+**5. Self-citation ratio.**
+Estimate the fraction of self-citations for an author.
+
+```{r}
+#| label: sol-ch12-5
+#| eval: false
+target_author <- "A5023888391"
+
+# Sample a subset of the author's works
+sample_works <- author_works |> slice_sample(n = 10)
+
+self_cite_frac <- map_dbl(sample_works$id, \(wid) {
+ citing <- tryCatch(
+   oa_fetch(entity = "works", cites = wid),
+   error = \(e) tibble()
+ )
+ if (nrow(citing) == 0) return(NA_real_)
+ citing |>
+   unnest(author) |>
+   summarise(has_self = any(au_id == target_author)) |>
+   pull(has_self) |>
+   mean()
+})
+
+cat(sprintf("Estimated self-citation rate: %.1f%%\n",
+            mean(self_cite_frac, na.rm = TRUE) * 100))
+```
+
+*Key insight:* Self-citation rates of 5-15% are typical; rates above 25%
+may signal strategic self-citation behaviour.
+
+## Chapter 13 --- Institutional and Country Analysis {-}
+
+**1. Country-level analysis.**
+Aggregate by country using full and fractional counts.
+
+```{r}
+#| label: sol-ch13-1
+#| eval: false
+library(tidyverse)
+
+country_counts <- works |>
+ unnest(authorships) |>
+ unnest(countries) |>
+ rename(country = countries) |>
+ mutate(n_countries = n_distinct(country), .by = id) |>
+ summarise(
+   full_count = n_distinct(id),
+   frac_count = sum(1 / n_countries),
+   .by = country
+ ) |>
+ arrange(desc(full_count)) |>
+ head(10)
+
+country_counts |>
+ mutate(ratio = full_count / frac_count) |>
+ ggplot(aes(reorder(country, full_count), ratio)) +
+ geom_col() +
+ coord_flip() +
+ labs(title = "Full / fractional count ratio by country",
+      x = NULL, y = "Ratio")
+```
+
+*Key insight:* Countries with high international collaboration rates (e.g.,
+Switzerland, Singapore) show a larger ratio, meaning full counting inflates
+their apparent output.
+
+**2. PP(top 10%) by institution.**
+Compute the proportion of papers in the top 10% most cited.
+
+```{r}
+#| label: sol-ch13-2
+#| eval: false
+# Compute year-specific 90th percentile thresholds
+thresholds <- works |>
+ group_by(publication_year) |>
+ summarise(p90 = quantile(cited_by_count, 0.9))
+
+inst_top10 <- works |>
+ unnest(authorships) |>
+ unnest(institutions) |>
+ left_join(thresholds, by = "publication_year") |>
+ mutate(is_top10 = cited_by_count >= p90) |>
+ summarise(
+   pp_top10 = mean(is_top10),
+   mncs = mean(cited_by_count),
+   .by = display_name
+ ) |>
+ filter(!is.na(display_name)) |>
+ arrange(desc(pp_top10))
+
+ggplot(inst_top10 |> head(20), aes(mncs, pp_top10)) +
+ geom_point() +
+ ggrepel::geom_text_repel(aes(label = display_name), size = 3) +
+ labs(x = "MNCS", y = "PP(top 10%)")
+```
+
+*Key insight:* PP(top 10%) and MNCS generally correlate but can diverge if an
+institution has a few extremely highly cited outliers.
+
+**3. Collaboration intensity.**
+Relate the number of institutional affiliations per paper to counting method
+effects.
+
+```{r}
+#| label: sol-ch13-3
+#| eval: false
+collab_intensity <- works |>
+ unnest(authorships) |>
+ unnest(institutions) |>
+ summarise(
+   n_insts = n_distinct(display_name),
+   .by = id
+ )
+
+inst_collab <- works |>
+ unnest(authorships) |>
+ unnest(institutions) |>
+ left_join(collab_intensity, by = "id") |>
+ summarise(
+   mean_collab = mean(n_insts),
+   full_count = n_distinct(id),
+   frac_count = sum(1 / n_insts),
+   ratio = full_count / frac_count,
+   .by = display_name
+ ) |>
+ filter(!is.na(display_name))
+
+ggplot(inst_collab, aes(mean_collab, ratio)) +
+ geom_point(alpha = 0.5) +
+ geom_smooth(method = "lm") +
+ labs(x = "Mean affiliations per paper",
+      y = "Full / fractional ratio",
+      title = "Collaboration intensity vs. counting effect")
+```
+
+*Key insight:* There is a positive relationship --- institutions with higher
+collaboration intensity are more inflated by full counting.
+
+## Chapter 14 --- Temporal Analysis and Citation Aging {-}
+
+**1. Half-life comparison.**
+Compare citation half-lives between a mathematics and a biomedical journal.
+
+```{r}
+#| label: sol-ch14-1
+#| eval: false
+library(openalexR)
+library(tidyverse)
+
+fetch_half_life <- function(journal_id, label) {
+ w <- oa_fetch(entity = "works",
+               primary_location.source.id = journal_id,
+               from_publication_date = "2015-01-01",
+               to_publication_date = "2018-12-31")
+ w |>
+   mutate(age = 2024 - publication_year) |>
+   group_by(age) |>
+   summarise(mean_cites = mean(cited_by_count)) |>
+   mutate(cum_share = cumsum(mean_cites) / sum(mean_cites),
+          journal = label)
+}
+
+math_hl   <- fetch_half_life("S154589771", "Mathematics")
+biomed_hl <- fetch_half_life("S49861241", "Biomedicine")
+
+bind_rows(math_hl, biomed_hl) |>
+ ggplot(aes(age, cum_share, colour = journal)) +
+ geom_line() +
+ geom_hline(yintercept = 0.5, linetype = "dashed") +
+ labs(title = "Citation half-life comparison",
+      x = "Age (years)", y = "Cumulative citation share")
+```
+
+*Key insight:* Biomedical journals typically have shorter half-lives (3-5 years)
+than mathematics journals (8-12 years) because of faster publication cycles.
+
+**2. Price index computation.**
+Compute the fraction of references less than 5 years old.
+
+```{r}
+#| label: sol-ch14-2
+#| eval: false
+# For papers with reference data available
+sample_papers <- works |>
+ filter(publication_year == 2020) |>
+ slice_sample(n = 20)
+
+price_indices <- map_dbl(sample_papers$id, \(wid) {
+ refs <- tryCatch(
+   oa_fetch(entity = "works", cited_by = wid),
+   error = \(e) tibble()
+ )
+ if (nrow(refs) == 0) return(NA_real_)
+ pub_year <- sample_papers$publication_year[sample_papers$id == wid]
+ mean(refs$publication_year >= (pub_year - 5), na.rm = TRUE)
+})
+
+cat(sprintf("Mean Price index: %.2f\n", mean(price_indices, na.rm = TRUE)))
+```
+
+*Key insight:* A high Price index indicates the field relies on recent work
+(fast-moving); a low Price index suggests reliance on older, established
+literature.
+
+**3. Sleeping beauty detection.**
+Identify delayed-recognition papers.
+
+```{r}
+#| label: sol-ch14-3
+#| eval: false
+sleeping <- works |>
+ filter(publication_year <= 2018,
+        cited_by_count >= 20) |>
+ mutate(age = 2024 - publication_year)
+
+# Approximate: papers with low early citation rate but high total
+# (exact per-year citation data requires counts_by_year from OpenAlex)
+sleeping_candidates <- sleeping |>
+ filter(
+   map_lgl(counts_by_year, \(cy) {
+     if (is.null(cy)) return(FALSE)
+     early <- cy |> filter(year <= publication_year + 3)
+     sum(early$cited_by_count, na.rm = TRUE) < 2
+   })
+ )
+
+sleeping_candidates |>
+ select(display_name, publication_year, cited_by_count) |>
+ arrange(desc(cited_by_count))
+```
+
+*Key insight:* Sleeping beauties are rare but occur across all fields; they
+often represent ahead-of-their-time ideas that gained traction only after a
+paradigm shift.
+
+**4. Median vs. mean aging.**
+Replot aging curves using median citations.
+
+```{r}
+#| label: sol-ch14-4
+#| eval: false
+aging_comparison <- works |>
+ mutate(age = 2024 - publication_year) |>
+ group_by(age) |>
+ summarise(
+   mean_cites   = mean(cited_by_count),
+   median_cites = median(cited_by_count)
+ ) |>
+ pivot_longer(c(mean_cites, median_cites),
+              names_to = "stat", values_to = "value")
+
+ggplot(aging_comparison, aes(age, value, colour = stat)) +
+ geom_line() +
+ geom_point() +
+ labs(title = "Mean vs. median citation aging",
+      x = "Age (years)", y = "Citations")
+```
+
+*Key insight:* The median curve is lower and flatter because the mean is pulled
+up by highly cited outliers. Median is more robust for skewed distributions.
+
+**5. Citation window sensitivity.**
+Compute JIF-like proxies with different window lengths.
+
+```{r}
+#| label: sol-ch14-5
+#| eval: false
+windows <- c(2, 3, 5)
+
+jif_by_window <- map(windows, \(w) {
+ journal_works |>
+   filter(publication_year >= (2023 - w),
+          publication_year <= 2022) |>
+   summarise(jif = sum(cited_by_count) / n()) |>
+   mutate(window = w)
+}) |> list_rbind()
+
+ggplot(jif_by_window, aes(factor(window), jif)) +
+ geom_col() +
+ labs(x = "Citation window (years)", y = "JIF proxy",
+      title = "JIF sensitivity to citation window")
+```
+
+*Key insight:* Longer windows generally produce higher values and favour fields
+with slower citation accumulation.
+
+## Chapter 15 --- Co-authorship Networks {-}
+
+**1. Fractional counting.**
+Weight edges by 1/(k-1) where k is the number of authors.
+
+```{r}
+#| label: sol-ch15-1
+#| eval: false
+library(igraph)
+library(tidyverse)
+
+edges_frac <- works |>
+ unnest(author) |>
+ group_by(id) |>
+ mutate(k = n()) |>
+ filter(k >= 2) |>
+ reframe(
+   pair = combn(au_id, 2, simplify = FALSE),
+   weight = 1 / (k - 1)
+ ) |>
+ unnest_wider(pair, names_sep = "_") |>
+ rename(from = pair_1, to = pair_2)
+
+g_frac <- graph_from_data_frame(edges_frac, directed = FALSE)
+E(g_frac)$weight <- edges_frac$weight
+
+degree_frac <- strength(g_frac) |>
+ sort(decreasing = TRUE) |>
+ head(10)
+degree_frac
+```
+
+*Key insight:* Fractional counting reduces the influence of mega-authored
+papers. Authors primarily involved in large teams may drop in rank.
+
+**2. Temporal slicing.**
+Build yearly networks and track structural evolution.
+
+```{r}
+#| label: sol-ch15-2
+#| eval: false
+yearly_stats <- works |>
+ group_by(publication_year) |>
+ group_map(\(df, key) {
+   edges <- df |>
+     unnest(author) |>
+     group_by(id) |>
+     filter(n() >= 2) |>
+     reframe(pair = combn(au_id, 2, simplify = FALSE)) |>
+     unnest_wider(pair, names_sep = "_")
+   if (nrow(edges) == 0) return(NULL)
+   g <- graph_from_data_frame(edges, directed = FALSE)
+   tibble(
+     year = key$publication_year,
+     n_nodes = vcount(g),
+     n_components = components(g)$no,
+     mean_degree = mean(degree(g))
+   )
+ }) |> list_rbind()
+
+ggplot(yearly_stats, aes(year, mean_degree)) +
+ geom_line() +
+ geom_point() +
+ labs(title = "Mean degree over time", x = "Year", y = "Mean degree")
+```
+
+*Key insight:* Mean degree typically increases over time as collaboration
+becomes more common; the number of components may decrease as the field becomes
+more connected.
+
+**3. Betweenness vs. degree.**
+Compare centrality measures for the giant component.
+
+```{r}
+#| label: sol-ch15-3
+#| eval: false
+g <- build_coauth_graph(works)
+gc <- induced_subgraph(g, components(g)$membership ==
+                         which.max(components(g)$csize))
+
+centrality <- tibble(
+ author = V(gc)$name,
+ deg = degree(gc),
+ btw = betweenness(gc, normalized = TRUE)
+)
+
+ggplot(centrality, aes(deg, btw)) +
+ geom_point(alpha = 0.4) +
+ labs(x = "Degree", y = "Betweenness (normalised)",
+      title = "Betweenness vs. degree in co-authorship network")
+```
+
+*Key insight:* High-betweenness, low-degree nodes are "bridge" authors who
+connect otherwise separate groups --- they may be interdisciplinary researchers.
+
+**4. Resolution parameter.**
+Vary the Leiden resolution and compare community counts.
+
+```{r}
+#| label: sol-ch15-4
+#| eval: false
+library(igraph)
+
+resolutions <- c(0.5, 1.0, 2.0)
+
+res_results <- map(resolutions, \(r) {
+ comm <- cluster_leiden(gc, resolution = r,
+                        objective_function = "modularity")
+ tibble(resolution = r,
+        n_communities = length(comm),
+        modularity = modularity(comm))
+})
+
+list_rbind(res_results)
+```
+
+*Key insight:* Higher resolution produces more communities. The optimal value
+depends on the application --- lower resolution reveals broad thematic clusters,
+higher resolution reveals tight collaborative teams.
+
+## Chapter 16 --- Co-citation and Bibliographic Coupling {-}
+
+**1. Cosine normalisation.**
+Normalise co-citation strengths by the geometric mean of individual citation
+counts.
+
+```{r}
+#| label: sol-ch16-1
+#| eval: false
+library(igraph)
+library(tidyverse)
+
+# Assume cocit_matrix is the raw co-citation matrix
+diag_sqrt <- sqrt(diag(cocit_matrix))
+cosine_matrix <- cocit_matrix / outer(diag_sqrt, diag_sqrt)
+diag(cosine_matrix) <- 0
+
+g_cosine <- graph_from_adjacency_matrix(cosine_matrix,
+                                         mode = "undirected",
+                                         weighted = TRUE)
+
+# Compare top pairs
+top_pairs_raw <- E(g_raw)[order(-E(g_raw)$weight)][1:10]
+top_pairs_cos <- E(g_cosine)[order(-E(g_cosine)$weight)][1:10]
+```
+
+*Key insight:* Cosine normalisation down-weights pairs that are individually
+highly cited, surfacing topically related pairs that raw counts miss.
+
+**2. Temporal co-citation.**
+Split the corpus into two periods and build separate networks.
+
+```{r}
+#| label: sol-ch16-2
+#| eval: false
+periods <- list(
+ early = works |> filter(publication_year %in% 2020:2021),
+ late  = works |> filter(publication_year %in% 2022:2023)
+)
+
+period_graphs <- map(periods, \(df) {
+ # Build co-citation network for this period's references
+ refs <- df |> unnest(referenced_works)
+ ref_pairs <- refs |>
+   group_by(id) |>
+   filter(n() >= 2) |>
+   reframe(pair = combn(referenced_works, 2, simplify = FALSE)) |>
+   unnest_wider(pair, names_sep = "_")
+
+ ref_pairs |>
+   count(pair_1, pair_2, name = "weight") |>
+   graph_from_data_frame(directed = FALSE)
+})
+
+# Find stable pairs: edges present in both periods
+shared_edges <- E(period_graphs$early) %in% E(period_graphs$late)
+```
+
+*Key insight:* Stable co-citation pairs represent the intellectual core of the
+field; new pairs emerging in the later period may signal research-front shifts.
+
+**3. Bibliographic coupling by year.**
+Track modularity and fragmentation of the intellectual structure.
+
+```{r}
+#| label: sol-ch16-3
+#| eval: false
+yearly_bc <- works |>
+ group_by(publication_year) |>
+ group_map(\(df, key) {
+   refs <- df |> unnest(referenced_works)
+   pairs <- refs |>
+     group_by(referenced_works) |>
+     filter(n() >= 2) |>
+     reframe(pair = combn(id, 2, simplify = FALSE)) |>
+     unnest_wider(pair, names_sep = "_") |>
+     count(pair_1, pair_2, name = "weight")
+   if (nrow(pairs) == 0) return(NULL)
+   g <- graph_from_data_frame(pairs, directed = FALSE)
+   comm <- cluster_leiden(g, resolution = 1.0)
+   tibble(year = key$publication_year,
+          n_components = components(g)$no,
+          modularity = modularity(comm))
+ }) |> list_rbind()
+
+ggplot(yearly_bc, aes(year, modularity)) +
+ geom_line() +
+ labs(title = "Bibliographic coupling modularity over time")
+```
+
+*Key insight:* Decreasing modularity suggests convergence across subfields;
+increasing modularity suggests specialisation and fragmentation.
+
+**4. Identifying research fronts.**
+Label communities using top title words.
+
+```{r}
+#| label: sol-ch16-4
+#| eval: false
+library(tidytext)
+
+bc_comm <- cluster_leiden(g_bc, resolution = 1.0)
+V(g_bc)$community <- membership(bc_comm)
+
+front_labels <- works |>
+ filter(id %in% V(g_bc)$name) |>
+ left_join(
+   tibble(id = V(g_bc)$name, community = V(g_bc)$community),
+   by = "id"
+ ) |>
+ unnest_tokens(word, display_name) |>
+ anti_join(stop_words, by = "word") |>
+ count(community, word, sort = TRUE) |>
+ group_by(community) |>
+ slice_head(n = 3) |>
+ summarise(label = paste(word, collapse = ", "))
+
+front_labels
+```
+
+*Key insight:* Community labels based on frequent title words typically
+correspond to recognisable subfields or research themes.
+
+## Chapter 17 --- Co-word and Keyword Co-occurrence {-}
+
+**1. Author keywords vs. concepts.**
+Build and compare two co-occurrence networks.
+
+```{r}
+#| label: sol-ch17-1
+#| eval: false
+library(igraph)
+library(tidyverse)
+
+# Author keywords network
+kw_pairs <- works |>
+ unnest(keywords) |>
+ group_by(id) |>
+ filter(n() >= 2) |>
+ reframe(pair = combn(keyword, 2, simplify = FALSE)) |>
+ unnest_wider(pair, names_sep = "_") |>
+ count(pair_1, pair_2, name = "weight", sort = TRUE)
+
+g_kw <- graph_from_data_frame(kw_pairs, directed = FALSE)
+
+# OpenAlex concepts network
+concept_pairs <- works |>
+ unnest(concepts) |>
+ group_by(id) |>
+ filter(n() >= 2) |>
+ reframe(pair = combn(display_name, 2, simplify = FALSE)) |>
+ unnest_wider(pair, names_sep = "_") |>
+ count(pair_1, pair_2, name = "weight", sort = TRUE)
+
+g_concept <- graph_from_data_frame(concept_pairs, directed = FALSE)
+
+cat("Author KW network:", vcount(g_kw), "nodes,",
+    ecount(g_kw), "edges\n")
+cat("Concept network:", vcount(g_concept), "nodes,",
+    ecount(g_concept), "edges\n")
+```
+
+*Key insight:* Author keywords are more specific but inconsistent; OpenAlex
+concepts are more standardised but coarser.
+
+**2. Temporal evolution.**
+Track the top keywords by degree over time.
+
+```{r}
+#| label: sol-ch17-2
+#| eval: false
+yearly_top_kw <- works |>
+ unnest(keywords) |>
+ group_by(publication_year) |>
+ group_map(\(df, key) {
+   pairs <- df |>
+     group_by(id) |>
+     filter(n() >= 2) |>
+     reframe(pair = combn(keyword, 2, simplify = FALSE)) |>
+     unnest_wider(pair, names_sep = "_")
+   if (nrow(pairs) == 0) return(NULL)
+   g <- graph_from_data_frame(pairs, directed = FALSE)
+   tibble(
+     year = key$publication_year,
+     keyword = names(sort(degree(g), decreasing = TRUE)[1:5]),
+     degree = sort(degree(g), decreasing = TRUE)[1:5]
+   )
+ }) |> list_rbind()
+
+ggplot(yearly_top_kw, aes(year, degree, colour = keyword)) +
+ geom_line() +
+ labs(title = "Top keywords by degree over time")
+```
+
+*Key insight:* Some keywords are perennially central; others emerge or fade,
+signalling evolving research interests.
+
+**3. Strategic diagram.**
+Plot clusters on a density-centrality plane.
+
+```{r}
+#| label: sol-ch17-3
+#| eval: false
+comm <- cluster_leiden(g_kw, resolution = 1.0)
+V(g_kw)$community <- membership(comm)
+
+strategic <- map(unique(membership(comm)), \(c) {
+ nodes <- V(g_kw)[V(g_kw)$community == c]
+ subg <- induced_subgraph(g_kw, nodes)
+ tibble(
+   community = c,
+   density = edge_density(subg),
+   centrality = mean(strength(g_kw, v = nodes))
+ )
+}) |> list_rbind()
+
+ggplot(strategic, aes(centrality, density,
+                      label = community)) +
+ geom_point(size = 3) +
+ geom_text(nudge_y = 0.01) +
+ geom_hline(yintercept = median(strategic$density),
+            linetype = "dashed") +
+ geom_vline(xintercept = median(strategic$centrality),
+            linetype = "dashed") +
+ labs(title = "Strategic diagram",
+      x = "Centrality (external)", y = "Density (internal)")
+```
+
+*Key insight:* Upper-right quadrant clusters are core themes (high density and
+centrality); lower-left clusters are peripheral or emerging topics.
+
+**4. Normalisation comparison.**
+Compare raw and association-strength-normalised networks.
+
+```{r}
+#| label: sol-ch17-4
+#| eval: false
+# Association strength: w_ij / (w_i * w_j / 2m)
+total_weight <- sum(E(g_kw)$weight)
+node_strength <- strength(g_kw)
+
+assoc_edges <- as_data_frame(g_kw) |>
+ mutate(
+   assoc = weight / (node_strength[from] * node_strength[to] /
+                     (2 * total_weight))
+ )
+
+g_assoc <- graph_from_data_frame(assoc_edges, directed = FALSE)
+E(g_assoc)$weight <- assoc_edges$assoc
+
+# Compare top-centrality keywords
+top_raw <- names(sort(strength(g_kw), decreasing = TRUE))[1:10]
+top_assoc <- names(sort(strength(g_assoc), decreasing = TRUE))[1:10]
+
+tibble(raw = top_raw, normalised = top_assoc)
+```
+
+*Key insight:* Normalisation reduces the dominance of high-frequency generic
+terms, elevating more specific and meaningful keyword pairs.
+
+## Chapter 18 --- Community Detection and Backbone Extraction {-}
+
+**1. Alpha sensitivity.**
+Run the disparity filter across multiple alpha values.
+
+```{r}
+#| label: sol-ch18-1
+#| eval: false
+library(igraph)
+library(tidyverse)
+
+alphas <- c(0.01, 0.05, 0.10, 0.20)
+
+alpha_results <- map(alphas, \(a) {
+ # Disparity filter: keep edge if p_ij < alpha
+ el <- as_data_frame(g) |>
+   mutate(
+     s_from = strength(g)[from],
+     k_from = degree(g)[from],
+     p_ij = (1 - weight / s_from)^(k_from - 1)
+   ) |>
+   filter(p_ij < a)
+
+ g_bb <- graph_from_data_frame(el, directed = FALSE)
+ comm <- cluster_leiden(g_bb, resolution = 1.0)
+ tibble(alpha = a,
+        edges = ecount(g_bb),
+        communities = length(comm),
+        connected = components(g_bb)$no == 1)
+}) |> list_rbind()
+
+alpha_results
+```
+
+*Key insight:* Very low alpha values remove too many edges and disconnect the
+network; very high values retain noise. Typical values of 0.05-0.10 balance
+signal and connectivity.
+
+**2. Threshold vs. disparity.**
+Compare two backbone extraction methods using NMI.
+
+```{r}
+#| label: sol-ch18-2
+#| eval: false
+library(igraph)
+
+# Threshold filtering: keep edges above median weight
+threshold <- median(E(g)$weight)
+g_thresh <- subgraph.edges(g, which(E(g)$weight > threshold))
+comm_thresh <- cluster_leiden(g_thresh, resolution = 1.0)
+
+# Disparity filtering (from exercise 1)
+comm_disp <- cluster_leiden(g_bb, resolution = 1.0)
+
+# NMI comparison on shared nodes
+shared <- intersect(V(g_thresh)$name, V(g_bb)$name)
+m1 <- membership(comm_thresh)[shared]
+m2 <- membership(comm_disp)[shared]
+
+compare(m1, m2, method = "nmi")
+```
+
+*Key insight:* The disparity filter preserves locally significant edges
+(important for low-degree nodes) while the threshold filter favours globally
+strong connections. NMI values below 0.7 indicate meaningfully different
+community structures.
+
+**3. Hierarchical structure.**
+Check whether communities at different resolutions are nested.
+
+```{r}
+#| label: sol-ch18-3
+#| eval: false
+resolutions <- c(0.5, 1.0, 2.0)
+
+memberships <- map(resolutions, \(r) {
+ comm <- cluster_leiden(g_bb, resolution = r)
+ tibble(node = V(g_bb)$name, community = membership(comm),
+        resolution = r)
+}) |> list_rbind()
+
+# Check nesting: at resolution 2.0, are communities subsets of
+# resolution 0.5 communities?
+nesting <- memberships |>
+ pivot_wider(names_from = resolution, values_from = community,
+             names_prefix = "res_") |>
+ count(res_0.5, res_2) |>
+ group_by(res_2) |>
+ mutate(is_nested = n_distinct(res_0.5) == 1)
+
+mean(nesting$is_nested)  # proportion of fine communities nested
+```
+
+*Key insight:* Perfectly nested hierarchies are rare in real networks.
+Partial nesting suggests a hierarchical thematic structure with some cross-
+cutting topics.
+
+**4. Weighted vs. unweighted community detection.**
+Remove weights and compare results.
+
+```{r}
+#| label: sol-ch18-4
+#| eval: false
+g_unweighted <- g_bb
+E(g_unweighted)$weight <- 1
+
+comm_weighted   <- cluster_leiden(g_bb, resolution = 1.0)
+comm_unweighted <- cluster_leiden(g_unweighted, resolution = 1.0)
+
+compare(membership(comm_weighted), membership(comm_unweighted),
+        method = "nmi")
+
+cat("Weighted communities:", length(comm_weighted), "\n")
+cat("Unweighted communities:", length(comm_unweighted), "\n")
+```
+
+*Key insight:* Removing weights often increases the number of communities because
+weak connections that helped merge groups are no longer distinguishable from
+strong ones.
+
+## Chapter 19 --- Science Mapping and Overlay Maps {-}
+
+**1. Multi-institution overlay.**
+Overlay two institutions on the same base map.
+
+```{r}
+#| label: sol-ch19-1
+#| eval: false
+library(tidyverse)
+library(ggrepel)
+
+inst_ids <- c("I123456789", "I987654321")
+
+profiles <- map(inst_ids, \(iid) {
+ w <- oa_fetch(entity = "works",
+               authorships.institutions.lineage = iid,
+               from_publication_date = "2020-01-01")
+ w |>
+   unnest(concepts) |>
+   count(display_name, name = "n_works") |>
+   mutate(inst = iid)
+}) |> list_rbind()
+
+ggplot(profiles, aes(display_name, n_works, fill = inst)) +
+ geom_col(position = "dodge") +
+ coord_flip() +
+ labs(title = "Research profile overlay")
+```
+
+*Key insight:* Overlapping areas indicate shared research strengths; divergent
+areas reveal institutional specialisation.
+
+**2. Temporal overlay.**
+Compare the same institution's profile across two time periods.
+
+```{r}
+#| label: sol-ch19-2
+#| eval: false
+periods <- list(
+ early = c("2018-01-01", "2019-12-31"),
+ late  = c("2022-01-01", "2023-12-31")
+)
+
+temporal_profiles <- imap(periods, \(dates, label) {
+ oa_fetch(entity = "works",
+          authorships.institutions.lineage = "I123456789",
+          from_publication_date = dates[1],
+          to_publication_date   = dates[2]) |>
+   unnest(concepts) |>
+   count(display_name, name = "n_works") |>
+   mutate(period = label)
+}) |> list_rbind()
+
+temporal_profiles |>
+ pivot_wider(names_from = period, values_from = n_works,
+             values_fill = 0) |>
+ mutate(shift = late - early) |>
+ arrange(desc(abs(shift))) |>
+ head(15)
+```
+
+*Key insight:* Positive shifts indicate growing research areas; negative shifts
+suggest declining focus or strategic reorientation.
+
+**3. Country-level overlay.**
+Compare a small and a large country's publication profiles.
+
+```{r}
+#| label: sol-ch19-3
+#| eval: false
+countries <- c("SG", "US")  # Singapore vs. United States
+
+country_profiles <- map(countries, \(cc) {
+ oa_fetch(entity = "works",
+          authorships.countries = cc,
+          from_publication_date = "2022-01-01",
+          to_publication_date = "2022-12-31") |>
+   slice_sample(n = 500) |>
+   unnest(concepts) |>
+   count(display_name, name = "n_works") |>
+   mutate(share = n_works / sum(n_works),
+          country = cc)
+}) |> list_rbind()
+
+country_profiles |>
+ pivot_wider(names_from = country, values_from = share,
+             values_fill = 0) |>
+ ggplot(aes(US, SG)) +
+ geom_point() +
+ geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+ ggrepel::geom_text_repel(aes(label = display_name), size = 2) +
+ labs(title = "Country profile: Singapore vs. US")
+```
+
+*Key insight:* Small countries tend to show concentrated profiles (above the
+diagonal in selected areas); large countries are more evenly distributed.
+
+## Chapter 20 --- Network Visualization and Interoperability {-}
+
+**1. Layout comparison.**
+Apply five layouts and compare quality and speed.
+
+```{r}
+#| label: sol-ch20-1
+#| eval: false
+library(igraph)
+library(ggraph)
+library(tidyverse)
+
+layouts <- c("fr", "kk", "drl", "graphopt", "lgl")
+
+layout_results <- map(layouts, \(algo) {
+ t <- system.time({
+   p <- ggraph(gc, layout = algo) +
+     geom_edge_link(alpha = 0.1) +
+     geom_node_point(aes(colour = factor(community)), size = 1) +
+     labs(title = algo) +
+     theme_void()
+ })
+ list(plot = p, time = t["elapsed"], layout = algo)
+})
+
+# Print timing
+map(layout_results, \(x) tibble(layout = x$layout, secs = x$time)) |>
+ list_rbind()
+```
+
+*Key insight:* Fruchterman-Reingold is a good default; Kamada-Kawai is better
+for small networks; DRL scales to large graphs but can produce chaotic layouts.
+
+**2. Interactive filtering.**
+Create a filterable `visNetwork` visualisation.
+
+```{r}
+#| label: sol-ch20-2
+#| eval: false
+library(visNetwork)
+
+nodes_df <- tibble(
+ id = V(gc)$name,
+ label = V(gc)$name,
+ group = as.character(V(gc)$community)
+)
+
+edges_df <- as_data_frame(gc) |>
+ select(from, to)
+
+visNetwork(nodes_df, edges_df) |>
+ visOptions(selectedBy = "group",
+            highlightNearest = TRUE) |>
+ visPhysics(stabilization = FALSE)
+```
+
+*Key insight:* Interactive filtering lets users focus on specific communities
+and explore inter-community bridges.
+
+**3. Gephi round-trip.**
+Export to GraphML for use in Gephi.
+
+```{r}
+#| label: sol-ch20-3
+#| eval: false
+library(igraph)
+
+# Export
+write_graph(gc, "network.graphml", format = "graphml")
+
+# After Gephi processing, compare:
+# - Force Atlas 2 layout often reveals community separation better
+# - R/ggraph offers more reproducible, scriptable figures
+# - Gephi is better for interactive exploration and publication
+#   quality figures via SVG/PDF export
+```
+
+*Key insight:* Gephi's Force Atlas 2 often produces cleaner community
+separation; R workflows are more reproducible and automatable.
+
+**4. Colour-blind check.**
+Test colour distinguishability with increasing community counts.
+
+```{r}
+#| label: sol-ch20-4
+#| eval: false
+library(ggraph)
+library(viridis)
+
+n_communities <- c(3, 5, 10)
+
+plots <- map(n_communities, \(k) {
+ comm <- cluster_leiden(gc, resolution = k / 5)
+ V(gc)$comm_k <- membership(comm)
+
+ ggraph(gc, layout = "fr") +
+   geom_edge_link(alpha = 0.05) +
+   geom_node_point(aes(colour = factor(comm_k)), size = 2) +
+   scale_colour_viridis_d(option = "D") +
+   labs(title = paste(k, "communities")) +
+   theme_void() +
+   theme(legend.position = "none")
+})
+
+# Use colorBlindness package or online simulator to test
+# library(colorBlindness)
+# cvdPlot(plots[[3]])
+```
+
+*Key insight:* Viridis palettes remain distinguishable up to about 8 categories;
+beyond that, consider shape or faceting as supplementary channels.
+
+## Chapter 21 --- Text Mining Bibliographic Corpora {-}
+
+**1. Bigram analysis.**
+Build a DFM from bigrams.
+
+```{r}
+#| label: sol-ch21-1
+#| eval: false
+library(quanteda)
+library(tidyverse)
+
+corp <- corpus(works, text_field = "ab")
+toks <- tokens(corp, remove_punct = TRUE, remove_numbers = TRUE) |>
+ tokens_tolower() |>
+ tokens_remove(stopwords("en")) |>
+ tokens_ngrams(n = 2)
+
+dfm_bi <- dfm(toks) |> dfm_trim(min_termfreq = 5)
+
+topfeatures(dfm_bi, 20)
+```
+
+*Key insight:* Bigrams capture meaningful phrases like "machine_learning" or
+"citation_analysis" that single words miss.
+
+**2. Lexical diversity.**
+Compute the type-token ratio (TTR) per year.
+
+```{r}
+#| label: sol-ch21-2
+#| eval: false
+library(quanteda)
+library(quanteda.textstats)
+
+ttr_by_year <- works |>
+ filter(!is.na(ab)) |>
+ group_by(publication_year) |>
+ summarise(
+   all_text = paste(ab, collapse = " "),
+   .groups = "drop"
+ ) |>
+ mutate(
+   n_types  = map_int(all_text, \(t) {
+     toks <- tokens(t, remove_punct = TRUE) |> tokens_tolower()
+     ntype(dfm(toks))
+   }),
+   n_tokens = map_int(all_text, \(t) {
+     toks <- tokens(t, remove_punct = TRUE)
+     ntoken(toks)
+   }),
+   ttr = n_types / n_tokens
+ )
+
+ggplot(ttr_by_year, aes(publication_year, ttr)) +
+ geom_line() +
+ labs(title = "Lexical diversity over time",
+      x = "Year", y = "Type-token ratio")
+```
+
+*Key insight:* Declining TTR may indicate vocabulary standardisation; increasing
+TTR suggests diversifying terminology.
+
+**3. Keyness analysis.**
+Identify terms that distinguish a specific year.
+
+```{r}
+#| label: sol-ch21-3
+#| eval: false
+library(quanteda)
+library(quanteda.textstats)
+
+corp <- corpus(works |> filter(!is.na(ab)),
+               text_field = "ab",
+               docid_field = "id")
+docvars(corp, "year") <- works$publication_year[!is.na(works$ab)]
+
+dfm_all <- dfm(tokens(corp, remove_punct = TRUE) |>
+               tokens_tolower() |>
+               tokens_remove(stopwords("en")))
+
+# Compare 2023 vs. all other years
+dfm_grouped <- dfm_group(dfm_all, groups = ifelse(
+ docvars(dfm_all, "year") == 2023, "2023", "other"
+))
+
+keyness <- textstat_keyness(dfm_grouped, target = "2023")
+textplot_keyness(keyness, n = 20)
+```
+
+*Key insight:* Keyness analysis surfaces terms unique to a period. For 2023,
+terms related to LLMs and AI may dominate.
+
+**4. Preprocessing sensitivity.**
+Compare analyses with and without stemming.
+
+```{r}
+#| label: sol-ch21-4
+#| eval: false
+toks_nostem <- tokens(corp, remove_punct = TRUE) |>
+ tokens_tolower() |>
+ tokens_remove(stopwords("en"))
+
+toks_stem <- tokens_wordstem(toks_nostem)
+
+top_nostem <- topfeatures(dfm(toks_nostem), 20)
+top_stem   <- topfeatures(dfm(toks_stem), 20)
+
+tibble(
+ rank = 1:20,
+ unstemmed = names(top_nostem),
+ stemmed = names(top_stem)
+)
+```
+
+*Key insight:* Stemming merges variants (e.g., "citations" and "citation") but
+can produce unintelligible stems. For keyword-based analyses, unstemmed terms
+are often more interpretable.
+
+## Chapter 22 --- Topic Modeling {-}
+
+**1. K selection.**
+Fit LDA models with multiple values of K and compare coherence.
+
+```{r}
+#| label: sol-ch22-1
+#| eval: false
+library(topicmodels)
+library(tidyverse)
+set.seed(20260509)
+
+ks <- c(5, 8, 12, 15)
+
+models <- map(ks, \(k) {
+ LDA(dtm, k = k, method = "Gibbs",
+     control = list(seed = 20260509, iter = 1000))
+})
+
+# Compute coherence (using top-10 terms per topic)
+coherence_scores <- map_dbl(models, \(mod) {
+ terms <- terms(mod, 10)
+ # Simple PMI-based coherence approximation
+ mean(map_dbl(seq_len(ncol(terms)), \(t) {
+   top_terms <- terms[, t]
+   pairs <- combn(top_terms, 2, simplify = FALSE)
+   mean(map_dbl(pairs, \(p) {
+     log((slam::col_sums(dtm[, p[1]] > 0 & dtm[, p[2]] > 0) + 1) /
+         slam::col_sums(dtm[, p[1]] > 0))
+   }))
+ }))
+})
+
+tibble(k = ks, coherence = coherence_scores) |>
+ ggplot(aes(k, coherence)) +
+ geom_line() +
+ geom_point() +
+ labs(title = "Topic coherence by K", x = "K", y = "Coherence")
+```
+
+*Key insight:* The best K balances coherence (higher is better) and
+interpretability. There is rarely a single "correct" K.
+
+**2. STM with journal covariate.**
+Fit a Structural Topic Model with journal as a prevalence covariate.
+
+```{r}
+#| label: sol-ch22-2
+#| eval: false
+library(stm)
+set.seed(20260509)
+
+# Prepare data from two journals
+two_journals <- works |>
+ filter(so %in% c("Scientometrics", "PLOS ONE"), !is.na(ab))
+
+processed <- textProcessor(two_journals$ab,
+                           metadata = two_journals)
+prepped <- prepDocuments(processed$documents,
+                         processed$vocab,
+                         processed$meta)
+
+stm_fit <- stm(prepped$documents, prepped$vocab,
+               K = 10,
+               prevalence = ~ so,
+               data = prepped$meta,
+               seed = 20260509)
+
+effect <- estimateEffect(1:10 ~ so, stm_fit, metadata = prepped$meta)
+plot(effect, covariate = "so", topics = 1:10)
+```
+
+*Key insight:* Topics with large journal effects represent disciplinary
+specialisation; shared topics indicate cross-cutting themes.
+
+**3. Topic labelling.**
+Read top documents per topic to assign labels.
+
+```{r}
+#| label: sol-ch22-3
+#| eval: false
+library(topicmodels)
+library(tidyverse)
+
+best_model <- models[[which.max(coherence_scores)]]
+gamma <- posterior(best_model)$topics
+
+# For each topic, find the top-5 documents
+topic_labels <- map(seq_len(ncol(gamma)), \(t) {
+ top_docs <- order(gamma[, t], decreasing = TRUE)[1:5]
+ titles <- works$display_name[top_docs]
+ tibble(topic = t,
+        top_terms = paste(terms(best_model, 5)[, t], collapse = ", "),
+        sample_titles = paste(titles, collapse = " | "))
+}) |> list_rbind()
+
+topic_labels
+# Now assign human-readable labels based on inspection
+```
+
+*Key insight:* Automated topic labels from top terms are a starting point;
+reading representative documents is essential for meaningful labels.
+
+**4. LDA vs. STM comparison.**
+Compare topics from both models.
+
+```{r}
+#| label: sol-ch22-4
+#| eval: false
+# Extract top terms for each model
+lda_terms <- terms(best_model, 10)
+stm_terms <- labelTopics(stm_fit, n = 10)$prob
+
+# Compute Jaccard similarity between matched topics
+jaccard <- function(a, b) {
+ length(intersect(a, b)) / length(union(a, b))
+}
+
+# Best-match each LDA topic to an STM topic
+similarities <- map_dbl(seq_len(ncol(lda_terms)), \(i) {
+ max(map_dbl(seq_len(nrow(stm_terms)), \(j) {
+   jaccard(lda_terms[, i], stm_terms[j, ])
+ }))
+})
+
+mean(similarities)
+```
+
+*Key insight:* STM topics may differ because the year covariate allows topic
+prevalence to shift over time, producing more temporally coherent topics.
+
+## Chapter 23 --- Keyword Extraction {-}
+
+**1. Precision and recall.**
+Evaluate RAKE keywords against author keywords.
+
+```{r}
+#| label: sol-ch23-1
+#| eval: false
+library(udpipe)
+library(tidyverse)
+
+sample_papers <- works |>
+ filter(!is.na(ab), map_lgl(keywords, \(k) length(k) > 0)) |>
+ slice_sample(n = 20)
+
+eval_results <- map(seq_len(nrow(sample_papers)), \(i) {
+ paper <- sample_papers[i, ]
+ rake_kw <- keywords_rake(
+   data.frame(doc_id = paper$id,
+              sentence = paper$ab,
+              stringsAsFactors = FALSE),
+   term = "sentence", group = "doc_id"
+ ) |> head(10) |> pull(keyword) |> tolower()
+
+ author_kw <- tolower(unlist(paper$keywords))
+
+ tibble(
+   precision = mean(rake_kw %in% author_kw),
+   recall = mean(author_kw %in% rake_kw)
+ )
+}) |> list_rbind()
+
+eval_results |>
+ summarise(across(everything(), list(mean = mean, sd = sd)))
+```
+
+*Key insight:* RAKE precision is typically low (0.1-0.3) because algorithms
+and authors conceptualise keywords differently. Recall is also limited because
+author keywords often include broad terms not in the abstract.
+
+**2. Bigram keywords.**
+Score bigrams by TF-IDF.
+
+```{r}
+#| label: sol-ch23-2
+#| eval: false
+library(tidytext)
+library(tidyverse)
+
+bigram_tfidf <- works |>
+ filter(!is.na(ab)) |>
+ unnest_tokens(bigram, ab, token = "ngrams", n = 2) |>
+ separate(bigram, c("word1", "word2"), sep = " ") |>
+ filter(!word1 %in% stop_words$word,
+        !word2 %in% stop_words$word) |>
+ unite(bigram, word1, word2, sep = " ") |>
+ count(id, bigram) |>
+ bind_tf_idf(bigram, id, n) |>
+ group_by(bigram) |>
+ summarise(mean_tfidf = mean(tf_idf)) |>
+ arrange(desc(mean_tfidf))
+
+bigram_tfidf |> head(20)
+```
+
+*Key insight:* Multi-word terms like "citation analysis" and "research
+evaluation" are invisible to unigram methods but highly informative.
+
+**3. Keyword enrichment.**
+Use extracted keywords to build a co-word network for keyword-poor papers.
+
+```{r}
+#| label: sol-ch23-3
+#| eval: false
+library(igraph)
+library(udpipe)
+
+# Papers without author keywords
+no_kw_papers <- works |>
+ filter(map_lgl(keywords, \(k) length(k) == 0), !is.na(ab))
+
+# Extract keywords via RAKE
+extracted <- map(seq_len(nrow(no_kw_papers)), \(i) {
+ kw <- keywords_rake(
+   data.frame(doc_id = no_kw_papers$id[i],
+              sentence = no_kw_papers$ab[i]),
+   term = "sentence", group = "doc_id"
+ ) |> head(5) |> pull(keyword)
+ tibble(id = no_kw_papers$id[i], keyword = kw)
+}) |> list_rbind()
+
+# Build co-word network
+pairs <- extracted |>
+ group_by(id) |>
+ filter(n() >= 2) |>
+ reframe(pair = combn(keyword, 2, simplify = FALSE)) |>
+ unnest_wider(pair, names_sep = "_") |>
+ count(pair_1, pair_2, sort = TRUE)
+
+g_enriched <- graph_from_data_frame(pairs, directed = FALSE)
+```
+
+*Key insight:* Extracted keywords produce a topical structure comparable to
+author keywords, enabling co-word analysis even for papers without manual
+keyword assignments.
+
+## Chapter 24 --- Embeddings for Scientometrics {-}
+
+**1. Weighted averaging.**
+Use TF-IDF weights for document embedding computation.
+
+```{r}
+#| label: sol-ch24-1
+#| eval: false
+library(word2vec)
+library(tidytext)
+library(tidyverse)
+library(umap)
+
+# Compute TF-IDF weights
+tfidf <- works |>
+ filter(!is.na(ab)) |>
+ unnest_tokens(word, ab) |>
+ anti_join(stop_words, by = "word") |>
+ count(id, word) |>
+ bind_tf_idf(word, id, n)
+
+# Get word vectors
+wv <- predict(w2v_model, newdata = unique(tfidf$word), type = "embedding")
+
+# Weighted average per document
+doc_embeddings <- tfidf |>
+ inner_join(
+   as_tibble(wv, rownames = "word"),
+   by = "word"
+ ) |>
+ group_by(id) |>
+ summarise(across(starts_with("V"), \(x) weighted.mean(x, tf_idf)))
+
+# UMAP
+umap_result <- umap(as.matrix(doc_embeddings |> select(-id)))
+```
+
+*Key insight:* TF-IDF weighting down-weights common words, often producing
+tighter, more meaningful clusters in the UMAP projection.
+
+**2. K-means clustering.**
+Apply k-means to embeddings and compare with LDA topics.
+
+```{r}
+#| label: sol-ch24-2
+#| eval: false
+set.seed(20260509)
+
+embedding_matrix <- as.matrix(doc_embeddings |> select(-id))
+
+km_results <- map(c(5, 8, 12), \(k) {
+ km <- kmeans(embedding_matrix, centers = k, nstart = 25)
+ tibble(k = k,
+        cluster = km$cluster,
+        id = doc_embeddings$id)
+}) |> list_rbind()
+
+# Compare k=8 clusters with LDA topics (K=8)
+# Assuming lda_topics is a vector of topic assignments
+km8 <- km_results |> filter(k == 8) |> pull(cluster)
+compare_nmi <- igraph::compare(km8, lda_topics, method = "nmi")
+cat(sprintf("NMI between k-means and LDA: %.3f\n", compare_nmi))
+```
+
+*Key insight:* Moderate NMI (0.3-0.6) is typical; the two methods capture
+overlapping but not identical structure because they model different aspects of
+the data.
+
+**3. Pre-trained embeddings.**
+Use SPECTER embeddings via reticulate.
+
+```{r}
+#| label: sol-ch24-3
+#| eval: false
+library(reticulate)
+
+# Requires Python with transformers installed
+transformers <- import("transformers")
+torch <- import("torch")
+
+tokenizer <- transformers$AutoTokenizer$from_pretrained(
+ "allenai/specter2"
+)
+model <- transformers$AutoModel$from_pretrained(
+ "allenai/specter2"
+)
+
+abstracts <- works$ab[!is.na(works$ab)][1:100]
+inputs <- tokenizer(abstracts, padding = TRUE, truncation = TRUE,
+                    return_tensors = "pt", max_length = 512L)
+with(torch$no_grad(), {
+ outputs <- model(inputs)
+})
+specter_emb <- outputs$last_hidden_state$mean(dim = 1L)$numpy()
+```
+
+*Key insight:* Pre-trained scientific embeddings like SPECTER capture domain
+semantics better than generic word2vec, especially for similarity search.
+
+**4. Analogy test.**
+Test analogical reasoning in the word2vec model.
+
+```{r}
+#| label: sol-ch24-4
+#| eval: false
+library(word2vec)
+
+# Test: "journal" - "article" + "book" ≈ ?
+analogy <- predict(w2v_model,
+                   newdata = c("journal", "article", "book"),
+                   type = "nearest", top_n = 5)
+
+# Alternative approach using vector arithmetic
+wv <- as.matrix(w2v_model)
+if (all(c("journal", "article", "book") %in% rownames(wv))) {
+ target <- wv["journal", ] - wv["article", ] + wv["book", ]
+ sims <- word2vec_similarity(
+   matrix(target, nrow = 1), wv
+ )
+ sort(sims[1, ], decreasing = TRUE)[1:5]
+}
+```
+
+*Key insight:* Domain-specific models may capture field-specific analogies (e.g.,
+"h-index" - "author" + "journal" near "impact factor") but fail on generic
+analogies, reflecting the training corpus.
+
+## Chapter 25 --- Detecting Emerging Topics {-}
+
+**1. Relative burst detection.**
+Use proportional frequencies instead of absolute counts.
+
+```{r}
+#| label: sol-ch25-1
+#| eval: false
+library(tidyverse)
+
+# Compute keyword proportions by year
+kw_yearly <- works |>
+ unnest(keywords) |>
+ count(publication_year, keyword) |>
+ group_by(publication_year) |>
+ mutate(proportion = n / sum(n)) |>
+ ungroup()
+
+# Apply Kleinberg burst detection on proportions
+bursts_relative <- kw_yearly |>
+ group_by(keyword) |>
+ filter(n() >= 3) |>  # need multiple years
+ summarise(
+   burst = list(kleinberg_bursts(proportion, publication_year)),
+   .groups = "drop"
+ ) |>
+ unnest(burst) |>
+ arrange(desc(strength))
+
+bursts_relative |> head(20)
+```
+
+*Key insight:* Relative frequencies reduce bias toward high-volume years;
+some terms that burst in absolute counts may be merely riding overall growth.
+
+**2. Emergence by journal.**
+Compare emerging keywords across two journals.
+
+```{r}
+#| label: sol-ch25-2
+#| eval: false
+journals <- c("Scientometrics", "PLOS ONE")
+
+journal_bursts <- map(journals, \(j) {
+ kw_j <- works |>
+   filter(so == j) |>
+   unnest(keywords) |>
+   count(publication_year, keyword) |>
+   group_by(keyword) |>
+   filter(n() >= 3) |>
+   summarise(
+     burst = list(kleinberg_bursts(n, publication_year))
+   ) |>
+   unnest(burst) |>
+   mutate(journal = j)
+}) |> list_rbind()
+
+# Compare top bursting terms
+journal_bursts |>
+ group_by(journal) |>
+ arrange(desc(strength)) |>
+ slice_head(n = 10) |>
+ select(journal, keyword, strength)
+```
+
+*Key insight:* Different journals serve different research communities; emerging
+terms may overlap only for broad methodological advances.
+
+**3. Novelty scoring.**
+Compute document novelty using cosine distance to prior-year centroids.
+
+```{r}
+#| label: sol-ch25-3
+#| eval: false
+library(quanteda)
+library(tidyverse)
+
+dfm_yearly <- dfm(tokens(corpus(works, text_field = "ab"),
+                         remove_punct = TRUE) |>
+                  tokens_tolower() |>
+                  tokens_remove(stopwords("en"))) |>
+ dfm_tfidf()
+
+years <- sort(unique(works$publication_year))
+
+novelty <- map(years[-1], \(yr) {
+ prior <- dfm_subset(dfm_yearly, publication_year < yr)
+ current <- dfm_subset(dfm_yearly, publication_year == yr)
+ if (nrow(prior) == 0 || nrow(current) == 0) return(NULL)
+
+ centroid <- colMeans(as.matrix(prior))
+ current_mat <- as.matrix(current)
+
+ cos_dist <- 1 - (current_mat %*% centroid) /
+   (sqrt(rowSums(current_mat^2)) * sqrt(sum(centroid^2)))
+
+ tibble(year = yr, novelty = as.numeric(cos_dist))
+}) |> list_rbind()
+
+novelty |>
+ group_by(year) |>
+ summarise(mean_novelty = mean(novelty, na.rm = TRUE)) |>
+ ggplot(aes(year, mean_novelty)) +
+ geom_line() +
+ labs(title = "Document novelty over time",
+      x = "Year", y = "Mean cosine distance to prior centroid")
+```
+
+*Key insight:* Increasing novelty scores suggest the field is exploring new
+territory; stable scores indicate incremental progress within established
+paradigms.
+
+**4. Validation.**
+Manually validate burst-detected emerging terms.
+
+```{r}
+#| label: sol-ch25-4
+#| eval: false
+# Select 5 terms identified as "emerging"
+emerging_terms <- bursts_relative |>
+ arrange(desc(strength)) |>
+ head(5) |>
+ pull(keyword)
+
+# For each term, search for corroborating evidence:
+# - Is there a review article about this topic?
+# - Was it a conference theme in recent years?
+# - Does Google Trends show a rising interest?
+
+# Create a validation table
+validation <- tibble(
+ term = emerging_terms,
+ review_found = c(TRUE, TRUE, FALSE, TRUE, FALSE),
+ conference_theme = c(TRUE, FALSE, FALSE, TRUE, TRUE),
+ google_trend_rising = c(TRUE, TRUE, TRUE, FALSE, TRUE),
+ validated = review_found | conference_theme
+)
+
+cat(sprintf("False positive rate: %.0f%%\n",
+            (1 - mean(validation$validated)) * 100))
+```
+
+*Key insight:* Burst detection has moderate precision; triangulating with
+qualitative sources reduces false positives and increases confidence.
+
+## Chapter 26 --- Altmetrics {-}
+
+**1. OA citation advantage.**
+Compare citations for OA vs. closed-access papers across journals.
+
+```{r}
+#| label: sol-ch26-1
+#| eval: false
+library(openalexR)
+library(tidyverse)
+
+journal_ids <- c("S4210174107", "S137773608")
+
+oa_advantage <- map(journal_ids, \(jid) {
+ w <- oa_fetch(entity = "works",
+               primary_location.source.id = jid,
+               from_publication_date = "2019-01-01",
+               to_publication_date = "2022-12-31")
+ w |>
+   group_by(is_oa) |>
+   summarise(
+     n = n(),
+     mean_cites = mean(cited_by_count),
+     median_cites = median(cited_by_count)
+   ) |>
+   mutate(journal = jid)
+}) |> list_rbind()
+
+oa_advantage
+```
+
+*Key insight:* The OA citation advantage exists in most fields but varies in
+magnitude. Self-selection (better papers go OA) may partially explain the
+effect.
+
+**2. Temporal attention.**
+Track citation accumulation over time for early-attention papers.
+
+```{r}
+#| label: sol-ch26-2
+#| eval: false
+recent_works <- works |>
+ filter(publication_year == 2022, !is.null(counts_by_year))
+
+attention_trajectory <- recent_works |>
+ unnest(counts_by_year) |>
+ group_by(id) |>
+ arrange(year) |>
+ mutate(cum_cites = cumsum(cited_by_count)) |>
+ ungroup()
+
+# Classify: high vs. low early attention (first year citations)
+early_cites <- attention_trajectory |>
+ filter(year == 2022) |>
+ mutate(early_attention = ifelse(cited_by_count >= 5,
+                                  "High", "Low"))
+
+attention_trajectory |>
+ left_join(early_cites |> select(id, early_attention), by = "id") |>
+ group_by(early_attention, year) |>
+ summarise(mean_cum = mean(cum_cites, na.rm = TRUE)) |>
+ ggplot(aes(year, mean_cum, colour = early_attention)) +
+ geom_line() +
+ labs(title = "Citation accumulation by early attention")
+```
+
+*Key insight:* Papers with high early attention tend to sustain their advantage,
+consistent with cumulative advantage (Matthew Effect) in citations.
+
+**3. Cross-field comparison.**
+Compare citation distributions and reference list lengths across fields.
+
+```{r}
+#| label: sol-ch26-3
+#| eval: false
+biomed <- oa_fetch(entity = "works",
+                   primary_location.source.id = "S49861241",
+                   from_publication_date = "2020-01-01") |>
+ mutate(field = "Biomedicine") |>
+ slice_sample(n = 200)
+
+math <- oa_fetch(entity = "works",
+                 primary_location.source.id = "S154589771",
+                 from_publication_date = "2020-01-01") |>
+ mutate(field = "Mathematics") |>
+ slice_sample(n = 200)
+
+comparison <- bind_rows(biomed, math)
+
+comparison |>
+ group_by(field) |>
+ summarise(
+   mean_cites = mean(cited_by_count),
+   median_cites = median(cited_by_count),
+   mean_refs = mean(referenced_works_count, na.rm = TRUE)
+ )
+
+ggplot(comparison, aes(cited_by_count, fill = field)) +
+ geom_histogram(position = "dodge", bins = 30) +
+ scale_x_log10() +
+ labs(title = "Citation distributions by field")
+```
+
+*Key insight:* Biomedical papers have higher citation counts and longer reference
+lists than mathematics papers. This is why raw citation counts cannot be compared
+across fields.
+
+## Chapter 27 --- Open Science Indicators {-}
+
+**1. Cross-journal OA comparison.**
+Compare OA rates across three journals in different disciplines.
+
+```{r}
+#| label: sol-ch27-1
+#| eval: false
+library(openalexR)
+library(tidyverse)
+
+journals <- list(
+ biology = "S49861241",
+ physics = "S137773608",
+ sociology = "S64468286"
+)
+
+oa_rates <- imap(journals, \(jid, field) {
+ w <- oa_fetch(entity = "works",
+               primary_location.source.id = jid,
+               from_publication_date = "2020-01-01",
+               to_publication_date = "2023-12-31")
+ w |>
+   summarise(oa_rate = mean(is_oa, na.rm = TRUE),
+             gold_oa = mean(oa_status == "gold", na.rm = TRUE)) |>
+   mutate(field = field)
+}) |> list_rbind()
+
+oa_rates
+```
+
+*Key insight:* Biology tends to have the highest gold OA rate (driven by PLOS,
+eLife, etc.), while sociology and mathematics lag behind.
+
+**2. Temporal OA growth.**
+Track the year-over-year OA growth rate.
+
+```{r}
+#| label: sol-ch27-2
+#| eval: false
+oa_growth <- works |>
+ filter(is_oa) |>
+ count(publication_year, name = "n_oa") |>
+ mutate(yoy_growth = (n_oa / lag(n_oa)) - 1)
+
+ggplot(oa_growth, aes(publication_year, yoy_growth)) +
+ geom_col() +
+ scale_y_continuous(labels = scales::percent) +
+ labs(title = "Year-over-year OA growth",
+      x = "Year", y = "Growth rate")
+```
+
+*Key insight:* OA growth accelerated around 2020, likely driven by COVID-19
+mandates and Plan S implementation.
+
+**3. OA and collaboration.**
+Test whether author count predicts OA status.
+
+```{r}
+#| label: sol-ch27-3
+#| eval: false
+works |>
+ mutate(n_authors = map_int(author, nrow)) |>
+ group_by(n_authors = pmin(n_authors, 10)) |>
+ summarise(oa_rate = mean(is_oa, na.rm = TRUE), n = n()) |>
+ ggplot(aes(n_authors, oa_rate)) +
+ geom_col() +
+ scale_y_continuous(labels = scales::percent) +
+ labs(title = "OA rate by number of authors",
+      x = "Authors (capped at 10)", y = "OA rate")
+```
+
+*Key insight:* Larger teams may have more funding to cover APCs. International
+collaborations also increase OA probability because at least one funder may
+mandate it.
+
+## Chapter 28 --- Gender and Equity Analysis {-}
+
+**1. Cross-journal comparison.**
+Compare gender representation in first authorship across journals.
+
+```{r}
+#| label: sol-ch28-1
+#| eval: false
+library(openalexR)
+library(tidyverse)
+
+journal_ids <- c("S4210174107", "S49861241", "S154589771")
+
+gender_by_journal <- map(journal_ids, \(jid) {
+ w <- oa_fetch(entity = "works",
+               primary_location.source.id = jid,
+               from_publication_date = "2020-01-01") |>
+   slice_sample(n = 200)
+
+ w |>
+   mutate(first_author = map_chr(author, \(a) a$au_display_name[1])) |>
+   # Gender inference would use genderize.io or similar
+   mutate(journal = jid)
+}) |> list_rbind()
+
+# After gender inference:
+# gender_by_journal |>
+#   group_by(journal, inferred_gender) |>
+#   summarise(n = n()) |>
+#   mutate(pct = n / sum(n))
+```
+
+*Key insight:* Gender representation varies significantly by field. STEM
+journals typically have lower female first-author rates than social sciences.
+
+**2. Temporal trends.**
+Track the proportion of female first authors over time.
+
+```{r}
+#| label: sol-ch28-2
+#| eval: false
+# After gender inference has been performed:
+gender_trend <- works_gendered |>
+ group_by(publication_year, inferred_gender) |>
+ summarise(n = n(), .groups = "drop_last") |>
+ mutate(pct = n / sum(n))
+
+ggplot(gender_trend |> filter(inferred_gender == "female"),
+      aes(publication_year, pct)) +
+ geom_line() +
+ geom_point() +
+ scale_y_continuous(labels = scales::percent) +
+ labs(title = "Female first-author share over time",
+      x = "Year", y = "Proportion female")
+```
+
+*Key insight:* Most fields show a gradual increase in female representation,
+though the rate of change varies considerably by discipline and region.
+
+**3. Citation gap.**
+Compare citations by inferred gender, controlling for year.
+
+```{r}
+#| label: sol-ch28-3
+#| eval: false
+# After gender inference:
+citation_gap <- works_gendered |>
+ group_by(publication_year, inferred_gender) |>
+ summarise(
+   mean_cites = mean(cited_by_count),
+   median_cites = median(cited_by_count),
+   n = n(),
+   .groups = "drop"
+ )
+
+ggplot(citation_gap, aes(publication_year, mean_cites,
+                          colour = inferred_gender)) +
+ geom_line() +
+ labs(title = "Mean citations by inferred gender",
+      x = "Year", y = "Mean citations")
+
+# Statistical test (controlling for year)
+summary(lm(cited_by_count ~ inferred_gender + publication_year,
+           data = works_gendered))
+```
+
+*Key insight:* A persistent citation gap may reflect systemic biases, network
+effects, or confounding factors (e.g., team size, field). Observational data
+alone cannot establish causation.
+
+## Chapter 29 --- Retraction Analysis {-}
+
+**1. Retraction rate by field.**
+Compare retraction rates across fields, normalised by corpus size.
+
+```{r}
+#| label: sol-ch29-1
+#| eval: false
+library(openalexR)
+library(tidyverse)
+
+fields <- c("biomedicine", "computer science")
+
+retraction_rates <- map(fields, \(f) {
+ all_works <- oa_fetch(entity = "works", search = f,
+                       from_publication_date = "2015-01-01",
+                       count_only = TRUE)
+ retracted <- oa_fetch(entity = "works", search = f,
+                       type = "retraction",
+                       from_publication_date = "2015-01-01",
+                       count_only = TRUE)
+ tibble(
+   field = f,
+   total = all_works$count,
+   retracted = retracted$count,
+   rate_per_1000 = retracted$count / all_works$count * 1000
+ )
+}) |> list_rbind()
+
+retraction_rates
+```
+
+*Key insight:* Retraction rates are typically higher in biomedical fields (1-2
+per 1,000) than in computer science, partly reflecting different scrutiny levels
+and reproducibility challenges.
+
+**2. Citation trajectory.**
+Examine when a retracted paper's citations were received.
+
+```{r}
+#| label: sol-ch29-2
+#| eval: false
+retracted_paper <- oa_fetch(entity = "works",
+                            doi = "10.xxxx/retracted-example")
+
+if (!is.null(retracted_paper$counts_by_year)) {
+ retracted_paper |>
+   unnest(counts_by_year) |>
+   ggplot(aes(year, cited_by_count)) +
+   geom_col() +
+   geom_vline(xintercept = 2020, linetype = "dashed",
+              colour = "red") +  # retraction year
+   labs(title = "Citation trajectory of a retracted paper",
+        x = "Year", y = "Citations received")
+}
+```
+
+*Key insight:* Many retracted papers continue to be cited after retraction,
+indicating that the retraction notice does not always reach citing authors.
+
+**3. Retraction-citation correlation.**
+Test whether pre-retraction citation count predicts post-retraction citations.
+
+```{r}
+#| label: sol-ch29-3
+#| eval: false
+# Assuming a set of retracted papers with known retraction years
+retracted_set <- retracted_works |>
+ unnest(counts_by_year) |>
+ mutate(period = ifelse(year < retraction_year, "pre", "post")) |>
+ group_by(id, period) |>
+ summarise(cites = sum(cited_by_count), .groups = "drop") |>
+ pivot_wider(names_from = period, values_from = cites,
+             values_fill = 0)
+
+cor(retracted_set$pre, retracted_set$post, method = "spearman")
+
+ggplot(retracted_set, aes(pre, post)) +
+ geom_point(alpha = 0.5) +
+ geom_smooth(method = "lm") +
+ labs(x = "Pre-retraction citations",
+      y = "Post-retraction citations",
+      title = "Pre- vs. post-retraction citation counts")
+```
+
+*Key insight:* A positive correlation suggests that highly visible papers
+continue to be cited after retraction --- the "retraction paradox."
+
+## Chapter 30 --- Funding Analysis {-}
+
+**1. Funder co-occurrence.**
+Identify frequently co-occurring funder pairs.
+
+```{r}
+#| label: sol-ch30-1
+#| eval: false
+library(tidyverse)
+
+funder_pairs <- works |>
+ unnest(grants) |>
+ group_by(id) |>
+ filter(n_distinct(funder) >= 2) |>
+ reframe(pair = combn(funder, 2, simplify = FALSE)) |>
+ unnest_wider(pair, names_sep = "_") |>
+ count(pair_1, pair_2, sort = TRUE)
+
+funder_pairs |> head(10)
+```
+
+*Key insight:* National funders frequently co-occur with international
+organisations (e.g., NIH + EU), reflecting collaborative funding models.
+
+**2. Funder portfolios.**
+Compare topical profiles of two major funders.
+
+```{r}
+#| label: sol-ch30-2
+#| eval: false
+library(openalexR)
+library(tidyverse)
+
+funder_ids <- c("F123456", "F789012")  # OpenAlex funder IDs
+
+funder_profiles <- map(funder_ids, \(fid) {
+ w <- oa_fetch(entity = "works",
+               grants.funder = fid,
+               from_publication_date = "2020-01-01") |>
+   slice_sample(n = 300)
+ w |>
+   unnest(keywords) |>
+   count(keyword, sort = TRUE) |>
+   mutate(funder = fid)
+}) |> list_rbind()
+
+# Compare top keywords
+funder_profiles |>
+ group_by(funder) |>
+ slice_head(n = 15) |>
+ ggplot(aes(reorder(keyword, n), n, fill = funder)) +
+ geom_col(position = "dodge") +
+ coord_flip() +
+ labs(title = "Funder portfolio comparison")
+```
+
+*Key insight:* Different funders support different thematic areas; comparing
+portfolios reveals strategic funding priorities.
+
+**3. Temporal trends.**
+Track funding acknowledgement coverage over time.
+
+```{r}
+#| label: sol-ch30-3
+#| eval: false
+funding_trend <- works |>
+ mutate(has_funding = map_lgl(grants, \(g) length(g) > 0)) |>
+ group_by(publication_year) |>
+ summarise(funding_rate = mean(has_funding, na.rm = TRUE))
+
+ggplot(funding_trend, aes(publication_year, funding_rate)) +
+ geom_line() +
+ geom_point() +
+ scale_y_continuous(labels = scales::percent) +
+ labs(title = "Papers with funding acknowledgements over time",
+      x = "Year", y = "Share with funding data")
+```
+
+*Key insight:* Funding metadata coverage has increased as publishers and
+databases improve structured acknowledgement parsing.
+
+## Chapter 31 --- Patent-Paper Linkages {-}
+
+**1. Field comparison.**
+Compare the proportion of highly cited papers across fields.
+
+```{r}
+#| label: sol-ch31-1
+#| eval: false
+library(openalexR)
+library(tidyverse)
+
+biomed <- oa_fetch(entity = "works",
+                   search = "drug delivery",
+                   from_publication_date = "2018-01-01",
+                   to_publication_date = "2020-12-31") |>
+ slice_sample(n = 200) |> mutate(field = "Biomedical")
+
+socsci <- oa_fetch(entity = "works",
+                   search = "social inequality",
+                   from_publication_date = "2018-01-01",
+                   to_publication_date = "2020-12-31") |>
+ slice_sample(n = 200) |> mutate(field = "Social Science")
+
+combined <- bind_rows(biomed, socsci)
+
+combined |>
+ group_by(field) |>
+ summarise(
+   pct_top10 = mean(cited_by_count >=
+                     quantile(cited_by_count, 0.9)),
+   mean_cites = mean(cited_by_count)
+ )
+```
+
+*Key insight:* Biomedical research is more likely to be cited in patents because
+it has more direct translational applications. Higher citation rates do not
+automatically imply greater technological relevance.
+
+**2. Time lag estimation.**
+Estimate the citation accumulation trajectory for a cohort of papers.
+
+```{r}
+#| label: sol-ch31-2
+#| eval: false
+cohort_2015 <- works |>
+ filter(publication_year == 2015, !is.null(counts_by_year))
+
+trajectory <- cohort_2015 |>
+ unnest(counts_by_year) |>
+ mutate(age = year - 2015) |>
+ filter(age >= 0) |>
+ group_by(age) |>
+ summarise(median_cites = median(cited_by_count))
+
+ggplot(trajectory, aes(age, median_cites)) +
+ geom_line() +
+ geom_point() +
+ labs(title = "Citation trajectory for 2015 cohort",
+      x = "Age (years since publication)",
+      y = "Median annual citations")
+
+# Peak year
+peak_age <- trajectory$age[which.max(trajectory$median_cites)]
+cat(sprintf("Peak citation year: age %d\n", peak_age))
+```
+
+*Key insight:* Papers typically peak in citation accumulation at age 2-4 years,
+depending on the field. This lag matters for evaluating recent research.
+
+**3. Institutional patent linkage.**
+Compare the proportion of top-cited papers across institutions.
+
+```{r}
+#| label: sol-ch31-3
+#| eval: false
+inst_ids <- c("I123456789", "I987654321")
+
+inst_top_papers <- map(inst_ids, \(iid) {
+ w <- oa_fetch(entity = "works",
+               authorships.institutions.lineage = iid,
+               from_publication_date = "2018-01-01",
+               to_publication_date = "2020-12-31")
+ p90 <- quantile(w$cited_by_count, 0.9)
+ tibble(
+   institution = iid,
+   n_papers = nrow(w),
+   pct_above_p90 = mean(w$cited_by_count >= p90)
+ )
+}) |> list_rbind()
+
+inst_top_papers
+```
+
+*Key insight:* A higher proportion of top-percentile papers may suggest greater
+potential for technological impact, but causation cannot be established without
+actual patent citation data.
+
+## Chapter 32 --- Causal Inference in Scientometrics {-}
+
+**1. Extended DiD.**
+Add covariates to the difference-in-differences regression.
+
+```{r}
+#| label: sol-ch32-1
+#| eval: false
+library(tidyverse)
+
+# Assuming works_did has: cited_by_count, is_oa, post_treatment,
+# type, n_authors, referenced_works_count
+did_extended <- lm(
+ cited_by_count ~ is_oa * post_treatment +
+   type + n_authors + referenced_works_count,
+ data = works_did
+)
+
+summary(did_extended)
+
+# Compare with simple model
+did_simple <- lm(cited_by_count ~ is_oa * post_treatment,
+                 data = works_did)
+
+cat(sprintf("Simple interaction: %.2f\n",
+            coef(did_simple)["is_oaTRUE:post_treatmentTRUE"]))
+cat(sprintf("Extended interaction: %.2f\n",
+            coef(did_extended)["is_oaTRUE:post_treatmentTRUE"]))
+```
+
+*Key insight:* If the interaction term changes substantially with added
+covariates, the simple model suffers from omitted variable bias.
+
+**2. Placebo test.**
+Use a false treatment date to test the parallel trends assumption.
+
+```{r}
+#| label: sol-ch32-2
+#| eval: false
+# Placebo: pretend treatment happened in 2018 instead of 2020
+works_placebo <- works_did |>
+ filter(publication_year <= 2019) |>  # pre-treatment only
+ mutate(post_placebo = publication_year >= 2018)
+
+did_placebo <- lm(cited_by_count ~ is_oa * post_placebo,
+                  data = works_placebo)
+
+summary(did_placebo)
+
+# If the interaction is NOT significant, parallel trends hold
+cat(sprintf("Placebo p-value: %.4f\n",
+            summary(did_placebo)$coefficients[
+             "is_oaTRUE:post_placeboTRUE", "Pr(>|t|)"
+            ]))
+```
+
+*Key insight:* A non-significant placebo interaction (p > 0.05) supports the
+parallel trends assumption. A significant result suggests pre-existing
+divergence between OA and non-OA papers.
+
+**3. Matched comparison.**
+Use propensity score matching to estimate the OA effect.
+
+```{r}
+#| label: sol-ch32-3
+#| eval: false
+library(MatchIt)
+library(tidyverse)
+
+# Propensity score matching
+matched <- matchit(
+ is_oa ~ publication_year + referenced_works_count + type,
+ data = works_did,
+ method = "nearest",
+ ratio = 1
+)
+
+summary(matched)
+matched_data <- match.data(matched)
+
+# Estimate treatment effect on matched sample
+did_matched <- lm(cited_by_count ~ is_oa, data = matched_data)
+summary(did_matched)
+
+cat(sprintf("Unmatched OA effect: %.2f\n",
+            coef(did_simple)["is_oaTRUE"]))
+cat(sprintf("Matched OA effect: %.2f\n",
+            coef(did_matched)["is_oaTRUE"]))
+```
+
+*Key insight:* Matching reduces selection bias by creating comparable groups.
+If the matched and unmatched effects differ substantially, selection on
+observables was important.
+
+## Chapter 33 --- Reproducibility, RRIDs, and Badges {-}
+
+**1. DAS detection.**
+Search abstracts for data/code availability statements.
+
+```{r}
+#| label: sol-ch33-1
+#| eval: false
+library(tidyverse)
+
+das_keywords <- c("data availability", "code availability",
+                  "github\\.com", "zenodo", "figshare",
+                  "data are available", "code is available")
+
+das_pattern <- paste(das_keywords, collapse = "|")
+
+works |>
+ filter(!is.na(ab)) |>
+ mutate(has_das = str_detect(tolower(ab), das_pattern)) |>
+ summarise(
+   total = n(),
+   with_das = sum(has_das),
+   das_rate = mean(has_das)
+ )
+```
+
+*Key insight:* DAS detection via abstract text is a lower bound; many statements
+appear only in dedicated sections not captured by abstracts.
+
+**2. Cross-journal comparison.**
+Compare metadata completeness and OA rates across journals.
+
+```{r}
+#| label: sol-ch33-2
+#| eval: false
+journal_ids <- c("S4210174107", "S49861241", "S137773608")
+
+journal_quality <- map(journal_ids, \(jid) {
+ w <- oa_fetch(entity = "works",
+               primary_location.source.id = jid,
+               from_publication_date = "2020-01-01") |>
+   slice_sample(n = 200)
+ tibble(
+   journal = jid,
+   abstract_rate = mean(!is.na(w$ab)),
+   oa_rate = mean(w$is_oa, na.rm = TRUE),
+   doi_rate = mean(!is.na(w$doi))
+ )
+}) |> list_rbind()
+
+journal_quality
+```
+
+*Key insight:* Journals with higher OA rates tend to have better metadata
+completeness, but the correlation is not perfect.
+
+**3. Temporal trends.**
+Track transparency proxies over time.
+
+```{r}
+#| label: sol-ch33-3
+#| eval: false
+transparency_trends <- works |>
+ group_by(publication_year) |>
+ summarise(
+   abstract_rate = mean(!is.na(ab)),
+   oa_rate = mean(is_oa, na.rm = TRUE),
+   high_cite_rate = mean(cited_by_count >= 10)
+ ) |>
+ pivot_longer(-publication_year, names_to = "metric",
+              values_to = "value")
+
+ggplot(transparency_trends, aes(publication_year, value,
+                                 colour = metric)) +
+ geom_line() +
+ scale_y_continuous(labels = scales::percent) +
+ labs(title = "Transparency and impact proxies over time",
+      x = "Year", y = "Proportion")
+```
+
+*Key insight:* Transparency proxies and citation impact may be weakly correlated
+within years, but confounding factors (field, journal prestige) complicate
+interpretation.
+
+## Chapter 34 --- Reproducible Pipelines {-}
+
+**1. Build a pipeline.**
+Create a `_targets.R` file for a bibliometric workflow.
+
+```{r}
+#| label: sol-ch34-1
+#| eval: false
+library(targets)
+
+# _targets.R content:
+tar_option_set(packages = c("openalexR", "tidyverse"))
+
+list(
+ tar_target(raw_data, {
+   oa_fetch(entity = "works", search = "bibliometrics",
+            from_publication_date = "2020-01-01")
+ }),
+
+ tar_target(clean_data, {
+   raw_data |>
+     filter(!is.na(doi), !is.na(publication_year)) |>
+     select(id, doi, display_name, publication_year,
+            cited_by_count, is_oa)
+ }),
+
+ tar_target(summary_stats, {
+   clean_data |>
+     group_by(publication_year) |>
+     summarise(n = n(), mean_cites = mean(cited_by_count))
+ }),
+
+ tar_target(trend_plot, {
+   ggplot(summary_stats, aes(publication_year, n)) +
+     geom_col() +
+     labs(title = "Publication trend", x = "Year", y = "Works")
+ })
+)
+
+# Run with: tar_make()
+# Verify: tar_visnetwork()
+```
+
+*Key insight:* Changing the summary function only re-runs `summary_stats` and
+`trend_plot`, not `raw_data` or `clean_data` --- this is the power of
+dependency-based pipelines.
+
+**2. renv snapshot.**
+Demonstrate dependency management with renv.
+
+```{r}
+#| label: sol-ch34-2
+#| eval: false
+# Step 1: Initialise renv
+# renv::init()
+
+# Step 2: Install a package
+# install.packages("glue")
+# library(glue)
+
+# Step 3: Snapshot
+# renv::snapshot()
+# This creates/updates renv.lock
+
+# Step 4: Simulate loss --- remove the package
+# remove.packages("glue")
+# library(glue)  # Error: package not found
+
+# Step 5: Restore
+# renv::restore()
+# library(glue)  # Works again
+```
+
+*Key insight:* renv creates a project-local library and a lockfile, ensuring
+exact reproducibility of package versions across machines and time.
+
+**3. Branching.**
+Use dynamic branching to analyse multiple journals in parallel.
+
+```{r}
+#| label: sol-ch34-3
+#| eval: false
+library(targets)
+
+# _targets.R with dynamic branching:
+tar_option_set(packages = c("openalexR", "tidyverse"))
+
+list(
+ tar_target(journal_ids,
+            c("S4210174107", "S137773608", "S49861241")),
+
+ tar_target(journal_data,
+   oa_fetch(entity = "works",
+            primary_location.source.id = journal_ids,
+            from_publication_date = "2020-01-01"),
+   pattern = map(journal_ids)
+ ),
+
+ tar_target(journal_summary,
+   journal_data |>
+     summarise(
+       journal = first(so),
+       n = n(),
+       mean_cites = mean(cited_by_count)
+     ),
+   pattern = map(journal_data)
+ )
+)
+```
+
+*Key insight:* Dynamic branching avoids duplicating target definitions; each
+journal is processed independently and can run in parallel with
+`tar_make_future()`.
+
+## Chapter 35 --- Interactive Dashboards {-}
+
+**1. Multi-page dashboard.**
+Create a Quarto dashboard with two pages.
+
+```{r}
+#| label: sol-ch35-1
+#| eval: false
+# Save as dashboard.qmd:
+# ---
+# title: "Bibliometric Dashboard"
+# format: dashboard
+# ---
+#
+# # Overview
+#
+# ## Row
+#
+# ```{r}
+# library(plotly)
+# plot_ly(summary_data, x = ~year, y = ~n, type = "bar")
+# ```
+#
+# ## Row
+#
+# ```{r}
+# plot_ly(works, x = ~cited_by_count, type = "histogram")
+# ```
+#
+# # Details
+#
+# ## Row
+#
+# ```{r}
+# library(DT)
+# datatable(works |> select(display_name, publication_year,
+#                           cited_by_count, is_oa))
+# ```
+```
+
+*Key insight:* Quarto dashboards use page-level headings (`#`) for navigation
+tabs and row/column-level headings (`##`) for layout.
+
+**2. Linked brushing.**
+Use plotly selection to filter a DT table.
+
+```{r}
+#| label: sol-ch35-2
+#| eval: false
+library(plotly)
+library(crosstalk)
+library(DT)
+
+shared_data <- SharedData$new(works)
+
+bscols(
+ plot_ly(shared_data, x = ~publication_year,
+         y = ~cited_by_count, type = "scatter",
+         mode = "markers") |>
+   layout(dragmode = "select"),
+
+ datatable(shared_data,
+           options = list(pageLength = 10),
+           selection = "multiple")
+)
+```
+
+*Key insight:* `crosstalk::SharedData` enables linked brushing between any
+htmlwidget that supports it, without needing Shiny.
+
+**3. Custom tooltips.**
+Add informative hover text to a plotly chart.
+
+```{r}
+#| label: sol-ch35-3
+#| eval: false
+library(plotly)
+library(tidyverse)
+
+tooltip_data <- works |>
+ group_by(publication_year) |>
+ summarise(n = n(), mean_cites = round(mean(cited_by_count), 1))
+
+plot_ly(tooltip_data,
+       x = ~publication_year,
+       y = ~n,
+       type = "bar",
+       text = ~paste0("Year: ", publication_year,
+                      "<br>Papers: ", n,
+                      "<br>Mean cites: ", mean_cites),
+       hoverinfo = "text")
+```
+
+*Key insight:* Custom tooltips using `text` and `hoverinfo = "text"` provide
+context-rich information on hover, improving dashboard usability.
+
+## Chapter 36 --- Parameterized Quarto Reports {-}
+
+**1. Institutional template.**
+Create a parameterized report for institutional profiles.
+
+```{r}
+#| label: sol-ch36-1
+#| eval: false
+# Save as inst_profile.qmd:
+# ---
+# title: "Institutional Profile"
+# params:
+#   inst_id: "I123456789"
+#   inst_name: "University of Example"
+#   start_year: 2020
+#   end_year: 2023
+# ---
+#
+# ```{r}
+# library(openalexR)
+# library(tidyverse)
+#
+# works <- oa_fetch(
+#   entity = "works",
+#   authorships.institutions.lineage = params$inst_id,
+#   from_publication_date = paste0(params$start_year, "-01-01"),
+#   to_publication_date = paste0(params$end_year, "-12-31")
+# )
+#
+# cat(sprintf("Total publications: %d\n", nrow(works)))
+# ```
+#
+# ## Publication Trend
+# ```{r}
+# works |>
+#   count(publication_year) |>
+#   ggplot(aes(publication_year, n)) +
+#   geom_col() +
+#   labs(title = params$inst_name)
+# ```
+#
+# ## Citation Distribution
+# ```{r}
+# ggplot(works, aes(cited_by_count)) +
+#   geom_histogram(bins = 30) +
+#   scale_x_log10()
+# ```
+#
+# ## Top Authors
+# ```{r}
+# works |> unnest(author) |>
+#   count(au_display_name, sort = TRUE) |>
+#   head(10)
+# ```
+```
+
+*Key insight:* Parameters make the same template reusable for any institution;
+batch rendering generates a portfolio of reports efficiently.
+
+**2. Batch rendering.**
+Render the template for multiple journals.
+
+```{r}
+#| label: sol-ch36-2
+#| eval: false
+library(quarto)
+
+journals <- list(
+ list(journal_id = "S4210174107", journal_name = "Scientometrics"),
+ list(journal_id = "S137773608", journal_name = "Nature Physics"),
+ list(journal_id = "S49861241", journal_name = "PLOS ONE")
+)
+
+walk(journals, \(j) {
+ quarto_render(
+   "journal_profile.qmd",
+   execute_params = list(
+     journal_id = j$journal_id,
+     journal_name = j$journal_name,
+     start_year = 2020,
+     end_year = 2023
+   ),
+   output_file = paste0("report_", j$journal_name, ".html")
+ )
+})
+```
+
+*Key insight:* Batch rendering with `quarto_render()` and parameterised
+templates scales to hundreds of reports with minimal code.
+
+**3. Conditional content.**
+Add a warning when the sample is too small.
+
+```{r}
+#| label: sol-ch36-3
+#| eval: false
+# In the parameterized .qmd file:
+#
+# ```{r}
+# #| results: asis
+# if (nrow(works) < 50) {
+#   cat("<div class="callout callout-warn">\n")
+#   cat("This sample contains fewer than 50 papers. ")
+#   cat("The citation distribution may not be reliable.\n")
+#   cat(":::\n")
+# } else {
+#   ggplot(works, aes(cited_by_count)) +
+#     geom_histogram(bins = 30) +
+#     scale_x_log10() +
+#     labs(title = "Citation distribution")
+# }
+# ```
+```
+
+*Key insight:* Conditional logic with `results: asis` enables dynamic content
+switching --- essential for robust automated reports that handle edge cases.
+
+## Chapter 37 --- Building a Bibliometric Shiny App {-}
+
+**1. Add network tab.**
+Extend the app with a co-authorship network visualisation.
+
+```{r}
+#| label: sol-ch37-1
+#| eval: false
+library(shiny)
+library(visNetwork)
+library(igraph)
+library(tidyverse)
+
+# Add to UI:
+# tabPanel("Network",
+#   visNetworkOutput("coauth_network", height = "600px")
+# )
+
+# Add to server:
+# output$coauth_network <- renderVisNetwork({
+#   req(data())
+#   edges <- data() |>
+#     unnest(author) |>
+#     group_by(id) |>
+#     filter(n() >= 2, n() <= 10) |>
+#     reframe(pair = combn(au_display_name, 2, simplify = FALSE)) |>
+#     unnest_wider(pair, names_sep = "_") |>
+#     count(pair_1, pair_2, name = "weight") |>
+#     rename(from = pair_1, to = pair_2)
+#
+#   g <- graph_from_data_frame(edges, directed = FALSE)
+#   comm <- cluster_leiden(g, resolution = 1.0)
+#
+#   nodes <- tibble(
+#     id = V(g)$name, label = V(g)$name,
+#     group = as.character(membership(comm))
+#   )
+#
+#   visNetwork(nodes, edges) |>
+#     visOptions(highlightNearest = TRUE, selectedBy = "group")
+# })
+```
+
+*Key insight:* Limiting the network to papers with 2-10 authors avoids
+overwhelming the visualisation with hyper-authored papers.
+
+**2. Caching.**
+Implement server-side caching for repeated queries.
+
+```{r}
+#| label: sol-ch37-2
+#| eval: false
+library(shiny)
+library(memoise)
+
+# Create a cached version of the data fetching function
+fetch_cached <- memoise(function(journal_id, start_date, end_date) {
+ oa_fetch(
+   entity = "works",
+   primary_location.source.id = journal_id,
+   from_publication_date = start_date,
+   to_publication_date = end_date
+ )
+}, cache = cachem::cache_disk("shiny_cache"))
+
+# In the server:
+# data <- reactive({
+#   fetch_cached(
+#     input$journal_id,
+#     paste0(input$start_year, "-01-01"),
+#     paste0(input$end_year, "-12-31")
+#   )
+# })
+```
+
+*Key insight:* Disk-backed caching persists across sessions, so the same query
+never hits the API twice. Use `cachem::cache_disk()` for production apps.
+
+**3. Deployment.**
+Deploy to shinyapps.io.
+
+```{r}
+#| label: sol-ch37-3
+#| eval: false
+# Step 1: Install rsconnect
+# install.packages("rsconnect")
+
+# Step 2: Configure account
+# rsconnect::setAccountInfo(
+#   name = "your-account",
+#   token = "your-token",
+#   secret = "your-secret"
+# )
+
+# Step 3: Deploy
+# rsconnect::deployApp(
+#   appDir = ".",
+#   appName = "bibliometric-explorer",
+#   appTitle = "Bibliometric Explorer"
+# )
+
+# Step 4: Test with different inputs
+# - Try different journal IDs
+# - Test with narrow and wide date ranges
+# - Verify that caching works (second load should be instant)
+```
+
+*Key insight:* Test with a variety of inputs before deploying; edge cases (empty
+results, very large corpora) should be handled gracefully with validation
+messages.
+
+**4. biblioshiny comparison.**
+Run biblioshiny and compare features.
+
+```{r}
+#| label: sol-ch37-4
+#| eval: false
+library(bibliometrix)
+# biblioshiny()
+
+# Feature comparison table:
+# | Feature              | biblioshiny | Custom app |
+# |---------------------|-------------|------------|
+# | Data sources        | WoS, Scopus | OpenAlex   |
+# | Network analysis    | Yes         | Basic      |
+# | Topic analysis      | Yes         | No         |
+# | Custom indicators   | Limited     | Full       |
+# | Parameterization    | No          | Yes        |
+# | Deployment          | Local only  | shinyapps  |
+# | Reproducibility     | GUI-based   | Code-based |
+#
+# biblioshiny is comprehensive but not easily customisable;
+# a custom app trades breadth for tailored functionality.
+```
+
+*Key insight:* biblioshiny is excellent for exploration but lacks
+reproducibility and customisation. A custom app is better for production
+workflows with specific analytical requirements.

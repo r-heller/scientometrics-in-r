@@ -1,0 +1,65 @@
+# Indicator Crosswalk Across Databases
+
+This appendix maps common bibliometric indicators to the data sources and tools that support them. Use it to choose the right source for your analysis.
+
+## Publication-level indicators
+
+| Indicator | OpenAlex | Web of Science | Scopus | Dimensions | Chapter |
+|:----------|:--------:|:--------------:|:------:|:----------:|:--------|
+| Citation count | Y | Y | Y | Y | 9–10 |
+| Field-normalised citations (MNCS) | Compute | CNCI (built-in) | FWCI (built-in) | FCR (built-in) | 13 |
+| PP(top 10%) | Compute | Compute | Compute | Compute | 10 |
+| Open access status | Y | Y | Y | Y | 27 |
+| Funding acknowledgements | Y (partial) | Y | Y | Y | 30 |
+| Abstract text | Y | Y | Y | Y | 21–25 |
+| References list | Y | Y | Y | Y | 16 |
+| Author affiliations | Y | Y | Y | Y | 12–13 |
+
+## Author-level indicators
+
+| Indicator | OpenAlex | Web of Science | Scopus | Dimensions | Chapter |
+|:----------|:--------:|:--------------:|:------:|:----------:|:--------|
+| h-index | Compute | Y | Y | Compute | 10, 12 |
+| Publication count | Y | Y | Y | Y | 12 |
+| ORCID integration | Y | Y | Y | Y | 12 |
+| Co-author network | Compute | Compute | Compute | Compute | 15 |
+
+## Journal-level indicators
+
+| Indicator | OpenAlex | Web of Science | Scopus | Chapter |
+|:----------|:--------:|:--------------:|:------:|:--------|
+| Journal Impact Factor | — | Y | — | 11 |
+| CiteScore | — | — | Y | 11 |
+| SNIP | — | — | Y | 11 |
+| SJR | — | — | Y | 11 |
+| Article volume | Y | Y | Y | 11 |
+| Citation distribution | Compute | Compute | Compute | 11 |
+
+## Institution-level indicators
+
+| Indicator | OpenAlex | Leiden Ranking | Web of Science | Scopus | Chapter |
+|:----------|:--------:|:-------------:|:--------------:|:------:|:--------|
+| Publication counts (full/fractional) | Compute | Y | Compute | Compute | 13 |
+| MNCS / FWCI | Compute | Y | CNCI | FWCI | 13 |
+| PP(top 10%) | Compute | Y | Compute | Compute | 13 |
+| Collaboration rates | Compute | Y | Compute | Compute | 15 |
+| Subject profile | Y | Y | Y | Y | 19 |
+
+## Network indicators
+
+| Indicator | Data needed | Source | Chapter |
+|:----------|:-----------|:------|:--------|
+| Co-authorship strength | Author pairs per paper | Any | 15 |
+| Bibliographic coupling | Reference lists | OpenAlex, WoS, Scopus | 16 |
+| Co-citation | Citing documents | OpenAlex, WoS, Scopus | 16 |
+| Keyword co-occurrence | Keywords/topics | Any | 17 |
+| Betweenness centrality | Network graph | Computed | 15 |
+| Community structure | Network graph | Computed | 18 |
+
+## Notes
+
+- **"Y"** = available directly from the data source.
+- **"Compute"** = the raw data is available but the indicator must be calculated.
+- **"—"** = not available from that source.
+- OpenAlex is the only fully free and open source in this table. Web of Science and Scopus require institutional subscriptions. Dimensions offers a free tier with limited functionality.
+- Field normalisation always requires reference values. When a source does not provide them natively, you can compute them from the full corpus using the method in Chapter 13.

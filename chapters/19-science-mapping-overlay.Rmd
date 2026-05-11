@@ -1,0 +1,256 @@
+# Science Mapping and Overlay Maps
+
+## Learning objectives {#scimap-objectives}
+
+After completing this chapter, you will be able to:
+
+- Explain the principles of science mapping and its applications
+- Construct a journal-level co-citation network from OpenAlex data
+- Create an overlay map that positions a research profile on a base map
+- Interpret overlay maps to identify research strengths and gaps
+- Discuss the limitations of global science maps for local evaluation
+
+## Setup {#scimap-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(igraph)
+library(tidygraph)
+library(ggraph)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#scimap-background}
+
+A **science map** is a spatial representation of the structure of science, where proximity indicates relatedness. Just as a geographic map shows the layout of countries and continents, a science map shows the layout of disciplines, fields, and research areas. These maps are constructed from bibliometric data --- typically citation links between journals or document sets --- and visualised using network layouts or dimensionality reduction techniques.
+
+The most common base maps use **journal-level citation networks**. Two journals are linked if papers in one frequently cite papers in the other. Community detection applied to these networks produces clusters corresponding to broad disciplines (biomedical sciences, physical sciences, social sciences, etc.). @waltman2012 developed methods for constructing such maps from large-scale citation data, and the resulting visualisations are widely used in science policy and institutional assessment.
+
+An **overlay map** [@rafols2010] takes a global science map as a fixed background and plots a specific entity's output on top. For example, a university's publications are mapped to the journals in which they appeared; the overlay then shows which areas of the global map the university is active in, and how intensely. This technique is powerful for visualising research profiles, identifying strategic gaps, and comparing institutions or countries without reducing their activity to a single number.
+
+The construction pipeline involves three steps: (1) build or obtain a base map of journals with coordinates and cluster assignments; (2) map the entity's publications to journals in the base map; (3) scale node sizes proportionally and overlay on the base map.
+
+Science maps provide intuitive, holistic overviews of research landscapes. However, they are projections of high-dimensional data into two dimensions, and like any projection, they introduce distortion. Interdisciplinary journals may appear in unexpected locations, and the layout algorithm's random seed affects exact positions [@hicks2015].
+
+## Worked example {#scimap-example}
+
+### Building a journal co-citation base map
+
+We construct a base map from citation flows between journals in a multidisciplinary sample.
+
+```{r}
+#| label: fetch-basemap-data
+#| cache: true
+works_multi <- oa_fetch(
+  entity = "works",
+  from_publication_date = "2022-01-01",
+  to_publication_date = "2022-12-31",
+  type = "article",
+  options = list(sample = 500, seed = 42)
+)
+
+journal_data <- works_multi |>
+  select(id, source_display_name, referenced_works) |>
+  filter(!is.na(source_display_name)) |>
+  unnest(referenced_works) |>
+  rename(cited_id = referenced_works)
+
+cat(glue("Citing papers with journal info: {n_distinct(journal_data$id)}\n"))
+cat(glue("Unique source journals: {n_distinct(journal_data$source_display_name)}\n"))
+```
+
+```{r}
+#| label: journal-cocitation
+journal_cited <- journal_data |>
+  select(citing_journal = source_display_name, cited_id)
+
+journal_pairs <- journal_cited |>
+  inner_join(journal_cited, by = "cited_id", suffix = c("_a", "_b"),
+             relationship = "many-to-many") |>
+  filter(citing_journal_a < citing_journal_b) |>
+  count(citing_journal_a, citing_journal_b, name = "cocitation")
+
+journal_pairs_top <- journal_pairs |>
+  filter(cocitation >= 3)
+
+g_journals <- graph_from_data_frame(
+  journal_pairs_top |> select(citing_journal_a, citing_journal_b,
+                               weight = cocitation),
+  directed = FALSE
+) |>
+  simplify(edge.attr.comb = list(weight = "sum"))
+
+cat(glue("Journal base map: {vcount(g_journals)} journals, {ecount(g_journals)} edges\n"))
+```
+
+### Clustering journals into disciplines
+
+```{r}
+#| label: journal-clusters
+comm <- cluster_leiden(g_journals, resolution_parameter = 0.8,
+                       objective_function = "modularity")
+V(g_journals)$cluster <- as.factor(membership(comm))
+V(g_journals)$degree <- degree(g_journals)
+
+cluster_table <- tibble(
+  journal = V(g_journals)$name,
+  cluster = V(g_journals)$cluster,
+  degree = V(g_journals)$degree
+) |>
+  group_by(cluster) |>
+  summarise(n_journals = n(),
+            top_journals = paste(head(journal[order(-degree)], 3),
+                                 collapse = "; "),
+            .groups = "drop") |>
+  arrange(desc(n_journals))
+
+cluster_table |> head(8) |> gt()
+```
+
+### Visualising the base map
+
+```{r}
+#| label: fig-scimap-basemap
+#| fig-cap: "Journal co-citation base map coloured by discipline cluster."
+#| fig-alt: "Network map of journals positioned by co-citation similarity. Colours indicate discipline clusters. Journals that cite each other's papers are positioned nearby."
+#| fig-width: 7
+#| fig-height: 5.5
+set.seed(42)
+layout <- create_layout(as_tbl_graph(g_journals), layout = "fr")
+
+ggraph(layout) +
+  geom_edge_link(alpha = 0.05, colour = "grey70") +
+  geom_node_point(aes(colour = cluster, size = degree), alpha = 0.7) +
+  scale_size_continuous(range = c(1, 5), guide = "none") +
+  scale_colour_manual(values = palette_sci(
+    n_distinct(V(g_journals)$cluster)
+  )) +
+  labs(colour = "Cluster") +
+  theme_void(base_family = "sans", base_size = 11) +
+  theme(legend.position = "bottom")
+```
+
+### Creating an overlay map
+
+We overlay the publication profile of an institution.
+
+```{r}
+#| label: fetch-overlay-data
+#| cache: true
+inst_works <- oa_fetch(
+  entity = "works",
+  authorships.institutions.id = "I40120149",
+  from_publication_date = "2022-01-01",
+  to_publication_date = "2022-12-31",
+  type = "article",
+  options = list(sample = 300, seed = 42)
+)
+
+inst_journals <- inst_works |>
+  filter(!is.na(source_display_name)) |>
+  count(source_display_name, name = "n_pubs", sort = TRUE)
+
+basemap_journals <- V(g_journals)$name
+inst_journals_matched <- inst_journals |>
+  filter(source_display_name %in% basemap_journals)
+
+cat(glue("Institution journals matched to base map: {nrow(inst_journals_matched)} / {nrow(inst_journals)}\n"))
+```
+
+```{r}
+#| label: fig-scimap-overlay
+#| fig-cap: "Overlay map showing Oxford's 2022 publication profile on the journal base map."
+#| fig-alt: "The journal base map with Oxford's publications overlaid as larger nodes. The overlay reveals which areas of science the university is active in."
+#| fig-width: 7
+#| fig-height: 5.5
+overlay_sizes <- tibble(journal = V(g_journals)$name) |>
+  left_join(inst_journals_matched, by = c("journal" = "source_display_name")) |>
+  mutate(n_pubs = replace_na(n_pubs, 0))
+
+set.seed(42)
+layout_overlay <- create_layout(as_tbl_graph(g_journals), layout = "fr")
+
+ggraph(layout_overlay) +
+  geom_edge_link(alpha = 0.03, colour = "grey80") +
+  geom_node_point(colour = "grey85", size = 1.5, alpha = 0.5) +
+  geom_node_point(
+    data = layout_overlay |> left_join(overlay_sizes, by = c("name" = "journal")) |>
+      filter(n_pubs > 0),
+    aes(size = n_pubs, colour = cluster), alpha = 0.8
+  ) +
+  scale_size_continuous(range = c(2, 8), name = "Publications") +
+  scale_colour_manual(values = palette_sci(
+    n_distinct(V(g_journals)$cluster)
+  )) +
+  labs(colour = "Cluster") +
+  theme_void(base_family = "sans", base_size = 11) +
+  theme(legend.position = "bottom")
+```
+
+## Diagnostics and interpretation {#scimap-diagnostics}
+
+- **Journal matching rate**: The fraction of the entity's publications that match journals in the base map determines overlay completeness. Low matching rates (< 50%) indicate the base map is too narrow for the entity's profile.
+- **Layout stability**: Force-directed layouts are sensitive to initial conditions. Always use `set.seed()` and report the seed. Consider consensus layouts from multiple seeds for important maps.
+- **Cluster labelling**: Algorithmic clusters need human interpretation. Label clusters by inspecting the journals they contain, not by relying on the algorithm.
+- **Overlay concentration**: If the overlay is concentrated in one or two clusters, the institution is highly specialised. Dispersed overlays indicate breadth. Neither is inherently better.
+
+## Limitations and responsible use {#scimap-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- **Projection distortion.** Two-dimensional layouts compress high-dimensional citation relationships. Journals at the boundaries between disciplines may be misplaced. Do not over-interpret exact positions.
+- **Journal-level aggregation.** Mapping publications to journals loses within-journal variation. A paper in *Nature* could be biology, physics, or chemistry --- the overlay cannot distinguish.
+- **Sample-dependent base maps.** Our base map is built from a small sample. Production science maps (e.g., the CWTS journal map) use comprehensive citation data. Treat this example as illustrative.
+- **Not evaluative.** Science maps show *where* research happens, not how good it is. An empty region on a university's overlay map is not a weakness --- it may reflect a deliberate strategic choice [@hicks2015].
+- **Interdisciplinary research is underrepresented.** Journals at disciplinary boundaries may cluster with one discipline, making interdisciplinary work partially invisible [@rafols2010].
+</div>
+
+## Common pitfalls {#scimap-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Using too small a base map.** A base map with fewer than 50 journals lacks resolution. Aim for at least 100–200 journals for meaningful discipline separation.
+- **Comparing overlays from different base maps.** Node positions are not transferable between different base maps. To compare institutions, overlay them on the *same* base map.
+- **Ignoring unmatched publications.** Publications in journals not on the base map simply disappear from the overlay. Report the matching rate.
+- **Treating clusters as fixed disciplines.** Cluster assignments depend on the algorithm, resolution parameter, and data sample. They are analytical tools, not natural categories.
+</div>
+
+## Exercises {#scimap-exercises}
+
+1. **Multi-institution overlay.** Overlay the profiles of two institutions on the same base map using different colours. Where do their research profiles overlap, and where do they diverge?
+
+2. **Temporal overlay.** Build overlays for the same institution in two different years. Has the research profile shifted toward new areas or remained stable?
+
+3. **Country-level overlay.** Instead of an institution, overlay a country's publication profile. How does a small specialised country (e.g., Singapore) compare to a large diversified one (e.g., the United States)?
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#scimap-reading}
+
+- @rafols2010 --- Overlay maps for visualising research profiles on global science maps.
+- @waltman2012 --- Unified approach to constructing and clustering bibliometric maps.
+- @hicks2015 --- The Leiden Manifesto: responsible interpretation of quantitative research profiles.
+- @fortunato2010 --- Community detection methods relevant to journal clustering.
+
+## Session info {#scimap-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

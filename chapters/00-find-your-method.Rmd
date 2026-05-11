@@ -1,0 +1,56 @@
+# Find Your Method
+
+Use this decision tree to navigate to the chapter or case study most relevant to your research question.
+
+```{mermaid}
+%%| fig-cap: "Decision tree for selecting a scientometric method."
+%%| label: fig-decision-tree
+
+flowchart TD
+    A["What is your<br>research question?"] --> B["Map a research field"]
+    A --> C["Evaluate research<br>performance"]
+    A --> D["Detect emerging<br>topics or trends"]
+    A --> E["Study collaboration<br>patterns"]
+    A --> F["Track open access<br>& open science"]
+
+    B --> B1["Bibliographic coupling<br>Ch. 16"]
+    B --> B2["Co-citation analysis<br>Ch. 16"]
+    B --> B3["Science mapping<br>Ch. 19"]
+    B --> B4["Topic modeling<br>Ch. 22"]
+    B --> B5["Case Study 1:<br>CRISPR Field Review"]
+
+    C --> C1["Author metrics<br>Ch. 10, 12"]
+    C --> C2["Journal metrics<br>Ch. 11"]
+    C --> C3["Institutional benchmarking<br>Ch. 13"]
+    C --> C4["Case Study 2:<br>Institutional Benchmark"]
+    C --> C5["Case Study 3:<br>Journal Portfolio"]
+
+    D --> D1["Keyword bursts<br>Ch. 25"]
+    D --> D2["Temporal analysis<br>Ch. 14"]
+    D --> D3["Embedding clustering<br>Ch. 24"]
+    D --> D4["Case Study 5:<br>Emerging Topics"]
+
+    E --> E1["Co-authorship networks<br>Ch. 15"]
+    E --> E2["Community detection<br>Ch. 18"]
+    E --> E3["Gender & equity<br>Ch. 28"]
+    E --> E4["Case Study 4:<br>Gender Gap"]
+
+    F --> F1["OA indicators<br>Ch. 27"]
+    F --> F2["Altmetrics<br>Ch. 26"]
+    F --> F3["Reproducibility<br>Ch. 33"]
+```
+
+## Quick reference table
+
+| Research question | Key chapters | Case study |
+|:---|:---|:---|
+| Map a research field | 16, 19, 22 | CS 1: CRISPR |
+| Evaluate an author | 10, 12 | — |
+| Evaluate a journal | 11 | CS 3: Journal Portfolio |
+| Benchmark an institution | 13 | CS 2: Institutional |
+| Detect emerging topics | 14, 24, 25 | CS 5: Emerging Topics |
+| Analyze collaboration | 15, 18 | — |
+| Study gender gaps | 28 | CS 4: Gender Gap |
+| Track open access | 27 | — |
+| Build a dashboard | 35, 37 | — |
+| Create a reproducible pipeline | 34, 36 | — |
