@@ -748,7 +748,8 @@ Extract a table from a PDF using `tabulizer`.
 ```{r}
 #| label: sol-ch08-3
 #| eval: false
-library(tabulapdf)
+# tabulapdf needs Java (rJava); shown for reference, not executed.
+# Install: install.packages("tabulapdf"); requires a working Java runtime.
 
 tables <- extract_tables("sample_paper.pdf", pages = 3)
 tbl <- as_tibble(tables[[1]], .name_repair = "unique")
