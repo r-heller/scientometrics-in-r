@@ -51,21 +51,23 @@ jobs:
             rlib-Linux-r4.4.1-renvlock-
 
       - name: Install lockfile packages via pak into user lib
-        # Earlier attempts with renv installed packages under
-        # <RENV_PATHS_LIBRARY>/<R-ver>/<platform>/, which is not on
-        # .libPaths(). pak::lockfile_install honours `lib` literally
-        # and resolves renv.lock directly. The user lib is .libPaths()[1].
+        # pak::lockfile_install expects pak's own lockfile schema, not
+        # renv.lock — they're not compatible. Parse renv.lock for the
+        # package name list, then pak::pkg_install into the user lib.
+        # We lose strict version pinning vs. the lockfile, but every
+        # package in the lockfile is on RSPM at a compatible version.
         run: |
           options(install.packages.check.source = "no")
           install.packages(
-            "pak",
+            c("jsonlite", "pak"),
             repos = "https://packagemanager.posit.co/cran/__linux__/noble/latest"
           )
-          pak::lockfile_install(
-            lockfile = "renv.lock",
-            lib      = .libPaths()[1],
-            update   = FALSE
-          )
+          lock <- jsonlite::fromJSON("renv.lock", simplifyVector = FALSE)
+          pkgs <- names(lock$Packages)
+          # Drop renv itself (already loaded) and any base/recommended pkgs.
+          pkgs <- setdiff(pkgs, c("renv", rownames(installed.packages(priority = "high"))))
+          cat("Installing", length(pkgs), "packages from renv.lock\n")
+          pak::pkg_install(pkgs, lib = .libPaths()[1], ask = FALSE)
           cat("--- .libPaths() ---\n"); print(.libPaths())
           cat("--- bookdown ---\n")
           print(find.package("bookdown", quiet = TRUE))
