@@ -9,6 +9,8 @@ book:
     - name: "Raban Heller"
       orcid: "0000-0001-8006-9742"
   date: today
+  cover-image: "images/cover.png"
+  favicon: "images/cover.png"
   repo-url: https://github.com/r-heller/scientometrics-in-r
   repo-branch: main
   repo-actions: [edit, source, issue]
