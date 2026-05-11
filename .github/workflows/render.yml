@@ -43,8 +43,20 @@ jobs:
           r-version: "4.4.1"
           use-public-rspm: true
 
-      - name: Setup renv
-        uses: r-lib/actions/setup-renv@v2
+      - name: Bootstrap renv
+        # setup-renv@v2 runs `install.packages("renv")` without setting a
+        # repo; on this runner that fails with "trying to use CRAN without
+        # setting a mirror" because the project .Rprofile sources
+        # renv/activate.R, which short-circuits the normal RSPM hookup.
+        # Install renv ourselves with an explicit repo, then activate.
+        run: |
+          install.packages("renv", repos = "https://packagemanager.posit.co/cran/__linux__/noble/latest")
+        shell: Rscript {0}
+
+      - name: Restore renv library
+        run: |
+          renv::restore(prompt = FALSE)
+        shell: Rscript {0}
 
       - name: Setup Python
         uses: actions/setup-python@v5
