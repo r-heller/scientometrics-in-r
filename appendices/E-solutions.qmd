@@ -2,6 +2,10 @@
 title: "Exercise Solutions"
 ---
 
+<!-- verify_chunks: skip-file
+     Every chunk in this appendix is intentionally not evaluated; solutions
+     reference data built during the corresponding chapter. -->
+
 # Exercise Solutions {#sec-solutions}
 
 This appendix provides suggested solutions for all chapter exercises.

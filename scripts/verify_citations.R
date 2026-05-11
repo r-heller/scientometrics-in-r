@@ -14,7 +14,19 @@ qmd_files <- c(qmd_files, "index.qmd")
 all_keys <- character()
 for (f in qmd_files) {
   text <- readLines(f, warn = FALSE)
-  keys <- str_extract_all(text, "(?<=@)[A-Za-z][A-Za-z0-9_:./-]*")
+  # Strip fenced code blocks so BibTeX/code examples don't leak @article keys.
+  in_fence <- FALSE
+  keep <- logical(length(text))
+  for (i in seq_along(text)) {
+    if (grepl("^\\s*```", text[i])) {
+      in_fence <- !in_fence
+      keep[i] <- FALSE
+      next
+    }
+    keep[i] <- !in_fence
+  }
+  text <- text[keep]
+  keys <- str_extract_all(text, "(?<=@)[A-Za-z][A-Za-z0-9_:/-]*[A-Za-z0-9]")
   all_keys <- c(all_keys, unlist(keys))
 }
 
@@ -24,6 +36,9 @@ all_keys <- all_keys[!grepl(
   "^(sec-|fig-|tbl-|eq-|lst-|thm-|lem-|cor-|prp-|cnj-|def-|exm-|exr-)",
   all_keys
 )]
+# Strip trailing punctuation that pandoc treats as sentence terminator, not key.
+all_keys <- sub("[.,;:!?)\\]]+$", "", all_keys)
+all_keys <- unique(all_keys[nzchar(all_keys)])
 
 if (length(all_keys) == 0) {
   message("No citation keys found in .qmd files. Skipping verification.")
