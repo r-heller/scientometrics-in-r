@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#viz-setup}
 
 ```{r}
-#| label: setup
+#| label: 20-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -49,7 +49,7 @@ Network visualisation is both an analytical tool and a communication device. A w
 We reuse a co-authorship network from Scientometrics.
 
 ```{r}
-#| label: build-sample-network
+#| label: 20-build-sample-network
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -97,7 +97,7 @@ cat(glue("Network: {vcount(giant)} nodes, {ecount(giant)} edges\n"))
 ### Comparing layout algorithms
 
 ```{r}
-#| label: fig-viz-layouts
+#| label: 20-fig-viz-layouts
 #| fig-cap: "The same network rendered with four different layout algorithms."
 #| fig-alt: "A 2x2 panel showing the same co-authorship network plotted with Fruchterman-Reingold, Kamada-Kawai, stress, and DRL layouts. Node colours indicate communities."
 #| fig-width: 8
@@ -127,7 +127,7 @@ patchwork::wrap_plots(plots, ncol = 2)
 ### Exporting to GraphML (Gephi)
 
 ```{r}
-#| label: export-graphml
+#| label: 20-export-graphml
 out_dir <- here::here("data")
 graphml_path <- file.path(out_dir, "coauth_network.graphml")
 write_graph(giant, graphml_path, format = "graphml")
@@ -138,7 +138,7 @@ cat(glue("File size: {round(file.size(graphml_path) / 1024, 1)} KB\n"))
 ### Exporting to Pajek format
 
 ```{r}
-#| label: export-pajek
+#| label: 20-export-pajek
 pajek_path <- file.path(out_dir, "coauth_network.net")
 write_graph(giant, pajek_path, format = "pajek")
 cat(glue("Exported Pajek: {pajek_path}\n"))
@@ -149,7 +149,7 @@ cat(glue("Exported Pajek: {pajek_path}\n"))
 VOSviewer reads tab-separated map and network files.
 
 ```{r}
-#| label: export-vosviewer
+#| label: 20-export-vosviewer
 set.seed(42)
 coords <- layout_with_fr(giant)
 
@@ -181,7 +181,7 @@ cat(glue("VOSviewer network: {net_path}\n"))
 ### Interactive visualisation with visNetwork
 
 ```{r}
-#| label: fig-viz-interactive
+#| label: 20-fig-viz-interactive
 #| fig-cap: "Interactive co-authorship network (zoom, pan, and hover for details)."
 #| fig-alt: "Interactive network visualisation where nodes can be hovered for author names and communities can be explored by zooming."
 #| eval: !expr knitr::is_html_output(excludes = c("epub","epub2","epub3"))
@@ -208,7 +208,7 @@ visNetwork(vis_nodes, vis_edges, width = "100%", height = "500px") |>
 ### Publication-quality figure
 
 ```{r}
-#| label: fig-viz-publication
+#| label: 20-fig-viz-publication
 #| fig-cap: "Publication-ready co-authorship network with labelled high-degree nodes."
 #| fig-alt: "A clean, publication-quality network visualisation with minimal visual clutter. High-degree nodes are labelled with author names. Community colours are distinct and colour-blind friendly."
 #| fig-width: 7
@@ -286,6 +286,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#viz-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 20-session-info
 sessionInfo()
 ```

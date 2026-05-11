@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#altmetrics-setup}
 
 ```{r}
-#| label: setup
+#| label: 26-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -42,7 +42,7 @@ OpenAlex provides open-access status and citation counts but does not directly p
 ### Fetching data with OA indicators
 
 ```{r}
-#| label: fetch-altmetrics-data
+#| label: 26-fetch-altmetrics-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -68,7 +68,7 @@ cat(glue("Works retrieved: {nrow(works_slim)}\n"))
 ### Open access as an altmetric dimension
 
 ```{r}
-#| label: oa-breakdown
+#| label: 26-oa-breakdown
 oa_summary <- works_slim |>
   count(oa_status, sort = TRUE) |>
   mutate(pct = scales::percent(n / sum(n)))
@@ -77,7 +77,7 @@ oa_summary |> gt()
 ```
 
 ```{r}
-#| label: fig-altmetrics-oa-citations
+#| label: 26-fig-altmetrics-oa-citations
 #| fig-cap: "Citation distributions by open access status."
 #| fig-alt: "Box plot comparing citation counts across different OA categories (gold, green, hybrid, bronze, closed). Shows whether OA articles receive more citations."
 #| fig-width: 6
@@ -94,7 +94,7 @@ works_slim |>
 ### Citation count distribution
 
 ```{r}
-#| label: fig-altmetrics-citedist
+#| label: 26-fig-altmetrics-citedist
 #| fig-cap: "Citation distribution of the sample, showing the characteristic right skew."
 #| fig-alt: "Histogram of citation counts showing a heavy right tail — most papers have few citations, a few have many."
 #| fig-width: 5
@@ -110,7 +110,7 @@ ggplot(works_slim, aes(x = cited_by_count)) +
 Reference list length correlates with engagement breadth and can serve as a simple proxy for scholarly thoroughness.
 
 ```{r}
-#| label: fig-altmetrics-refcount
+#| label: 26-fig-altmetrics-refcount
 #| fig-cap: "Relationship between reference list length and citation count."
 #| fig-alt: "Scatter plot showing a positive but noisy relationship between the number of references a paper cites and the number of citations it receives."
 #| fig-width: 5
@@ -123,7 +123,7 @@ ggplot(works_slim, aes(x = referenced_works_count, y = cited_by_count)) +
 ```
 
 ```{r}
-#| label: ref-cite-correlation
+#| label: 26-ref-cite-correlation
 cor_val <- cor(works_slim$referenced_works_count, works_slim$cited_by_count,
                use = "complete.obs")
 cat(glue("Pearson correlation (references vs. citations): {round(cor_val, 3)}\n"))
@@ -182,6 +182,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#altmetrics-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 26-session-info
 sessionInfo()
 ```

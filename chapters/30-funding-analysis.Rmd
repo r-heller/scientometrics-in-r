@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#funding-setup}
 
 ```{r}
-#| label: setup
+#| label: 30-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -42,7 +42,7 @@ The fundamental challenge is **attribution**: a paper acknowledging three funder
 ### Extracting funder data
 
 ```{r}
-#| label: fetch-funding-data
+#| label: 30-fetch-funding-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -60,7 +60,7 @@ cat(glue("Works with funder data: {nrow(funded)} / {nrow(works)} ({scales::perce
 ```
 
 ```{r}
-#| label: unnest-funders
+#| label: 30-unnest-funders
 funder_data <- funded |>
   unnest(funders, names_sep = "_") |>
   select(work_id = id, funder = funders_display_name,
@@ -73,7 +73,7 @@ cat(glue("Unique funders: {n_distinct(funder_data$funder)}\n"))
 ### Top funders by publication count
 
 ```{r}
-#| label: fig-funding-top
+#| label: 30-fig-funding-top
 #| fig-cap: "Top 15 funders by number of supported publications."
 #| fig-alt: "Horizontal bar chart showing the 15 funders with the most publications in the sample."
 #| fig-width: 7
@@ -93,7 +93,7 @@ funder_counts |>
 ### Citation impact by funder
 
 ```{r}
-#| label: funder-impact
+#| label: 30-funder-impact
 funder_impact <- funder_data |>
   group_by(funder) |>
   summarise(
@@ -111,7 +111,7 @@ funder_impact |> head(10) |> gt()
 ### Funded vs. unfunded comparison
 
 ```{r}
-#| label: fig-funding-comparison
+#| label: 30-fig-funding-comparison
 #| fig-cap: "Citation distribution for funded vs. unfunded papers."
 #| fig-alt: "Box plot comparing citation counts for papers with and without funding acknowledgements."
 #| fig-width: 5
@@ -177,6 +177,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#funding-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 30-session-info
 sessionInfo()
 ```

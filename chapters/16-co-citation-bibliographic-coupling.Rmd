@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#cocit-setup}
 
 ```{r}
-#| label: setup
+#| label: 16-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -49,7 +49,7 @@ Both methods produce **similarity matrices** that can be converted to networks. 
 We fetch a corpus of scientometrics research and extract reference lists.
 
 ```{r}
-#| label: fetch-cocit-data
+#| label: 16-fetch-cocit-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -74,7 +74,7 @@ cat(glue("Citation links: {nrow(refs)}\n"))
 Two cited documents are co-cited when they appear in the same reference list. We count shared citing papers.
 
 ```{r}
-#| label: build-cocitation
+#| label: 16-build-cocitation
 cocit_pairs <- refs |>
   inner_join(refs, by = "citing_id", suffix = c("_a", "_b"),
              relationship = "many-to-many") |>
@@ -88,7 +88,7 @@ cat(glue("Co-citation pairs (count >= 3): {nrow(cocit_top)}\n"))
 ```
 
 ```{r}
-#| label: cocit-network
+#| label: 16-cocit-network
 g_cocit <- graph_from_data_frame(
   cocit_top |> select(cited_id_a, cited_id_b, weight = cocit_count),
   directed = FALSE
@@ -103,7 +103,7 @@ cat(glue("Co-citation network: {vcount(g_cocit)} nodes, {ecount(g_cocit)} edges\
 Two citing documents are coupled when they share at least one reference.
 
 ```{r}
-#| label: build-bibcoupling
+#| label: 16-build-bibcoupling
 bibcoup_pairs <- refs |>
   inner_join(refs, by = "cited_id", suffix = c("_a", "_b"),
              relationship = "many-to-many") |>
@@ -117,7 +117,7 @@ cat(glue("Bibliographic coupling pairs (shared refs >= 5): {nrow(bibcoup_top)}\n
 ```
 
 ```{r}
-#| label: bibcoup-network
+#| label: 16-bibcoup-network
 g_bibcoup <- graph_from_data_frame(
   bibcoup_top |> select(citing_id_a, citing_id_b, weight = shared_refs),
   directed = FALSE
@@ -130,7 +130,7 @@ cat(glue("Coupling network: {vcount(g_bibcoup)} nodes, {ecount(g_bibcoup)} edges
 ### Visualisation
 
 ```{r}
-#| label: fig-cocit-network
+#| label: 16-fig-cocit-network
 #| fig-cap: "Co-citation network of frequently co-cited references in Scientometrics (2020–2023)."
 #| fig-alt: "Network graph showing co-citation relationships between documents. Nodes are cited papers; edges connect papers frequently cited together. Node size reflects degree. Communities are coloured."
 #| fig-width: 6
@@ -158,7 +158,7 @@ ggraph(layout) +
 ```
 
 ```{r}
-#| label: fig-bibcoup-network
+#| label: 16-fig-bibcoup-network
 #| fig-cap: "Bibliographic coupling network of Scientometrics articles (2020–2023)."
 #| fig-alt: "Network graph showing bibliographic coupling relationships between articles. Edges connect papers that share many references. Coloured by community."
 #| fig-width: 6
@@ -189,7 +189,7 @@ ggraph(layout_bc) +
 ### Comparing the two approaches
 
 ```{r}
-#| label: compare-approaches
+#| label: 16-compare-approaches
 comparison <- tibble(
   Method = c("Co-citation", "Bibliographic coupling"),
   Nodes = c(vcount(g_cocit), vcount(g_bibcoup)),
@@ -258,6 +258,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#cocit-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 16-session-info
 sessionInfo()
 ```

@@ -14,7 +14,7 @@ After completing this chapter, you will be able to:
 ## Setup {#temporal-setup}
 
 ```{r}
-#| label: setup
+#| label: 14-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -49,7 +49,7 @@ Understanding citation temporality is essential for fair evaluation. Comparing c
 We fetch works from two journals with different expected aging profiles.
 
 ```{r}
-#| label: fetch-temporal-data
+#| label: 14-fetch-temporal-data
 #| cache: true
 # Scientometrics (social science, moderate aging)
 works_sciento <- oa_fetch(
@@ -84,7 +84,7 @@ works_all <- bind_rows(
 We compute mean citations by age (years since publication) for each journal.
 
 ```{r}
-#| label: aging-curves
+#| label: 14-aging-curves
 aging <- works_all |>
   group_by(journal, age) |>
   summarise(
@@ -97,7 +97,7 @@ aging <- works_all |>
 ```
 
 ```{r}
-#| label: fig-temporal-aging
+#| label: 14-fig-temporal-aging
 #| fig-cap: "Citation aging curves for Scientometrics and PLOS ONE articles published 2013-2018."
 #| fig-alt: "Line chart showing mean citation count by years since publication for two journals. PLOS ONE articles accumulate citations faster in early years, while Scientometrics articles show a slower but more sustained pattern."
 #| fig-width: 6
@@ -116,7 +116,7 @@ ggplot(aging, aes(x = age, y = mean_cites, colour = journal)) +
 We estimate the half-life as the age at which cumulative citations reach 50% of total.
 
 ```{r}
-#| label: compute-half-life
+#| label: 14-compute-half-life
 half_life <- works_all |>
   group_by(journal) |>
   arrange(age) |>
@@ -145,7 +145,7 @@ half_life |>
 The Price index is the fraction of references less than five years old. A full computation requires publication years of each reference; here we show reference-list lengths as a starting point.
 
 ```{r}
-#| label: compute-price-index
+#| label: 14-compute-price-index
 works_all |>
   filter(!is.na(referenced_works_count), referenced_works_count > 0) |>
   group_by(journal) |>
@@ -155,7 +155,7 @@ works_all |>
 ### Cumulative citation trajectories
 
 ```{r}
-#| label: fig-temporal-cumulative
+#| label: 14-fig-temporal-cumulative
 #| fig-cap: "Cumulative citation percentage by years since publication."
 #| fig-alt: "Line chart showing how the cumulative share of total citations grows with article age for each journal. Steeper curves indicate faster citation accumulation."
 #| fig-width: 6
@@ -241,6 +241,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#temporal-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 14-session-info
 sessionInfo()
 ```

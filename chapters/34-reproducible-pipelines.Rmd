@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#pipeline-setup}
 
 ```{r}
-#| label: setup
+#| label: 34-setup
 #| message: false
 library(tidyverse)
 library(glue)
@@ -44,7 +44,7 @@ These tools complement each other: `targets` manages the computation, `renv` man
 The `_targets.R` file defines the pipeline. Here we show the structure for a typical bibliometric analysis.
 
 ```{r}
-#| label: targets-example
+#| label: 34-targets-example
 #| eval: false
 # _targets.R — pipeline definition
 library(targets)
@@ -90,7 +90,7 @@ list(
 ### Running and inspecting the pipeline
 
 ```{r}
-#| label: run-pipeline
+#| label: 34-run-pipeline
 #| eval: false
 # Run the pipeline
 targets::tar_make()
@@ -105,7 +105,7 @@ targets::tar_read(citation_stats)
 ### Project structure
 
 ```{r}
-#| label: project-structure
+#| label: 34-project-structure
 #| eval: false
 # Recommended project layout:
 #
@@ -125,7 +125,7 @@ targets::tar_read(citation_stats)
 ### Using renv
 
 ```{r}
-#| label: renv-example
+#| label: 34-renv-example
 #| eval: false
 # Initialise renv in a new project
 renv::init()
@@ -140,7 +140,7 @@ renv::restore()
 ### Dockerfile for bibliometric analysis
 
 ```{r}
-#| label: dockerfile-example
+#| label: 34-dockerfile-example
 #| eval: false
 # Example Dockerfile (not R code — shown for reference)
 #
@@ -203,6 +203,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#pipeline-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 34-session-info
 sessionInfo()
 ```

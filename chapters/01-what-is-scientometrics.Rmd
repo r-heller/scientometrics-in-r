@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#what-setup}
 
 ```{r}
-#| label: setup
+#| label: 01-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -68,7 +68,7 @@ To make things concrete from the very first chapter, we fetch a small sample of 
 We search for works whose title or abstract mentions "scientometrics", published between 2014 and 2023, and draw a random sample of 500 records.
 
 ```{r}
-#| label: fetch-sample
+#| label: 01-fetch-sample
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -89,7 +89,7 @@ Each row is a scholarly work. Key columns include `display_name` (the title), `p
 How many works did we retrieve, and what does the citation distribution look like?
 
 ```{r}
-#| label: descriptives
+#| label: 01-descriptives
 works_summary <- works |>
   summarise(
     n_works       = n(),
@@ -110,7 +110,7 @@ The large gap between the mean and median is a hallmark of citation distribution
 Which journals appear most often in our sample?
 
 ```{r}
-#| label: top-journals
+#| label: 01-top-journals
 top_journals <- works |>
   filter(!is.na(source_display_name)) |>
   count(source_display_name, sort = TRUE) |>
@@ -122,7 +122,7 @@ top_journals
 ### Publication trend over time
 
 ```{r}
-#| label: fig-what-pub-trend
+#| label: 01-fig-what-pub-trend
 #| fig-cap: "Annual publication counts for sampled works related to scientometrics (2014--2023)."
 #| fig-alt: "Bar chart showing the number of sampled publications per year from 2014 to 2023, illustrating the growth trend in scientometrics research."
 #| fig-width: 6
@@ -144,7 +144,7 @@ The trend shows a growing volume of scientometrics-related publications over the
 ### Top journals visualised
 
 ```{r}
-#| label: fig-what-top-journals
+#| label: 01-fig-what-top-journals
 #| fig-cap: "Top 10 journals by number of works in the sampled scientometrics corpus."
 #| fig-alt: "Horizontal bar chart showing the 10 journals that contribute the most works to the sampled corpus, with Scientometrics leading."
 #| fig-width: 7
@@ -163,7 +163,7 @@ top_journals |>
 ### Citation distribution
 
 ```{r}
-#| label: fig-what-citation-dist
+#| label: 01-fig-what-citation-dist
 #| fig-cap: "Citation distribution of sampled scientometrics works (log-scaled x-axis)."
 #| fig-alt: "Histogram of citation counts on a logarithmic x-axis, revealing the heavily right-skewed distribution characteristic of citation data."
 #| fig-width: 6
@@ -191,7 +191,7 @@ Even for a simple descriptive analysis, a few diagnostic checks are essential:
 - **Citation counts are snapshots.** The `cited_by_count` field reflects the current citation total at the time of the API query. Older papers have had more time to accumulate citations, so direct comparisons across years are misleading without normalization.
 
 ```{r}
-#| label: diagnostics
+#| label: 01-diagnostics
 cat(glue("Date range: {min(works$publication_date)} to {max(works$publication_date)}\n"))
 cat(glue("Works with zero citations: {sum(works$cited_by_count == 0)}\n"))
 cat(glue("Unique journals: {n_distinct(works$source_display_name, na.rm = TRUE)}\n"))
@@ -250,6 +250,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#what-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 01-session-info
 sessionInfo()
 ```

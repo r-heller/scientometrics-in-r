@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#paramreport-setup}
 
 ```{r}
-#| label: setup
+#| label: 36-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -44,7 +44,7 @@ Parameterized reports are especially valuable for institutional reporting (annua
 A parameterized Quarto document starts with parameters in the YAML header:
 
 ```{r}
-#| label: yaml-example
+#| label: 36-yaml-example
 #| eval: false
 # Example YAML header (not executable R):
 #
@@ -61,7 +61,7 @@ A parameterized Quarto document starts with parameters in the YAML header:
 ### Using parameters in code
 
 ```{r}
-#| label: use-params
+#| label: 36-use-params
 journal_id <- "S148561398"
 journal_name <- "Scientometrics"
 start_year <- 2020
@@ -69,7 +69,7 @@ end_year <- 2023
 ```
 
 ```{r}
-#| label: fetch-param-data
+#| label: 36-fetch-param-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -88,7 +88,7 @@ cat(glue("Articles retrieved: {nrow(works)}\n"))
 ### Automated summary statistics
 
 ```{r}
-#| label: param-summary
+#| label: 36-param-summary
 summary_stats <- works |>
   summarise(
     total_articles = n(),
@@ -106,7 +106,7 @@ summary_stats |> gt()
 ### Parameterized figure
 
 ```{r}
-#| label: fig-paramreport-trend
+#| label: 36-fig-paramreport-trend
 #| fig-cap: "Annual publication count for the selected journal."
 #| fig-alt: "Bar chart showing the number of articles published per year in the journal specified by the report parameters."
 #| fig-width: 5
@@ -124,7 +124,7 @@ works |>
 ### Batch rendering
 
 ```{r}
-#| label: batch-render
+#| label: 36-batch-render
 #| eval: false
 # Render for multiple journals:
 journals <- tibble(
@@ -197,6 +197,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#paramreport-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 36-session-info
 sessionInfo()
 ```

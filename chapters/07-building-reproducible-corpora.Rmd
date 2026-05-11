@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#corpora-setup}
 
 ```{r}
-#| label: setup
+#| label: 07-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -42,7 +42,7 @@ Raw bibliographic data is messy. Records from different sources may describe the
 ### Fetching raw data
 
 ```{r}
-#| label: fetch-corpus-data
+#| label: 07-fetch-corpus-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -58,7 +58,7 @@ cat(glue("Raw records: {nrow(works)}\n"))
 ### DOI-based deduplication
 
 ```{r}
-#| label: dedup-doi
+#| label: 07-dedup-doi
 works_deduped <- dedupe_by_doi(works)
 cat(glue("After DOI dedup: {nrow(works_deduped)}\n"))
 cat(glue("Removed: {nrow(works) - nrow(works_deduped)} duplicates\n"))
@@ -69,7 +69,7 @@ cat(glue("Removed: {nrow(works) - nrow(works_deduped)} duplicates\n"))
 For records without DOIs, we use approximate string matching.
 
 ```{r}
-#| label: fuzzy-dedup
+#| label: 07-fuzzy-dedup
 no_doi <- works_deduped |> filter(is.na(doi))
 
 if (nrow(no_doi) > 1) {
@@ -87,7 +87,7 @@ if (nrow(no_doi) > 1) {
 ### Affiliation extraction and ROR mapping
 
 ```{r}
-#| label: affiliation-cleanup
+#| label: 07-affiliation-cleanup
 affiliations <- works_deduped |>
   select(id, authorships) |>
   unnest(authorships, names_sep = "_") |>
@@ -107,7 +107,7 @@ top_institutions
 ### Saving as Parquet
 
 ```{r}
-#| label: save-parquet
+#| label: 07-save-parquet
 corpus_clean <- works_deduped |>
   select(id, display_name, publication_date, cited_by_count, doi, source_display_name, abstract)
 
@@ -119,7 +119,7 @@ cat(glue("Saved {nrow(corpus_clean)} records to {out_path}\n"))
 ### Visualization
 
 ```{r}
-#| label: fig-corpora-institutions
+#| label: 07-fig-corpora-institutions
 #| fig-cap: "Top 15 institutions by publication count in the sample corpus."
 #| fig-alt: "Horizontal bar chart showing the 15 most frequent institutional affiliations in the cleaned corpus."
 #| fig-width: 6
@@ -185,6 +185,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#corpora-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 07-session-info
 sessionInfo()
 ```
