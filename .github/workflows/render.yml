@@ -33,7 +33,8 @@ jobs:
             libcurl4-openssl-dev libssl-dev libxml2-dev libgit2-dev \
             libfontconfig1-dev libharfbuzz-dev libfribidi-dev \
             libpoppler-cpp-dev libtesseract-dev libleptonica-dev \
-            libudunits2-dev libgdal-dev libmagick++-dev default-jdk
+            libudunits2-dev libgdal-dev libmagick++-dev default-jdk \
+            libglpk-dev libnode-dev libv8-dev cmake
 
       - uses: r-lib/actions/setup-pandoc@v2
 
