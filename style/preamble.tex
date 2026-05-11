@@ -10,3 +10,25 @@
 \usepackage{fontspec}
 \setmainfont{Inter}[Scale=1.0]
 \setmonofont{JetBrains Mono}[Scale=0.92]
+
+% --- Callout-box environments for {block, type='box...'} chunks ---------------
+% The bs4_book HTML target maps these block types to <div class="...">.
+% In PDF, pandoc converts them to \begin{type}...\end{type} environments,
+% which must exist. Define them all as light grey-bordered framed boxes.
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable, skins}
+\definecolor{boxgrey}{HTML}{E0E0E0}
+\definecolor{boxbg}{HTML}{F5F5F5}
+\newtcolorbox{boxgeneric}{
+  enhanced, breakable,
+  colback=boxbg, colframe=linkblue,
+  boxrule=0pt, leftrule=2pt,
+  arc=2pt, outer arc=2pt,
+  left=10pt, right=10pt, top=8pt, bottom=8pt
+}
+\newenvironment{boxinfo}{\begin{boxgeneric}}{\end{boxgeneric}}
+\newenvironment{boximportant}{\begin{boxgeneric}}{\end{boxgeneric}}
+\newenvironment{boxreport}{\begin{boxgeneric}}{\end{boxgeneric}}
+\newenvironment{boxdmetar}{\begin{boxgeneric}}{\end{boxgeneric}}
+\newenvironment{boxquestion}{\begin{boxgeneric}}{\end{boxgeneric}}
+\newenvironment{boxempty}{\begin{boxgeneric}}{\end{boxgeneric}}
