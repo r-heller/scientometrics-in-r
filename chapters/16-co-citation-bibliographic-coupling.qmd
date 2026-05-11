@@ -165,7 +165,7 @@ ggraph(layout) +
     n_distinct(V(giant)$community)
   )) +
   labs(colour = "Community") +
-  theme_graph() +
+  theme_void(base_family = "sans", base_size = 11) +
   theme(legend.position = "bottom")
 ```
 
@@ -194,7 +194,7 @@ ggraph(layout_bc) +
     n_distinct(V(giant_bc)$community)
   )) +
   labs(colour = "Community") +
-  theme_graph() +
+  theme_void(base_family = "sans", base_size = 11) +
   theme(legend.position = "bottom")
 ```
 

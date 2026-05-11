@@ -143,7 +143,7 @@ ggraph(as_tbl_graph(giant), layout = "fr") +
   scale_size_continuous(range = c(0.5, 5), guide = "none") +
   scale_colour_manual(values = palette_sci(n_distinct(V(giant)$community))) +
   labs(colour = "Community") +
-  theme_graph() + theme(legend.position = "bottom")
+  theme_void(base_family = "sans", base_size = 11) + theme(legend.position = "bottom")
 ```
 
 ## Topic evolution

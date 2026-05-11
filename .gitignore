@@ -50,3 +50,5 @@ _freeze/openalex_cache/
 *_files/
 
 /.quarto/
+
+**/*.quarto_ipynb
