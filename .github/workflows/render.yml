@@ -34,7 +34,7 @@ jobs:
             libfontconfig1-dev libharfbuzz-dev libfribidi-dev \
             libpoppler-cpp-dev libtesseract-dev libleptonica-dev \
             libudunits2-dev libgdal-dev libmagick++-dev default-jdk \
-            libglpk-dev libnode-dev libv8-dev cmake
+            libglpk-dev libnode-dev libv8-dev cmake libgsl-dev libjq-dev
 
       - uses: r-lib/actions/setup-pandoc@v2
 
