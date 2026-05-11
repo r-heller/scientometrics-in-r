@@ -107,6 +107,9 @@ jobs:
         run: Rscript -e 'bookdown::render_book("index.Rmd", output_format = "all")'
 
       - name: Render per-chapter PDFs
+        # Nice-to-have; the full book PDF/EPUB/HTML are already built.
+        # Don't block deploy on a single chapter's LaTeX hiccup.
+        continue-on-error: true
         run: Rscript scripts/render-chapter-pdfs.R
 
       - name: Deploy to gh-pages
