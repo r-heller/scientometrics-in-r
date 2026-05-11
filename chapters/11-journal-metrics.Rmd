@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#jmetrics-setup}
 
 ```{r}
-#| label: setup
+#| label: 11-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -44,7 +44,7 @@ DORA [@dora2012] explicitly warns against using the JIF as a proxy for individua
 We analyse five well-known journals in information science and scientometrics.
 
 ```{r}
-#| label: define-journals
+#| label: 11-define-journals
 journals <- tribble(
   ~short_name,        ~source_id,
   "Scientometrics",   "S148561398",
@@ -60,7 +60,7 @@ journals <- tribble(
 We fetch works published in 2021-2022 and count citations received during 2022-2023 to construct a two-year JIF-like proxy.
 
 ```{r}
-#| label: fetch-journal-data
+#| label: 11-fetch-journal-data
 #| cache: true
 fetch_journal_works <- function(source_id, from_year, to_year) {
   res <- tryCatch(
@@ -85,7 +85,7 @@ journal_works <- journals |>
 ### Computing JIF-like proxies
 
 ```{r}
-#| label: compute-jif-proxy
+#| label: 11-compute-jif-proxy
 jif_proxy <- journal_works |>
   mutate(
     n_articles = map_int(data, nrow),
@@ -111,7 +111,7 @@ jif_proxy |>
 SNIP normalises by citation potential. We approximate this by dividing each journal's mean citations per paper by the median reference-list length of its citing works.
 
 ```{r}
-#| label: compute-snip-proxy
+#| label: 11-compute-snip-proxy
 snip_proxy <- journal_works |>
   mutate(
     mean_cites = map_dbl(data, \(d) if (nrow(d) == 0) NA_real_ else mean(d$cited_by_count, na.rm = TRUE)),
@@ -135,7 +135,7 @@ snip_proxy |>
 ### Visualization
 
 ```{r}
-#| label: fig-jmetrics-comparison
+#| label: 11-fig-jmetrics-comparison
 #| fig-cap: "Comparison of JIF proxy and SNIP proxy across five journals."
 #| fig-alt: "Dot plot showing JIF proxy and SNIP proxy values side by side for five information science journals, illustrating how normalisation changes relative rankings."
 #| fig-width: 6
@@ -213,6 +213,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#jmetrics-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 11-session-info
 sessionInfo()
 ```

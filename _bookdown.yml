@@ -72,5 +72,8 @@ rmd_files:
   - "98-citing-this-guide.Rmd"
   - "99-references.Rmd"
 output_dir: "docs"
-new_session: yes
-before_chapter_script: "_common.R"
+# new_session: yes is incompatible with Rmd files in subdirectories
+# (chapters/, appendices/, case-studies/). Render in a single R session;
+# _common.R is sourced once via the index.Rmd setup chunk below instead
+# of via before_chapter_script.
+new_session: no

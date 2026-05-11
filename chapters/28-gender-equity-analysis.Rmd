@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#gender-setup}
 
 ```{r}
-#| label: setup
+#| label: 28-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -44,7 +44,7 @@ Documented gender disparities include: women are underrepresented as first and l
 ### Extracting author data
 
 ```{r}
-#| label: fetch-gender-data
+#| label: 28-fetch-gender-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -74,7 +74,7 @@ cat(glue("Unique first names: {n_distinct(authors$first_name)}\n"))
 We use a minimal heuristic for demonstration. In production work, use a validated gender-inference service with probabilistic output and country context.
 
 ```{r}
-#| label: gender-proxy
+#| label: 28-gender-proxy
 common_female <- c("maria", "anna", "li", "sarah", "jennifer", "jessica",
                    "elena", "nina", "laura", "julia", "diana", "sandra")
 common_male <- c("john", "david", "michael", "james", "robert", "peter",
@@ -96,7 +96,7 @@ cat(glue("Classified: {nrow(classified)} / {nrow(authors)} ({scales::percent(nro
 ### Gender representation
 
 ```{r}
-#| label: fig-gender-proportion
+#| label: 28-fig-gender-proportion
 #| fig-cap: "Gender representation among classifiable author names."
 #| fig-alt: "Bar chart showing the proportion of male and female author names in the sample, based on name-based gender inference."
 #| fig-width: 5
@@ -115,7 +115,7 @@ classified |>
 ### Authorship position analysis
 
 ```{r}
-#| label: authorship-position
+#| label: 28-authorship-position
 position_data <- works |>
   select(work_id = id, authorships) |>
   unnest(authorships, names_sep = "_") |>
@@ -149,7 +149,7 @@ position_summary |> gt()
 ```
 
 ```{r}
-#| label: fig-gender-position
+#| label: 28-fig-gender-position
 #| fig-cap: "Gender representation by authorship position."
 #| fig-alt: "Grouped bar chart comparing the proportion of male and female names in first, middle, and last author positions."
 #| fig-width: 6
@@ -215,6 +215,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#gender-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 28-session-info
 sessionInfo()
 ```

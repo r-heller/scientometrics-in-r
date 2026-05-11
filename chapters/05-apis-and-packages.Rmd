@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#apis-setup}
 
 ```{r}
-#| label: setup
+#| label: 05-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -45,7 +45,7 @@ We build a small corpus of recent scientometrics research, demonstrating the ful
 The core function is `oa_fetch()`. We search for works published in the journal *Scientometrics* between 2020 and 2023, sampling 200 records for a manageable demonstration.
 
 ```{r}
-#| label: fetch-works
+#| label: 05-fetch-works
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -63,7 +63,7 @@ The result is a tibble where each row is a work and columns include `id`, `displ
 ### Inspecting the results
 
 ```{r}
-#| label: inspect-works
+#| label: 05-inspect-works
 works |>
   select(display_name, publication_date, cited_by_count, doi) |>
   arrange(desc(cited_by_count)) |>
@@ -75,7 +75,7 @@ works |>
 We can also retrieve author-level data. Let us look up authors associated with scientometrics research by filtering on the relevant topic.
 
 ```{r}
-#| label: fetch-authors
+#| label: 05-fetch-authors
 #| cache: true
 authors <- oa_fetch(
   entity = "authors",
@@ -95,7 +95,7 @@ authors |>
 Real-world corpora often contain duplicates when merging results from multiple queries or sources. The `dedupe_by_doi()` function from our companion package handles this cleanly.
 
 ```{r}
-#| label: deduplicate
+#| label: 05-deduplicate
 works_with_dupes <- bind_rows(works, works[1:10, ])
 cat(glue("Before dedup: {nrow(works_with_dupes)} rows\n\n"))
 
@@ -108,7 +108,7 @@ cat(glue("After dedup:  {nrow(works_clean)} rows\n"))
 The `fetch_openalex()` wrapper in `R/api_helpers.R` automatically caches API responses to disk. On subsequent calls with the same arguments, it reads from cache instead of hitting the API.
 
 ```{r}
-#| label: cached-fetch
+#| label: 05-cached-fetch
 #| cache: true
 works_cached <- fetch_openalex(
   entity = "works",
@@ -128,7 +128,7 @@ nrow(works_cached)
 For detailed metadata (reference lists, funders, licenses), Crossref is invaluable.
 
 ```{r}
-#| label: crossref-example
+#| label: 05-crossref-example
 #| cache: true
 #| eval: false
 # Requires network access — cached output used in book builds
@@ -140,7 +140,7 @@ cr_work$data |>
 ### Visualization
 
 ```{r}
-#| label: fig-apis-publications-per-year
+#| label: 05-fig-apis-publications-per-year
 #| fig-cap: "Annual publication counts for sampled Scientometrics articles (2020–2023)."
 #| fig-alt: "Bar chart showing the number of sampled publications per year from the journal Scientometrics, covering 2020 to 2023."
 #| fig-width: 6
@@ -164,7 +164,7 @@ When working with API data, always verify:
 - **Nested columns**: Author and concept columns are list-columns. Use `tidyr::unnest()` carefully and inspect for `NULL` entries before unnesting.
 
 ```{r}
-#| label: diagnostics
+#| label: 05-diagnostics
 cat(glue("Total works: {nrow(works)}\n"))
 cat(glue("DOI coverage: {scales::percent(mean(!is.na(works$doi)))}\n"))
 cat(glue("Date range: {min(works$publication_date)} to {max(works$publication_date)}\n"))
@@ -217,6 +217,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#apis-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 05-session-info
 sessionInfo()
 ```

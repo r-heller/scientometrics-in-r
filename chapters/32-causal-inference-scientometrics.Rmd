@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#causal-setup}
 
 ```{r}
-#| label: setup
+#| label: 32-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -44,7 +44,7 @@ All three methods require strong assumptions. In bibliometrics, violations are c
 ### Setting up a DiD analysis: OA status and citations
 
 ```{r}
-#| label: fetch-causal-data
+#| label: 32-fetch-causal-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -71,7 +71,7 @@ cat(glue("OA: {sum(did_data$is_oa)}, Closed: {sum(!did_data$is_oa)}\n"))
 ### Descriptive comparison
 
 ```{r}
-#| label: fig-causal-descriptive
+#| label: 32-fig-causal-descriptive
 #| fig-cap: "Mean citations by OA status and time period."
 #| fig-alt: "Grouped bar chart showing mean citation counts for OA and closed-access papers, split into pre-2020 and 2020+ periods."
 #| fig-width: 5
@@ -92,7 +92,7 @@ ggplot(did_summary, aes(x = period, y = mean_cites, fill = group)) +
 ### DiD regression
 
 ```{r}
-#| label: did-regression
+#| label: 32-did-regression
 did_model <- lm(cited_by_count ~ is_oa * post_2020 + referenced_works_count,
                 data = did_data)
 
@@ -105,7 +105,7 @@ tidy_did |>
 ### Simple matching comparison
 
 ```{r}
-#| label: matching
+#| label: 32-matching
 oa_papers <- did_data |> filter(is_oa)
 closed_papers <- did_data |> filter(!is_oa)
 
@@ -128,7 +128,7 @@ cat(glue("Mean cites (closed match): {round(mean(matched$cited_by_count_closed),
 ### Visualising the parallel trends assumption
 
 ```{r}
-#| label: fig-causal-trends
+#| label: 32-fig-causal-trends
 #| fig-cap: "Citation trends by OA status over time (checking parallel trends)."
 #| fig-alt: "Line chart showing mean annual citation counts for OA and closed-access papers. If the pre-intervention trends are parallel, DiD assumptions are supported."
 #| fig-width: 6
@@ -200,6 +200,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#causal-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 32-session-info
 sessionInfo()
 ```

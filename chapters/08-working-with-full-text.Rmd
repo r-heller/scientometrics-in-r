@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#fulltext-setup}
 
 ```{r}
-#| label: setup
+#| label: 08-setup
 #| message: false
 library(tidyverse)
 library(pdftools)
@@ -42,7 +42,7 @@ Legal frameworks vary by jurisdiction. The EU Copyright Directive (2019/790) pro
 We demonstrate with a programmatically created PDF to keep this example self-contained.
 
 ```{r}
-#| label: create-demo-pdf
+#| label: 08-create-demo-pdf
 demo_text <- paste(
   "Title: A Review of Bibliometric Methods",
   "",
@@ -70,7 +70,7 @@ dev.off()
 ```
 
 ```{r}
-#| label: extract-pdf-text
+#| label: 08-extract-pdf-text
 extracted <- pdf_text(tmp_pdf)
 cat(substr(extracted[1], 1, 500))
 ```
@@ -78,7 +78,7 @@ cat(substr(extracted[1], 1, 500))
 ### Basic text preprocessing
 
 ```{r}
-#| label: preprocess-text
+#| label: 08-preprocess-text
 corp <- corpus(extracted)
 toks <- tokens(corp, remove_punct = TRUE, remove_numbers = TRUE) |>
   tokens_tolower() |>
@@ -91,7 +91,7 @@ topfeatures(dfmat, 15)
 ### Word frequency visualization
 
 ```{r}
-#| label: fig-fulltext-wordfreq
+#| label: 08-fig-fulltext-wordfreq
 #| fig-cap: "Top 15 words extracted from the demo PDF after preprocessing."
 #| fig-alt: "Horizontal bar chart showing the most frequent words extracted from the PDF, after removing stopwords."
 #| fig-width: 6
@@ -109,7 +109,7 @@ ggplot(top_words, aes(x = count, y = word)) +
 ### OCR with tesseract
 
 ```{r}
-#| label: ocr-demo
+#| label: 08-ocr-demo
 #| eval: false
 # Requires tesseract system library and a scanned PDF
 # library(tesseract)
@@ -170,6 +170,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#fulltext-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 08-session-info
 sessionInfo()
 ```

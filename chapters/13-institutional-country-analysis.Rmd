@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#instcountry-setup}
 
 ```{r}
-#| label: setup
+#| label: 13-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -46,7 +46,7 @@ Country-level analysis faces the same choices. Additionally, linguistic bias in 
 We compare five research-intensive universities.
 
 ```{r}
-#| label: define-institutions
+#| label: 13-define-institutions
 institutions <- tribble(
   ~short_name,  ~ror_id,
   "MIT",        "I63966007",
@@ -60,7 +60,7 @@ institutions <- tribble(
 ### Fetching institutional publications
 
 ```{r}
-#| label: fetch-inst-data
+#| label: 13-fetch-inst-data
 #| cache: true
 fetch_inst_works <- function(inst_id) {
   res <- tryCatch(
@@ -85,7 +85,7 @@ inst_data <- institutions |>
 ### Full counting vs. fractional counting
 
 ```{r}
-#| label: counting-methods
+#| label: 13-counting-methods
 compute_counts <- function(works_df, inst_id) {
   if (is.null(works_df) || nrow(works_df) == 0) {
     return(tibble(full_count = 0L, frac_count = 0))
@@ -126,7 +126,7 @@ counting_comparison |>
 ### Normalised citation impact
 
 ```{r}
-#| label: compute-mncs-inst
+#| label: 13-compute-mncs-inst
 inst_impact <- inst_data |>
   mutate(
     mean_cites = map_dbl(works, \(w) mean(w$cited_by_count, na.rm = TRUE)),
@@ -153,7 +153,7 @@ inst_impact |>
 ### Visualization
 
 ```{r}
-#| label: fig-instcountry-comparison
+#| label: 13-fig-instcountry-comparison
 #| fig-cap: "Full count vs. fractional count publication output for five institutions."
 #| fig-alt: "Grouped bar chart comparing full-count and fractional-count publication numbers for five universities, showing how fractional counting reduces output for highly collaborative institutions."
 #| fig-width: 6
@@ -174,7 +174,7 @@ ggplot(counting_long, aes(x = count, y = reorder(short_name, count),
 ```
 
 ```{r}
-#| label: fig-instcountry-mncs
+#| label: 13-fig-instcountry-mncs
 #| fig-cap: "Approximate MNCS for each institution (within-sample normalisation)."
 #| fig-alt: "Horizontal bar chart showing the mean normalised citation score for each of the five institutions, with a vertical reference line at 1.0 representing the sample average."
 #| fig-width: 6
@@ -243,6 +243,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#instcountry-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 13-session-info
 sessionInfo()
 ```

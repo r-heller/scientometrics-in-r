@@ -12,7 +12,7 @@ After completing this chapter, you will be able to:
 ## Setup {#parsing-setup}
 
 ```{r}
-#| label: setup
+#| label: 06-setup
 #| message: false
 library(tidyverse)
 library(bib2df)
@@ -38,7 +38,7 @@ The `bibliometrix` package [@aria2017] provides `convert2df()`, a versatile func
 We construct a small BibTeX string inline to demonstrate parsing without external files.
 
 ```{r}
-#| label: parse-bibtex
+#| label: 06-parse-bibtex
 bib_text <- '
 @article{smith2023,
   author = {Smith, John A. and Doe, Jane B.},
@@ -70,7 +70,7 @@ glimpse(bib_df)
 ### Parsing with RefManageR
 
 ```{r}
-#| label: parse-refmanager
+#| label: 06-parse-refmanager
 bib_rm <- ReadBib(tmp_bib)
 as.data.frame(bib_rm) |> select(title, author, year, journal, doi)
 ```
@@ -78,7 +78,7 @@ as.data.frame(bib_rm) |> select(title, author, year, journal, doi)
 ### Parsing WoS plain text with bibliometrix
 
 ```{r}
-#| label: parse-wos-demo
+#| label: 06-parse-wos-demo
 #| eval: false
 # Requires a WoS export file — not bundled
 # wos_df <- convert2df("savedrecs.txt", dbsource = "wos", format = "plaintext")
@@ -88,7 +88,7 @@ as.data.frame(bib_rm) |> select(title, author, year, journal, doi)
 ### Standardizing field names
 
 ```{r}
-#| label: standardize-fields
+#| label: 06-standardize-fields
 standardize_bib <- function(df) {
   df |>
     transmute(
@@ -106,7 +106,7 @@ bib_df |> standardize_bib()
 ### Visualization
 
 ```{r}
-#| label: fig-parsing-fields
+#| label: 06-fig-parsing-fields
 #| fig-cap: "Field completeness in the parsed BibTeX records."
 #| fig-alt: "Horizontal bar chart showing which metadata fields are present in the parsed BibTeX records."
 #| fig-width: 6
@@ -176,6 +176,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#parsing-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 06-session-info
 sessionInfo()
 ```

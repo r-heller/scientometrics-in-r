@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#coword-setup}
 
 ```{r}
-#| label: setup
+#| label: 17-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -52,7 +52,7 @@ Co-word analysis complements citation-based methods (\@ref(cocit-background)). C
 We extract author keywords from a sample of scientometrics research.
 
 ```{r}
-#| label: fetch-coword-data
+#| label: 17-fetch-coword-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -64,7 +64,7 @@ works <- oa_fetch(
 ```
 
 ```{r}
-#| label: extract-keywords
+#| label: 17-extract-keywords
 keywords <- works |>
   select(id, topics) |>
   unnest(topics, names_sep = "_") |>
@@ -81,7 +81,7 @@ cat(glue("Unique keywords: {n_distinct(keywords$keyword)}\n"))
 ```
 
 ```{r}
-#| label: fig-coword-topkeywords
+#| label: 17-fig-coword-topkeywords
 #| fig-cap: "Top 20 most frequent keywords in the Scientometrics sample."
 #| fig-alt: "Horizontal bar chart showing the 20 most frequently occurring keywords, with frequency counts on the x-axis."
 #| fig-width: 6
@@ -100,7 +100,7 @@ kw_counts |>
 We create edges between keywords that appear in the same paper.
 
 ```{r}
-#| label: build-coword-network
+#| label: 17-build-coword-network
 kw_frequent <- kw_counts |>
   filter(n >= 5) |>
   pull(keyword)
@@ -129,7 +129,7 @@ cat(glue("Keyword network: {vcount(g_kw)} nodes, {ecount(g_kw)} edges\n"))
 ### Community detection for topical clusters
 
 ```{r}
-#| label: keyword-communities
+#| label: 17-keyword-communities
 V(g_kw)$degree <- degree(g_kw)
 V(g_kw)$strength <- strength(g_kw)
 
@@ -142,7 +142,7 @@ cat(glue("Modularity: {round(modularity(g_kw, membership(communities)), 3)}\n"))
 ```
 
 ```{r}
-#| label: community-keywords
+#| label: 17-community-keywords
 community_summary <- tibble(
   keyword = V(g_kw)$name,
   community = V(g_kw)$community,
@@ -159,7 +159,7 @@ community_summary |> gt()
 ### Visualisation
 
 ```{r}
-#| label: fig-coword-network
+#| label: 17-fig-coword-network
 #| fig-cap: "Keyword co-occurrence network coloured by topical cluster."
 #| fig-alt: "Network graph where nodes are keywords and edges connect keywords that frequently co-occur. Node size reflects degree; colours indicate topical communities identified by the Leiden algorithm."
 #| fig-width: 7
@@ -238,6 +238,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#coword-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 17-session-info
 sessionInfo()
 ```

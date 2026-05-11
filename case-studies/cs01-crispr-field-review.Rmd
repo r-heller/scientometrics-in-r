@@ -7,7 +7,7 @@ Map the structure, growth, and evolution of CRISPR gene editing research from it
 ## Setup
 
 ```{r}
-#| label: setup
+#| label: cs01-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -29,7 +29,7 @@ source(here::here("R", "sci_palette.R"))
 ## Data acquisition
 
 ```{r}
-#| label: fetch-crispr
+#| label: cs01-fetch-crispr
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -50,7 +50,7 @@ cat(glue("Year range: {min(works$year)}--{max(works$year)}\n"))
 ## Publication growth
 
 ```{r}
-#| label: fig-cs01-growth
+#| label: cs01-fig-cs01-growth
 #| fig-cap: "Annual publication output in the CRISPR field."
 #| fig-alt: "Bar chart showing exponential growth in CRISPR publications from 2010 to 2024."
 #| fig-width: 6
@@ -66,7 +66,7 @@ works |>
 ## Citation landscape
 
 ```{r}
-#| label: fig-cs01-citations
+#| label: cs01-fig-cs01-citations
 #| fig-cap: "Citation distribution of CRISPR articles."
 #| fig-alt: "Histogram showing the heavily right-skewed citation distribution typical of a rapidly growing field."
 #| fig-width: 5
@@ -120,7 +120,7 @@ cat(glue("Network: {vcount(giant)} nodes, {ecount(giant)} edges\n"))
 ```
 
 ```{r}
-#| label: fig-cs01-network
+#| label: cs01-fig-cs01-network
 #| fig-cap: "Co-authorship network of CRISPR researchers."
 #| fig-alt: "Network graph showing collaboration patterns among CRISPR researchers, with communities coloured by Leiden algorithm."
 #| fig-width: 7
@@ -160,7 +160,7 @@ top_by_year <- map_dfr(unique(text_df$year), function(yr) {
 ```
 
 ```{r}
-#| label: fig-cs01-topics
+#| label: cs01-fig-cs01-topics
 #| fig-cap: "Top terms by year showing topical evolution."
 #| fig-alt: "Faceted bar chart showing the top 5 terms in each year of CRISPR research."
 #| fig-width: 8
