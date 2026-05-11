@@ -9,8 +9,11 @@
 \setcounter{secnumdepth}{4}
 \setcounter{tocdepth}{3}
 \usepackage{fontspec}
-\setmainfont{Inter}[Scale=1.0]
-\setmonofont{JetBrains Mono}[Scale=0.92]
+% Inter / JetBrains Mono are not installed on the CI TinyTeX runner.
+% Fall back silently to the default xelatex font (Latin Modern) when
+% the system can't find the requested family.
+\IfFontExistsTF{Inter}{\setmainfont{Inter}[Scale=1.0]}{}
+\IfFontExistsTF{JetBrains Mono}{\setmonofont{JetBrains Mono}[Scale=0.92]}{}
 
 % --- Callout-box environments for {block, type='box...'} chunks ---------------
 % The bs4_book HTML target maps these block types to <div class="...">.
