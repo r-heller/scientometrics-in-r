@@ -39,24 +39,10 @@ jobs:
           r-version: "4.4.1"
           use-public-rspm: true
 
-      - name: Bootstrap renv
-        # setup-renv@v2 runs `install.packages("renv")` without setting a
-        # repo; here we install it explicitly from the Posit mirror, then
-        # let the project .Rprofile activate it.
-        run: |
-          install.packages("renv", repos = "https://packagemanager.posit.co/cran/__linux__/noble/latest")
-        shell: Rscript {0}
-
-      - name: Cache renv library
-        uses: actions/cache@v4
+      - name: Setup R dependencies (renv-aware)
+        uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          path: ~/.cache/R/renv
-          key: renv-${{ runner.os }}-${{ hashFiles('renv.lock') }}
-          restore-keys: renv-${{ runner.os }}-
-
-      - name: Restore renv
-        run: renv::restore(prompt = FALSE)
-        shell: Rscript {0}
+          cache-version: 2
 
       - uses: r-lib/actions/setup-tinytex@v2
 
