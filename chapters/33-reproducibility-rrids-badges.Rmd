@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#repro-setup}
 
 ```{r}
-#| label: setup
+#| label: 33-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -46,7 +46,7 @@ These practices are measurable proxies for reproducibility, but they are not rep
 ### Analysing data availability patterns
 
 ```{r}
-#| label: fetch-repro-data
+#| label: 33-fetch-repro-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -73,7 +73,7 @@ cat(glue("Works: {nrow(works_repro)}\n"))
 ### OA as a transparency proxy
 
 ```{r}
-#| label: fig-repro-oa-trend
+#| label: 33-fig-repro-oa-trend
 #| fig-cap: "Proportion of open access articles by year as a transparency indicator."
 #| fig-alt: "Line chart showing the proportion of OA articles over time, used as a proxy for transparency practices."
 #| fig-width: 5
@@ -93,7 +93,7 @@ works_repro |>
 ### Abstract availability as metadata completeness
 
 ```{r}
-#| label: fig-repro-abstract
+#| label: 33-fig-repro-abstract
 #| fig-cap: "Abstract availability rate by year."
 #| fig-alt: "Line chart showing the proportion of articles with available abstracts over time."
 #| fig-width: 5
@@ -112,7 +112,7 @@ works_repro |>
 ### Transparency and citation impact
 
 ```{r}
-#| label: fig-repro-impact
+#| label: 33-fig-repro-impact
 #| fig-cap: "Citation count by OA status, a proxy for the transparency–impact relationship."
 #| fig-alt: "Box plot comparing citation counts for OA vs. closed papers, illustrating whether transparent papers receive more citations."
 #| fig-width: 5
@@ -129,7 +129,7 @@ works_repro |>
 ### Summary statistics
 
 ```{r}
-#| label: repro-summary
+#| label: 33-repro-summary
 works_repro |>
   mutate(is_oa = oa_status != "closed") |>
   group_by(is_oa) |>
@@ -194,6 +194,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#repro-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 33-session-info
 sessionInfo()
 ```

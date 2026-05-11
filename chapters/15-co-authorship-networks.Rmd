@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#coauth-setup}
 
 ```{r}
-#| label: setup
+#| label: 15-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -46,7 +46,7 @@ Network analysis of co-authorship data has been widely applied to map research f
 We fetch works from a journal and extract the author pairs.
 
 ```{r}
-#| label: fetch-coauth-data
+#| label: 15-fetch-coauth-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -64,7 +64,7 @@ nrow(works)
 Each work has a list-column of authors. We unnest and build all pairwise co-author edges.
 
 ```{r}
-#| label: extract-author-pairs
+#| label: 15-extract-author-pairs
 author_data <- works |>
   select(id, authorships) |>
   unnest(authorships, names_sep = "_") |>
@@ -86,7 +86,7 @@ cat(glue("Edges: {nrow(edges)}\n"))
 ### Building the network
 
 ```{r}
-#| label: build-network
+#| label: 15-build-network
 g <- graph_from_data_frame(
   edges |> select(author_id_1, author_id_2, weight),
   directed = FALSE
@@ -102,7 +102,7 @@ cat(glue("Density: {round(graph.density(g), 4)}\n"))
 ### Network metrics
 
 ```{r}
-#| label: compute-metrics
+#| label: 15-compute-metrics
 V(g)$degree <- degree(g)
 V(g)$betweenness <- betweenness(g, normalized = TRUE)
 V(g)$clustering <- transitivity(g, type = "local")
@@ -129,7 +129,7 @@ metrics |>
 We apply both Louvain and Leiden to the largest connected component.
 
 ```{r}
-#| label: community-detection
+#| label: 15-community-detection
 comp <- components(g)
 giant <- induced_subgraph(g, which(comp$membership == which.max(comp$csize)))
 
@@ -141,7 +141,7 @@ cat(glue("Louvain modularity: {round(modularity(louvain), 3)}\n"))
 ```
 
 ```{r}
-#| label: leiden-detection
+#| label: 15-leiden-detection
 #| cache: true
 leiden_result <- cluster_leiden(giant, resolution_parameter = 1.0,
                                 objective_function = "modularity")
@@ -154,7 +154,7 @@ cat(glue("Leiden modularity: {round(modularity(giant, membership(leiden_result))
 ### Comparing community assignments
 
 ```{r}
-#| label: compare-communities
+#| label: 15-compare-communities
 comparison <- tibble(
   louvain = V(giant)$community_louvain,
   leiden = V(giant)$community_leiden
@@ -173,7 +173,7 @@ cat(glue("Normalized Mutual Information (Louvain vs Leiden): {round(nmi, 3)}\n")
 We use a Fruchterman-Reingold layout with a fixed seed for deterministic output.
 
 ```{r}
-#| label: fig-coauth-network
+#| label: 15-fig-coauth-network
 #| fig-cap: "Co-authorship network of sampled Scientometrics articles (2021–2023), coloured by Leiden community."
 #| fig-alt: "Network graph showing co-authorship relationships. Nodes represent authors and are coloured by community membership detected by the Leiden algorithm. Node size reflects degree centrality. Edges connect co-authors."
 #| fig-width: 6
@@ -204,7 +204,7 @@ ggraph(layout) +
 ```
 
 ```{r}
-#| label: fig-coauth-degree-dist
+#| label: 15-fig-coauth-degree-dist
 #| fig-cap: "Degree distribution of the co-authorship network."
 #| fig-alt: "Histogram of node degree values showing the right-skewed distribution typical of co-authorship networks, where most authors have few co-authors and a few have many."
 #| fig-width: 6
@@ -226,7 +226,7 @@ Key diagnostics for co-authorship networks:
 - **Comparison of algorithms**: If Louvain and Leiden produce very different community counts, investigate the resolution parameter. High NMI (>0.8) indicates strong agreement.
 
 ```{r}
-#| label: diagnostics
+#| label: 15-diagnostics
 giant_ratio <- vcount(giant) / vcount(g)
 cat(glue("Giant component: {vcount(giant)}/{vcount(g)} nodes ({scales::percent(giant_ratio)})\n"))
 cat(glue("Mean degree: {round(mean(degree(giant)), 1)}\n"))
@@ -285,6 +285,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#coauth-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 15-session-info
 sessionInfo()
 ```

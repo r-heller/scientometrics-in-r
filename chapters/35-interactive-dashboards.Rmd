@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#dashboard-setup}
 
 ```{r}
-#| label: setup
+#| label: 35-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -45,7 +45,7 @@ The key design principle for dashboards is **progressive disclosure**: show the 
 ### Preparing dashboard data
 
 ```{r}
-#| label: fetch-dashboard-data
+#| label: 35-fetch-dashboard-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -68,7 +68,7 @@ cat(glue("Dashboard data: {nrow(dash_data)} records\n"))
 ### Interactive trend chart
 
 ```{r}
-#| label: fig-dashboard-trend
+#| label: 35-fig-dashboard-trend
 #| fig-cap: "Interactive publication trend with hover details."
 #| fig-alt: "Interactive line chart showing annual publication counts with tooltips on hover."
 #| fig-width: 6
@@ -90,7 +90,7 @@ ggplotly(p)
 ### Interactive citation distribution
 
 ```{r}
-#| label: fig-dashboard-citedist
+#| label: 35-fig-dashboard-citedist
 #| fig-cap: "Interactive citation distribution with hover details."
 #| fig-alt: "Interactive histogram of citation counts where hovering reveals bin details."
 #| fig-width: 6
@@ -108,7 +108,7 @@ ggplotly(p2)
 ### Searchable data table
 
 ```{r}
-#| label: data-table
+#| label: 35-data-table
 #| eval: !expr knitr::is_html_output(excludes = c("epub","epub2","epub3"))
 # Interactive DT widget — only rendered for HTML output.
 dash_data |>
@@ -124,7 +124,7 @@ dash_data |>
 ### OA status breakdown (interactive)
 
 ```{r}
-#| label: fig-dashboard-oa
+#| label: 35-fig-dashboard-oa
 #| fig-cap: "Interactive OA status breakdown by year."
 #| fig-alt: "Interactive stacked bar chart showing OA status proportions by year."
 #| fig-width: 6
@@ -194,6 +194,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#dashboard-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 35-session-info
 sessionInfo()
 ```

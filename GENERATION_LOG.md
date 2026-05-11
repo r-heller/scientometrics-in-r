@@ -45,3 +45,15 @@ Append-only log of chapter and case study generation.
 - _common.R: added a copy hook so citation.bib and citation.ris land in docs/citation-files/ on every render.
 - No changes to design tokens, _common.R knitr opts, color palette, style/style.css, fonts, chapter prose, code, numbering, references.bib, or renv.lock.
 - Commit: 336cb6c - Manual: importing the generated citation.ris into Zotero needs spot-checking after the first deploy.
+
+## 2026-05-11 — Harrer-style layout adoption (Coder palette)
+
+- 00-acknowledgments.Rmd: added "Inspiration" subsection crediting Harrer, Cuijpers, Furukawa, Ebert and linking the meta-analysis book + repository.
+- style/style.css rebuilt with the same component system Harrer uses (callout topology, mode tokens, code-chunk gradient, sticky toggle button) but retokenized to Hugo Coder colors (#fafafa/#212121 light, #212121/#dadada dark, #1565c0/#42a5f5 link) and fonts (Inter / JetBrains Mono).
+- Vendored Font Awesome 6 Free locally: style/font-awesome.min.css + style/webfonts/{fa-solid-900,fa-regular-400,fa-brands-400}.woff2. No CDN at render. Rewrote ../webfonts/ paths to webfonts/ so the relative URL resolves from style/.
+- Dark/light toggle: vanilla JS (no jQuery), data-theme attribute on <html>, localStorage persistence keyed "themeMode", defaults to OS prefers-color-scheme. Icon: fa-solid fa-circle-half-stroke (not the 🌓 emoji).
+- Callout block classes: boxinfo (lightbulb), boximportant (exclamation-circle), boxreport (file-medical), boxdmetar (box-open), boxquestion (circle-question), boxempty (no icon, used for the citation block). Glyphs come from FA6 unicode codepoints.
+- index.Rmd landing page restructured to the Harrer pattern: Welcome → cover right-floated → pitch → Open Source Repository → How To Use The Guide → Contributing → Citing this Guide (boxempty card).
+- 98-citing-this-guide.Rmd citation block switched to boxempty.
+- _output.yml css list: [style/style.css, style/font-awesome.min.css].
+- Also: fix-labels.py / fix-refs.py prefixed every chunk label with its file token (01-setup, 02-fetch-…) so bookdown's single-doc merge does not error on duplicate labels; cross-refs updated to match. Chapter 22/25 + cs05 quanteda::convert() namespacing (tidygraph::convert was shadowing). Mermaid engine registered in _common.R; mermaid.js loaded from jsDelivr in header.html. _bookdown.yml switched to new_session: no (subdir Rmd files are incompatible with new_session: yes); _common.R is sourced once from index.Rmd. No content/numbering changes; bs4_book kept (gitbook is optional per project per the brief).

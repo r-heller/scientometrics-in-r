@@ -52,3 +52,7 @@ _freeze/openalex_cache/
 /.quarto/
 
 **/*.quarto_ipynb
+
+# bookdown output (deployed to gh-pages by CI)
+docs/
+render-test.log

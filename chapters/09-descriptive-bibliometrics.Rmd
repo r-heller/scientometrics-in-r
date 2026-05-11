@@ -14,7 +14,7 @@ After completing this chapter, you will be able to:
 ## Setup {#desc-setup}
 
 ```{r}
-#| label: setup
+#| label: 09-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -47,7 +47,7 @@ Descriptive bibliometrics also serves a data-quality role. Anomalous spikes in a
 We fetch a sample of works from the *Scientometrics* journal via OpenAlex and convert the result into a bibliometrix-compatible data frame.
 
 ```{r}
-#| label: fetch-desc-data
+#| label: 09-fetch-desc-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -63,7 +63,7 @@ nrow(works)
 ### Converting to bibliometrix format
 
 ```{r}
-#| label: convert-to-bib
+#| label: 09-convert-to-bib
 bib_df <- oa2bibliometrix(works)
 
 cat(glue("Records: {nrow(bib_df)}\n"))
@@ -73,7 +73,7 @@ cat(glue("Fields: {ncol(bib_df)}\n"))
 ### Running biblioAnalysis
 
 ```{r}
-#| label: biblio-analysis
+#| label: 09-biblio-analysis
 results <- tryCatch(
   biblioAnalysis(bib_df, sep = ";"),
   error = function(e) {
@@ -90,7 +90,7 @@ if (!is.null(results)) {
 ### Annual scientific production
 
 ```{r}
-#| label: fig-desc-annual
+#| label: 09-fig-desc-annual
 #| fig-cap: "Annual scientific production in the sampled corpus (2018-2023)."
 #| fig-alt: "Bar chart showing the number of publications per year from 2018 to 2023, illustrating the growth trend in the sampled Scientometrics articles."
 #| fig-width: 6
@@ -109,7 +109,7 @@ ggplot(annual, aes(x = year, y = n)) +
 ### Most productive authors
 
 ```{r}
-#| label: fig-desc-top-authors
+#| label: 09-fig-desc-top-authors
 #| fig-cap: "Top 15 most productive authors in the sample."
 #| fig-alt: "Horizontal bar chart listing the 15 authors with the most publications in the sample, ordered by number of articles."
 #| fig-width: 6
@@ -131,7 +131,7 @@ ggplot(author_prod, aes(x = n, y = reorder(authorships_display_name, n))) +
 Because all sampled works come from a single journal in this example, we instead show the most frequent cited sources from the references.
 
 ```{r}
-#| label: top-sources
+#| label: 09-top-sources
 top_sources <- works |>
   select(id, referenced_works) |>
   unnest(referenced_works) |>
@@ -147,7 +147,7 @@ print(top_sources)
 The three-field plot (Sankey diagram) links authors, keywords, and sources. It is a signature visualisation in bibliometrix.
 
 ```{r}
-#| label: fig-desc-three-field
+#| label: 09-fig-desc-three-field
 #| fig-cap: "Three-field plot linking authors (left), keywords (centre), and cited sources (right)."
 #| fig-alt: "Sankey diagram connecting the most productive authors to their most frequent keywords and the journals they cite most, showing thematic flows across the three dimensions."
 #| fig-width: 7
@@ -217,6 +217,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#desc-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 09-session-info
 sessionInfo()
 ```

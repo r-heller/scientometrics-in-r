@@ -7,7 +7,7 @@ Compare gender representation in authorship across a biomedical journal and an i
 ## Setup
 
 ```{r}
-#| label: setup
+#| label: cs04-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -24,7 +24,7 @@ source(here::here("R", "sci_palette.R"))
 ## Data acquisition
 
 ```{r}
-#| label: fetch-gender-data
+#| label: cs04-fetch-gender-data
 #| cache: true
 works_sciento <- oa_fetch(
   entity = "works",
@@ -50,7 +50,7 @@ works_all <- bind_rows(works_sciento, works_plos)
 ## Gender inference
 
 ```{r}
-#| label: gender-classification
+#| label: cs04-gender-classification
 common_female <- c("maria", "anna", "li", "sarah", "jennifer", "jessica",
                    "elena", "nina", "laura", "julia", "diana", "sandra",
                    "lisa", "emily", "rachel", "amy", "kate", "megan")
@@ -87,7 +87,7 @@ cat(glue("Classified authors: {nrow(authors)}\n"))
 ## Gender representation by journal
 
 ```{r}
-#| label: fig-cs04-journal
+#| label: cs04-fig-cs04-journal
 #| fig-cap: "Gender representation by journal."
 #| fig-alt: "Grouped bar chart comparing the proportion of male and female author names across two journals."
 #| fig-width: 5
@@ -107,7 +107,7 @@ authors |>
 ## Authorship position analysis
 
 ```{r}
-#| label: fig-cs04-position
+#| label: cs04-fig-cs04-position
 #| fig-cap: "Gender representation by authorship position and journal."
 #| fig-alt: "Faceted bar chart showing male/female proportions in first, middle, and last author positions for each journal."
 #| fig-width: 7
@@ -130,7 +130,7 @@ ggplot(position_summary, aes(x = position, y = pct, fill = gender)) +
 ## Temporal trends
 
 ```{r}
-#| label: fig-cs04-temporal
+#| label: cs04-fig-cs04-temporal
 #| fig-cap: "Proportion of female first authors by year."
 #| fig-alt: "Line chart tracking the proportion of female first authors over time for each journal."
 #| fig-width: 6

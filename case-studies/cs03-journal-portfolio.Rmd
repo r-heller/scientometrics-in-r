@@ -7,7 +7,7 @@ Compare three information-science journals on citation impact, aging patterns, a
 ## Setup
 
 ```{r}
-#| label: setup
+#| label: cs03-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -25,7 +25,7 @@ source(here::here("R", "sci_palette.R"))
 ## Data acquisition
 
 ```{r}
-#| label: define-journals
+#| label: cs03-define-journals
 journals <- tribble(
   ~short_name,        ~source_id,
   "Scientometrics",   "S148561398",
@@ -35,7 +35,7 @@ journals <- tribble(
 ```
 
 ```{r}
-#| label: fetch-journal-data
+#| label: cs03-fetch-journal-data
 #| cache: true
 fetch_journal <- function(sid) {
   oa_fetch(
@@ -55,7 +55,7 @@ journal_data <- journals |>
 ## Citation impact comparison
 
 ```{r}
-#| label: fig-cs03-impact
+#| label: cs03-fig-cs03-impact
 #| fig-cap: "Citation count distributions by journal."
 #| fig-alt: "Box plots comparing citation distributions across three information-science journals."
 #| fig-width: 6
@@ -89,7 +89,7 @@ all_works |>
 ## Citation aging
 
 ```{r}
-#| label: fig-cs03-aging
+#| label: cs03-fig-cs03-aging
 #| fig-cap: "Mean citations by article age for each journal."
 #| fig-alt: "Line chart showing how citation accumulation differs across journals as articles age."
 #| fig-width: 6
@@ -126,7 +126,7 @@ top_topics <- topic_data |>
 ```
 
 ```{r}
-#| label: fig-cs03-topics
+#| label: cs03-fig-cs03-topics
 #| fig-cap: "Top 10 topics by journal."
 #| fig-alt: "Faceted bar chart showing the most frequent topics for each journal, revealing different thematic emphases."
 #| fig-width: 8

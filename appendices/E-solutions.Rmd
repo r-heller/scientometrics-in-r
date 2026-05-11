@@ -21,7 +21,7 @@ and top journals reveals how different fields vary in volume, growth rate, and
 journal concentration.
 
 ```{r}
-#| label: sol-ch01-1
+#| label: E-sol-ch01-1
 #| eval: false
 library(openalexR)
 library(tidyverse)
@@ -51,7 +51,7 @@ scientometrics.
 Filter to zero-citation records and examine the year distribution.
 
 ```{r}
-#| label: sol-ch01-2
+#| label: E-sol-ch01-2
 #| eval: false
 works |>
  filter(cited_by_count == 0) |>
@@ -71,7 +71,7 @@ accumulate citations --- a window effect.
 Compute yearly OA proportions to reveal the trend.
 
 ```{r}
-#| label: sol-ch01-3
+#| label: E-sol-ch01-3
 #| eval: false
 works |>
  mutate(year = publication_year) |>
@@ -92,7 +92,7 @@ the growth of gold OA journals.
 Plot annual counts on a log scale; linearity implies exponential growth.
 
 ```{r}
-#| label: sol-ch01-4
+#| label: E-sol-ch01-4
 #| eval: false
 works |>
  filter(publication_year >= 2000, publication_year <= 2023) |>
@@ -114,7 +114,7 @@ approximately exponential, consistent with Price's law.
 Fit a linear model in log-log space to estimate the exponent.
 
 ```{r}
-#| label: sol-ch02-1
+#| label: E-sol-ch02-1
 #| eval: false
 library(tidyverse)
 
@@ -144,7 +144,7 @@ range from 1.5 to 3.5, depending on the field and time window.
 Divide journals into three zones of roughly equal article counts.
 
 ```{r}
-#| label: sol-ch02-2
+#| label: E-sol-ch02-2
 #| eval: false
 journal_counts <- works |>
  count(so, sort = TRUE) |>
@@ -167,7 +167,7 @@ multiplier.
 Extract title words and plot rank vs. frequency on log-log axes.
 
 ```{r}
-#| label: sol-ch02-3
+#| label: E-sol-ch02-3
 #| eval: false
 library(tidytext)
 
@@ -194,7 +194,7 @@ Simulate preferential attachment and compare the resulting distribution to
 Lotka's law.
 
 ```{r}
-#| label: sol-ch02-4
+#| label: E-sol-ch02-4
 #| eval: false
 set.seed(20260509)
 n_authors <- 100
@@ -226,7 +226,7 @@ This is a qualitative exercise. Evaluate a real hiring policy against the ten
 principles.
 
 ```{r}
-#| label: sol-ch03-1
+#| label: E-sol-ch03-1
 #| eval: false
 # No code required. Suggested structure:
 # For each of the 10 Leiden Manifesto principles:
@@ -244,7 +244,7 @@ principles 6 (field variation) and 7 (qualitative portfolio assessment).
 Compare self-citation rates between two different fields.
 
 ```{r}
-#| label: sol-ch03-2
+#| label: E-sol-ch03-2
 #| eval: false
 library(openalexR)
 library(tidyverse)
@@ -272,7 +272,7 @@ some fields is structural (smaller communities) rather than manipulative.
 A research exercise using the DORA signatory database.
 
 ```{r}
-#| label: sol-ch03-3
+#| label: E-sol-ch03-3
 #| eval: false
 # No code required. Visit https://sfdora.org/signers/
 # Select three major funders and compare their grant evaluation
@@ -289,7 +289,7 @@ revealing a gap between stated commitments and implementation.
 Propose a new indicator and analyse potential gaming strategies.
 
 ```{r}
-#| label: sol-ch03-4
+#| label: E-sol-ch03-4
 #| eval: false
 # Example indicator: "Replication Impact Score"
 #   = fraction of a researcher's papers that have been independently replicated
@@ -313,7 +313,7 @@ denominator. Indicator design must anticipate behavioural responses.
 Query the same DOIs in OpenAlex and Crossref and compare.
 
 ```{r}
-#| label: sol-ch04-1
+#| label: E-sol-ch04-1
 #| eval: false
 library(openalexR)
 library(rcrossref)
@@ -346,7 +346,7 @@ Crossref data, but abstract availability may differ.
 Compare indexed works across contrasting fields.
 
 ```{r}
-#| label: sol-ch04-2
+#| label: E-sol-ch04-2
 #| eval: false
 fields <- list(
  biology = "https://openalex.org/C86803240",
@@ -369,7 +369,7 @@ reflecting the historical journal-centricity of bibliometric databases.
 Correlate citation counts from two sources.
 
 ```{r}
-#| label: sol-ch04-3
+#| label: E-sol-ch04-3
 #| eval: false
 library(rcrossref)
 
@@ -400,7 +400,7 @@ arise from coverage scope and update frequency.
 Check whether bioRxiv DOIs appear in OpenAlex with published links.
 
 ```{r}
-#| label: sol-ch04-4
+#| label: E-sol-ch04-4
 #| eval: false
 biorxiv_dois <- c(
  "10.1101/2023.01.01.123456",
@@ -427,7 +427,7 @@ linked to a published version depends on recency and field.
 This is a qualitative exercise requiring no code.
 
 ```{r}
-#| label: sol-ch04-5
+#| label: E-sol-ch04-5
 #| eval: false
 # Recommended answer structure:
 # 1. OpenAlex: free, broad coverage, good for large-scale analysis
@@ -453,7 +453,7 @@ with a regional index maximises both coverage and reproducibility.
 Find your institution in OpenAlex and retrieve its works.
 
 ```{r}
-#| label: sol-ch05-1
+#| label: E-sol-ch05-1
 #| eval: false
 library(openalexR)
 library(tidyverse)
@@ -479,7 +479,7 @@ in regional or non-English journals tend to have lower DOI rates.
 Retrieve the same work from both APIs and compare.
 
 ```{r}
-#| label: sol-ch05-2
+#| label: E-sol-ch05-2
 #| eval: false
 library(rcrossref)
 
@@ -504,7 +504,7 @@ citation graph. Crossref counts only DOI-based citations; OpenAlex resolves more
 Fetch all works from a journal across multiple years.
 
 ```{r}
-#| label: sol-ch05-3
+#| label: E-sol-ch05-3
 #| eval: false
 journal_works <- oa_fetch(
  entity = "works",
@@ -535,7 +535,7 @@ growing.
 Parse a BibTeX file from Google Scholar using `bib2df`.
 
 ```{r}
-#| label: sol-ch06-1
+#| label: E-sol-ch06-1
 #| eval: false
 library(bib2df)
 library(tidyverse)
@@ -554,7 +554,7 @@ making them less useful for text-based analyses.
 Parse the same records from CSV and RIS formats and compare fields.
 
 ```{r}
-#| label: sol-ch06-2
+#| label: E-sol-ch06-2
 #| eval: false
 library(bibliometrix)
 
@@ -576,7 +576,7 @@ keywords that CSV exports may omit; CSVs are easier to manipulate in R.
 Write a reusable function to normalise columns.
 
 ```{r}
-#| label: sol-ch06-3
+#| label: E-sol-ch06-3
 #| eval: false
 standardise_biblio <- function(df) {
  tibble(
@@ -602,7 +602,7 @@ input format, improving reproducibility.
 Compute the DOI coverage rate per publication year.
 
 ```{r}
-#| label: sol-ch07-1
+#| label: E-sol-ch07-1
 #| eval: false
 library(tidyverse)
 
@@ -623,7 +623,7 @@ became standard practice after the mid-2000s.
 Detect potential author name duplicates.
 
 ```{r}
-#| label: sol-ch07-2
+#| label: E-sol-ch07-2
 #| eval: false
 library(stringdist)
 
@@ -651,7 +651,7 @@ always correct.
 Use the ROR API to resolve institutions.
 
 ```{r}
-#| label: sol-ch07-3
+#| label: E-sol-ch07-3
 #| eval: false
 library(httr2)
 
@@ -685,7 +685,7 @@ alone can produce false positives for common institutional names.
 Download a PDF, extract text, and compare the abstract.
 
 ```{r}
-#| label: sol-ch08-1
+#| label: E-sol-ch08-1
 #| eval: false
 library(pdftools)
 library(tidyverse)
@@ -711,7 +711,7 @@ cleaner.
 Write a function to split extracted text into sections.
 
 ```{r}
-#| label: sol-ch08-2
+#| label: E-sol-ch08-2
 #| eval: false
 split_sections <- function(text) {
  lines <- str_split(text, "\n")[[1]]
@@ -744,7 +744,7 @@ materials, and non-standard numbering all break simple regex patterns.
 Extract a table from a PDF using `tabulizer`.
 
 ```{r}
-#| label: sol-ch08-3
+#| label: E-sol-ch08-3
 #| eval: false
 # tabulapdf needs Java (rJava); shown for reference, not executed.
 # Install: install.packages("tabulapdf"); requires a working Java runtime.
@@ -768,7 +768,7 @@ whitespace trimming, and removal of empty or merged-cell artefact rows.
 Fit Lotka's law using `bibliometrix`.
 
 ```{r}
-#| label: sol-ch09-1
+#| label: E-sol-ch09-1
 #| eval: false
 library(bibliometrix)
 library(tidyverse)
@@ -787,7 +787,7 @@ observed distribution is consistent with the theoretical inverse-square law.
 Identify core, mid, and peripheral journal zones.
 
 ```{r}
-#| label: sol-ch09-2
+#| label: E-sol-ch09-2
 #| eval: false
 library(openalexR)
 library(bibliometrix)
@@ -809,7 +809,7 @@ for a disproportionate share of articles --- Bradford's law in action.
 Use country instead of author name on the left field.
 
 ```{r}
-#| label: sol-ch09-3
+#| label: E-sol-ch09-3
 #| eval: false
 library(bibliometrix)
 
@@ -824,7 +824,7 @@ patterns: certain countries cluster around specific journals and keywords.
 Compute the compound annual growth rate (CAGR).
 
 ```{r}
-#| label: sol-ch09-4
+#| label: E-sol-ch09-4
 #| eval: false
 annual <- works |>
  count(publication_year) |>
@@ -848,7 +848,7 @@ growth.
 Compute h-index, g-index, and m-quotient for a specific author.
 
 ```{r}
-#| label: sol-ch10-1
+#| label: E-sol-ch10-1
 #| eval: false
 library(openalexR)
 library(tidyverse)
@@ -883,7 +883,7 @@ papers, and the m-quotient adjusts for career length.
 Pseudocode for removing self-citations from the h-index.
 
 ```{r}
-#| label: sol-ch10-2
+#| label: E-sol-ch10-2
 #| eval: false
 # Pseudocode:
 # 1. For each paper by the author, fetch its citing works
@@ -912,7 +912,7 @@ for most researchers but can have large effects for prolific self-citers.
 Use bootstrap resampling to compute a confidence interval for MNCS.
 
 ```{r}
-#| label: sol-ch10-3
+#| label: E-sol-ch10-3
 #| eval: false
 set.seed(20260509)
 
@@ -933,7 +933,7 @@ should always be reported with uncertainty estimates.
 Compare two indicators by year.
 
 ```{r}
-#| label: sol-ch10-4
+#| label: E-sol-ch10-4
 #| eval: false
 yearly_indicators <- works |>
  group_by(publication_year) |>
@@ -958,7 +958,7 @@ extremely highly cited papers inflate MNCS without affecting the 10% threshold.
 Extend the citation window to four years.
 
 ```{r}
-#| label: sol-ch11-1
+#| label: E-sol-ch11-1
 #| eval: false
 library(openalexR)
 library(tidyverse)
@@ -985,7 +985,7 @@ dilutes the signal for fast-moving fields.
 Compare JIF and SNIP proxies with Spearman correlation.
 
 ```{r}
-#| label: sol-ch11-2
+#| label: E-sol-ch11-2
 #| eval: false
 journal_metrics <- works |>
  group_by(so) |>
@@ -1006,7 +1006,7 @@ field normalisation reorders journals.
 Compare journals across two disciplines.
 
 ```{r}
-#| label: sol-ch11-3
+#| label: E-sol-ch11-3
 #| eval: false
 physics_journals <- c("S137773608", "S71048024")
 sociology_journals <- c("S64468286", "S128732326")
@@ -1036,7 +1036,7 @@ accumulation; SNIP-style normalisation reduces this gap.
 Estimate the proportion of journal self-citations.
 
 ```{r}
-#| label: sol-ch11-4
+#| label: E-sol-ch11-4
 #| eval: false
 # Approximation: among citing works of this journal's papers,
 # how many are also published in the same journal?
@@ -1071,7 +1071,7 @@ high and may warrant investigation.
 Compare two researchers on multiple indicators.
 
 ```{r}
-#| label: sol-ch12-1
+#| label: E-sol-ch12-1
 #| eval: false
 library(openalexR)
 library(tidyverse)
@@ -1100,7 +1100,7 @@ highly cited papers.
 Compare works fetched by OpenAlex ID vs. ORCID filtering.
 
 ```{r}
-#| label: sol-ch12-2
+#| label: E-sol-ch12-2
 #| eval: false
 oa_by_id <- oa_fetch(entity = "works",
                      author.id = "A5023888391")
@@ -1125,7 +1125,7 @@ disambiguation errors, and delayed metadata updates.
 Search for a common name and assess disambiguation.
 
 ```{r}
-#| label: sol-ch12-3
+#| label: E-sol-ch12-3
 #| eval: false
 wang_wei <- oa_fetch(entity = "authors",
                      search = "Wang Wei")
@@ -1151,7 +1151,7 @@ affiliation and ORCID are the most reliable disambiguation features.
 Recompute productivity using fractional counting.
 
 ```{r}
-#| label: sol-ch12-4
+#| label: E-sol-ch12-4
 #| eval: false
 author_works <- oa_fetch(entity = "works",
                          author.id = "A5023888391")
@@ -1177,7 +1177,7 @@ collaborate broadly see a larger gap between full and fractional counts.
 Estimate the fraction of self-citations for an author.
 
 ```{r}
-#| label: sol-ch12-5
+#| label: E-sol-ch12-5
 #| eval: false
 target_author <- "A5023888391"
 
@@ -1210,7 +1210,7 @@ may signal strategic self-citation behaviour.
 Aggregate by country using full and fractional counts.
 
 ```{r}
-#| label: sol-ch13-1
+#| label: E-sol-ch13-1
 #| eval: false
 library(tidyverse)
 
@@ -1244,7 +1244,7 @@ their apparent output.
 Compute the proportion of papers in the top 10% most cited.
 
 ```{r}
-#| label: sol-ch13-2
+#| label: E-sol-ch13-2
 #| eval: false
 # Compute year-specific 90th percentile thresholds
 thresholds <- works |>
@@ -1278,7 +1278,7 @@ Relate the number of institutional affiliations per paper to counting method
 effects.
 
 ```{r}
-#| label: sol-ch13-3
+#| label: E-sol-ch13-3
 #| eval: false
 collab_intensity <- works |>
  unnest(authorships) |>
@@ -1318,7 +1318,7 @@ collaboration intensity are more inflated by full counting.
 Compare citation half-lives between a mathematics and a biomedical journal.
 
 ```{r}
-#| label: sol-ch14-1
+#| label: E-sol-ch14-1
 #| eval: false
 library(openalexR)
 library(tidyverse)
@@ -1354,7 +1354,7 @@ than mathematics journals (8-12 years) because of faster publication cycles.
 Compute the fraction of references less than 5 years old.
 
 ```{r}
-#| label: sol-ch14-2
+#| label: E-sol-ch14-2
 #| eval: false
 # For papers with reference data available
 sample_papers <- works |>
@@ -1382,7 +1382,7 @@ literature.
 Identify delayed-recognition papers.
 
 ```{r}
-#| label: sol-ch14-3
+#| label: E-sol-ch14-3
 #| eval: false
 sleeping <- works |>
  filter(publication_year <= 2018,
@@ -1413,7 +1413,7 @@ paradigm shift.
 Replot aging curves using median citations.
 
 ```{r}
-#| label: sol-ch14-4
+#| label: E-sol-ch14-4
 #| eval: false
 aging_comparison <- works |>
  mutate(age = 2024 - publication_year) |>
@@ -1439,7 +1439,7 @@ up by highly cited outliers. Median is more robust for skewed distributions.
 Compute JIF-like proxies with different window lengths.
 
 ```{r}
-#| label: sol-ch14-5
+#| label: E-sol-ch14-5
 #| eval: false
 windows <- c(2, 3, 5)
 
@@ -1466,7 +1466,7 @@ with slower citation accumulation.
 Weight edges by 1/(k-1) where k is the number of authors.
 
 ```{r}
-#| label: sol-ch15-1
+#| label: E-sol-ch15-1
 #| eval: false
 library(igraph)
 library(tidyverse)
@@ -1499,7 +1499,7 @@ papers. Authors primarily involved in large teams may drop in rank.
 Build yearly networks and track structural evolution.
 
 ```{r}
-#| label: sol-ch15-2
+#| label: E-sol-ch15-2
 #| eval: false
 yearly_stats <- works |>
  group_by(publication_year) |>
@@ -1534,7 +1534,7 @@ more connected.
 Compare centrality measures for the giant component.
 
 ```{r}
-#| label: sol-ch15-3
+#| label: E-sol-ch15-3
 #| eval: false
 g <- build_coauth_graph(works)
 gc <- induced_subgraph(g, components(g)$membership ==
@@ -1559,7 +1559,7 @@ connect otherwise separate groups --- they may be interdisciplinary researchers.
 Vary the Leiden resolution and compare community counts.
 
 ```{r}
-#| label: sol-ch15-4
+#| label: E-sol-ch15-4
 #| eval: false
 library(igraph)
 
@@ -1587,7 +1587,7 @@ Normalise co-citation strengths by the geometric mean of individual citation
 counts.
 
 ```{r}
-#| label: sol-ch16-1
+#| label: E-sol-ch16-1
 #| eval: false
 library(igraph)
 library(tidyverse)
@@ -1613,7 +1613,7 @@ highly cited, surfacing topically related pairs that raw counts miss.
 Split the corpus into two periods and build separate networks.
 
 ```{r}
-#| label: sol-ch16-2
+#| label: E-sol-ch16-2
 #| eval: false
 periods <- list(
  early = works |> filter(publication_year %in% 2020:2021),
@@ -1645,7 +1645,7 @@ field; new pairs emerging in the later period may signal research-front shifts.
 Track modularity and fragmentation of the intellectual structure.
 
 ```{r}
-#| label: sol-ch16-3
+#| label: E-sol-ch16-3
 #| eval: false
 yearly_bc <- works |>
  group_by(publication_year) |>
@@ -1677,7 +1677,7 @@ increasing modularity suggests specialisation and fragmentation.
 Label communities using top title words.
 
 ```{r}
-#| label: sol-ch16-4
+#| label: E-sol-ch16-4
 #| eval: false
 library(tidytext)
 
@@ -1709,7 +1709,7 @@ correspond to recognisable subfields or research themes.
 Build and compare two co-occurrence networks.
 
 ```{r}
-#| label: sol-ch17-1
+#| label: E-sol-ch17-1
 #| eval: false
 library(igraph)
 library(tidyverse)
@@ -1749,7 +1749,7 @@ concepts are more standardised but coarser.
 Track the top keywords by degree over time.
 
 ```{r}
-#| label: sol-ch17-2
+#| label: E-sol-ch17-2
 #| eval: false
 yearly_top_kw <- works |>
  unnest(keywords) |>
@@ -1781,7 +1781,7 @@ signalling evolving research interests.
 Plot clusters on a density-centrality plane.
 
 ```{r}
-#| label: sol-ch17-3
+#| label: E-sol-ch17-3
 #| eval: false
 comm <- cluster_leiden(g_kw, resolution = 1.0)
 V(g_kw)$community <- membership(comm)
@@ -1815,7 +1815,7 @@ centrality); lower-left clusters are peripheral or emerging topics.
 Compare raw and association-strength-normalised networks.
 
 ```{r}
-#| label: sol-ch17-4
+#| label: E-sol-ch17-4
 #| eval: false
 # Association strength: w_ij / (w_i * w_j / 2m)
 total_weight <- sum(E(g_kw)$weight)
@@ -1846,7 +1846,7 @@ terms, elevating more specific and meaningful keyword pairs.
 Run the disparity filter across multiple alpha values.
 
 ```{r}
-#| label: sol-ch18-1
+#| label: E-sol-ch18-1
 #| eval: false
 library(igraph)
 library(tidyverse)
@@ -1882,7 +1882,7 @@ signal and connectivity.
 Compare two backbone extraction methods using NMI.
 
 ```{r}
-#| label: sol-ch18-2
+#| label: E-sol-ch18-2
 #| eval: false
 library(igraph)
 
@@ -1911,7 +1911,7 @@ community structures.
 Check whether communities at different resolutions are nested.
 
 ```{r}
-#| label: sol-ch18-3
+#| label: E-sol-ch18-3
 #| eval: false
 resolutions <- c(0.5, 1.0, 2.0)
 
@@ -1941,7 +1941,7 @@ cutting topics.
 Remove weights and compare results.
 
 ```{r}
-#| label: sol-ch18-4
+#| label: E-sol-ch18-4
 #| eval: false
 g_unweighted <- g_bb
 E(g_unweighted)$weight <- 1
@@ -1966,7 +1966,7 @@ strong ones.
 Overlay two institutions on the same base map.
 
 ```{r}
-#| label: sol-ch19-1
+#| label: E-sol-ch19-1
 #| eval: false
 library(tidyverse)
 library(ggrepel)
@@ -1996,7 +1996,7 @@ areas reveal institutional specialisation.
 Compare the same institution's profile across two time periods.
 
 ```{r}
-#| label: sol-ch19-2
+#| label: E-sol-ch19-2
 #| eval: false
 periods <- list(
  early = c("2018-01-01", "2019-12-31"),
@@ -2028,7 +2028,7 @@ suggest declining focus or strategic reorientation.
 Compare a small and a large country's publication profiles.
 
 ```{r}
-#| label: sol-ch19-3
+#| label: E-sol-ch19-3
 #| eval: false
 countries <- c("SG", "US")  # Singapore vs. United States
 
@@ -2063,7 +2063,7 @@ diagonal in selected areas); large countries are more evenly distributed.
 Apply five layouts and compare quality and speed.
 
 ```{r}
-#| label: sol-ch20-1
+#| label: E-sol-ch20-1
 #| eval: false
 library(igraph)
 library(ggraph)
@@ -2094,7 +2094,7 @@ for small networks; DRL scales to large graphs but can produce chaotic layouts.
 Create a filterable `visNetwork` visualisation.
 
 ```{r}
-#| label: sol-ch20-2
+#| label: E-sol-ch20-2
 #| eval: false
 library(visNetwork)
 
@@ -2120,7 +2120,7 @@ and explore inter-community bridges.
 Export to GraphML for use in Gephi.
 
 ```{r}
-#| label: sol-ch20-3
+#| label: E-sol-ch20-3
 #| eval: false
 library(igraph)
 
@@ -2141,7 +2141,7 @@ separation; R workflows are more reproducible and automatable.
 Test colour distinguishability with increasing community counts.
 
 ```{r}
-#| label: sol-ch20-4
+#| label: E-sol-ch20-4
 #| eval: false
 library(ggraph)
 library(viridis)
@@ -2175,7 +2175,7 @@ beyond that, consider shape or faceting as supplementary channels.
 Build a DFM from bigrams.
 
 ```{r}
-#| label: sol-ch21-1
+#| label: E-sol-ch21-1
 #| eval: false
 library(quanteda)
 library(tidyverse)
@@ -2198,7 +2198,7 @@ topfeatures(dfm_bi, 20)
 Compute the type-token ratio (TTR) per year.
 
 ```{r}
-#| label: sol-ch21-2
+#| label: E-sol-ch21-2
 #| eval: false
 library(quanteda)
 library(quanteda.textstats)
@@ -2235,7 +2235,7 @@ TTR suggests diversifying terminology.
 Identify terms that distinguish a specific year.
 
 ```{r}
-#| label: sol-ch21-3
+#| label: E-sol-ch21-3
 #| eval: false
 library(quanteda)
 library(quanteda.textstats)
@@ -2265,7 +2265,7 @@ terms related to LLMs and AI may dominate.
 Compare analyses with and without stemming.
 
 ```{r}
-#| label: sol-ch21-4
+#| label: E-sol-ch21-4
 #| eval: false
 toks_nostem <- tokens(corp, remove_punct = TRUE) |>
  tokens_tolower() |>
@@ -2293,7 +2293,7 @@ are often more interpretable.
 Fit LDA models with multiple values of K and compare coherence.
 
 ```{r}
-#| label: sol-ch22-1
+#| label: E-sol-ch22-1
 #| eval: false
 library(topicmodels)
 library(tidyverse)
@@ -2334,7 +2334,7 @@ interpretability. There is rarely a single "correct" K.
 Fit a Structural Topic Model with journal as a prevalence covariate.
 
 ```{r}
-#| label: sol-ch22-2
+#| label: E-sol-ch22-2
 #| eval: false
 library(stm)
 set.seed(20260509)
@@ -2366,7 +2366,7 @@ specialisation; shared topics indicate cross-cutting themes.
 Read top documents per topic to assign labels.
 
 ```{r}
-#| label: sol-ch22-3
+#| label: E-sol-ch22-3
 #| eval: false
 library(topicmodels)
 library(tidyverse)
@@ -2394,7 +2394,7 @@ reading representative documents is essential for meaningful labels.
 Compare topics from both models.
 
 ```{r}
-#| label: sol-ch22-4
+#| label: E-sol-ch22-4
 #| eval: false
 # Extract top terms for each model
 lda_terms <- terms(best_model, 10)
@@ -2424,7 +2424,7 @@ prevalence to shift over time, producing more temporally coherent topics.
 Evaluate RAKE keywords against author keywords.
 
 ```{r}
-#| label: sol-ch23-1
+#| label: E-sol-ch23-1
 #| eval: false
 library(udpipe)
 library(tidyverse)
@@ -2462,7 +2462,7 @@ author keywords often include broad terms not in the abstract.
 Score bigrams by TF-IDF.
 
 ```{r}
-#| label: sol-ch23-2
+#| label: E-sol-ch23-2
 #| eval: false
 library(tidytext)
 library(tidyverse)
@@ -2490,7 +2490,7 @@ evaluation" are invisible to unigram methods but highly informative.
 Use extracted keywords to build a co-word network for keyword-poor papers.
 
 ```{r}
-#| label: sol-ch23-3
+#| label: E-sol-ch23-3
 #| eval: false
 library(igraph)
 library(udpipe)
@@ -2530,7 +2530,7 @@ keyword assignments.
 Use TF-IDF weights for document embedding computation.
 
 ```{r}
-#| label: sol-ch24-1
+#| label: E-sol-ch24-1
 #| eval: false
 library(word2vec)
 library(tidytext)
@@ -2568,7 +2568,7 @@ tighter, more meaningful clusters in the UMAP projection.
 Apply k-means to embeddings and compare with LDA topics.
 
 ```{r}
-#| label: sol-ch24-2
+#| label: E-sol-ch24-2
 #| eval: false
 set.seed(20260509)
 
@@ -2596,7 +2596,7 @@ the data.
 Use SPECTER embeddings via reticulate.
 
 ```{r}
-#| label: sol-ch24-3
+#| label: E-sol-ch24-3
 #| eval: false
 library(reticulate)
 
@@ -2627,7 +2627,7 @@ semantics better than generic word2vec, especially for similarity search.
 Test analogical reasoning in the word2vec model.
 
 ```{r}
-#| label: sol-ch24-4
+#| label: E-sol-ch24-4
 #| eval: false
 library(word2vec)
 
@@ -2657,7 +2657,7 @@ analogies, reflecting the training corpus.
 Use proportional frequencies instead of absolute counts.
 
 ```{r}
-#| label: sol-ch25-1
+#| label: E-sol-ch25-1
 #| eval: false
 library(tidyverse)
 
@@ -2690,7 +2690,7 @@ some terms that burst in absolute counts may be merely riding overall growth.
 Compare emerging keywords across two journals.
 
 ```{r}
-#| label: sol-ch25-2
+#| label: E-sol-ch25-2
 #| eval: false
 journals <- c("Scientometrics", "PLOS ONE")
 
@@ -2723,7 +2723,7 @@ terms may overlap only for broad methodological advances.
 Compute document novelty using cosine distance to prior-year centroids.
 
 ```{r}
-#| label: sol-ch25-3
+#| label: E-sol-ch25-3
 #| eval: false
 library(quanteda)
 library(tidyverse)
@@ -2767,7 +2767,7 @@ paradigms.
 Manually validate burst-detected emerging terms.
 
 ```{r}
-#| label: sol-ch25-4
+#| label: E-sol-ch25-4
 #| eval: false
 # Select 5 terms identified as "emerging"
 emerging_terms <- bursts_relative |>
@@ -2802,7 +2802,7 @@ qualitative sources reduces false positives and increases confidence.
 Compare citations for OA vs. closed-access papers across journals.
 
 ```{r}
-#| label: sol-ch26-1
+#| label: E-sol-ch26-1
 #| eval: false
 library(openalexR)
 library(tidyverse)
@@ -2835,7 +2835,7 @@ effect.
 Track citation accumulation over time for early-attention papers.
 
 ```{r}
-#| label: sol-ch26-2
+#| label: E-sol-ch26-2
 #| eval: false
 recent_works <- works |>
  filter(publication_year == 2022, !is.null(counts_by_year))
@@ -2869,7 +2869,7 @@ consistent with cumulative advantage (Matthew Effect) in citations.
 Compare citation distributions and reference list lengths across fields.
 
 ```{r}
-#| label: sol-ch26-3
+#| label: E-sol-ch26-3
 #| eval: false
 biomed <- oa_fetch(entity = "works",
                    primary_location.source.id = "S49861241",
@@ -2909,7 +2909,7 @@ across fields.
 Compare OA rates across three journals in different disciplines.
 
 ```{r}
-#| label: sol-ch27-1
+#| label: E-sol-ch27-1
 #| eval: false
 library(openalexR)
 library(tidyverse)
@@ -2941,7 +2941,7 @@ eLife, etc.), while sociology and mathematics lag behind.
 Track the year-over-year OA growth rate.
 
 ```{r}
-#| label: sol-ch27-2
+#| label: E-sol-ch27-2
 #| eval: false
 oa_growth <- works |>
  filter(is_oa) |>
@@ -2962,7 +2962,7 @@ mandates and Plan S implementation.
 Test whether author count predicts OA status.
 
 ```{r}
-#| label: sol-ch27-3
+#| label: E-sol-ch27-3
 #| eval: false
 works |>
  mutate(n_authors = map_int(author, nrow)) |>
@@ -2985,7 +2985,7 @@ mandate it.
 Compare gender representation in first authorship across journals.
 
 ```{r}
-#| label: sol-ch28-1
+#| label: E-sol-ch28-1
 #| eval: false
 library(openalexR)
 library(tidyverse)
@@ -3018,7 +3018,7 @@ journals typically have lower female first-author rates than social sciences.
 Track the proportion of female first authors over time.
 
 ```{r}
-#| label: sol-ch28-2
+#| label: E-sol-ch28-2
 #| eval: false
 # After gender inference has been performed:
 gender_trend <- works_gendered |>
@@ -3042,7 +3042,7 @@ though the rate of change varies considerably by discipline and region.
 Compare citations by inferred gender, controlling for year.
 
 ```{r}
-#| label: sol-ch28-3
+#| label: E-sol-ch28-3
 #| eval: false
 # After gender inference:
 citation_gap <- works_gendered |>
@@ -3075,7 +3075,7 @@ alone cannot establish causation.
 Compare retraction rates across fields, normalised by corpus size.
 
 ```{r}
-#| label: sol-ch29-1
+#| label: E-sol-ch29-1
 #| eval: false
 library(openalexR)
 library(tidyverse)
@@ -3109,7 +3109,7 @@ and reproducibility challenges.
 Examine when a retracted paper's citations were received.
 
 ```{r}
-#| label: sol-ch29-2
+#| label: E-sol-ch29-2
 #| eval: false
 retracted_paper <- oa_fetch(entity = "works",
                             doi = "10.xxxx/retracted-example")
@@ -3133,7 +3133,7 @@ indicating that the retraction notice does not always reach citing authors.
 Test whether pre-retraction citation count predicts post-retraction citations.
 
 ```{r}
-#| label: sol-ch29-3
+#| label: E-sol-ch29-3
 #| eval: false
 # Assuming a set of retracted papers with known retraction years
 retracted_set <- retracted_works |>
@@ -3163,7 +3163,7 @@ continue to be cited after retraction --- the "retraction paradox."
 Identify frequently co-occurring funder pairs.
 
 ```{r}
-#| label: sol-ch30-1
+#| label: E-sol-ch30-1
 #| eval: false
 library(tidyverse)
 
@@ -3185,7 +3185,7 @@ organisations (e.g., NIH + EU), reflecting collaborative funding models.
 Compare topical profiles of two major funders.
 
 ```{r}
-#| label: sol-ch30-2
+#| label: E-sol-ch30-2
 #| eval: false
 library(openalexR)
 library(tidyverse)
@@ -3220,7 +3220,7 @@ portfolios reveals strategic funding priorities.
 Track funding acknowledgement coverage over time.
 
 ```{r}
-#| label: sol-ch30-3
+#| label: E-sol-ch30-3
 #| eval: false
 funding_trend <- works |>
  mutate(has_funding = map_lgl(grants, \(g) length(g) > 0)) |>
@@ -3244,7 +3244,7 @@ databases improve structured acknowledgement parsing.
 Compare the proportion of highly cited papers across fields.
 
 ```{r}
-#| label: sol-ch31-1
+#| label: E-sol-ch31-1
 #| eval: false
 library(openalexR)
 library(tidyverse)
@@ -3280,7 +3280,7 @@ automatically imply greater technological relevance.
 Estimate the citation accumulation trajectory for a cohort of papers.
 
 ```{r}
-#| label: sol-ch31-2
+#| label: E-sol-ch31-2
 #| eval: false
 cohort_2015 <- works |>
  filter(publication_year == 2015, !is.null(counts_by_year))
@@ -3311,7 +3311,7 @@ depending on the field. This lag matters for evaluating recent research.
 Compare the proportion of top-cited papers across institutions.
 
 ```{r}
-#| label: sol-ch31-3
+#| label: E-sol-ch31-3
 #| eval: false
 inst_ids <- c("I123456789", "I987654321")
 
@@ -3341,7 +3341,7 @@ actual patent citation data.
 Add covariates to the difference-in-differences regression.
 
 ```{r}
-#| label: sol-ch32-1
+#| label: E-sol-ch32-1
 #| eval: false
 library(tidyverse)
 
@@ -3372,7 +3372,7 @@ covariates, the simple model suffers from omitted variable bias.
 Use a false treatment date to test the parallel trends assumption.
 
 ```{r}
-#| label: sol-ch32-2
+#| label: E-sol-ch32-2
 #| eval: false
 # Placebo: pretend treatment happened in 2018 instead of 2020
 works_placebo <- works_did |>
@@ -3399,7 +3399,7 @@ divergence between OA and non-OA papers.
 Use propensity score matching to estimate the OA effect.
 
 ```{r}
-#| label: sol-ch32-3
+#| label: E-sol-ch32-3
 #| eval: false
 library(MatchIt)
 library(tidyverse)
@@ -3435,7 +3435,7 @@ observables was important.
 Search abstracts for data/code availability statements.
 
 ```{r}
-#| label: sol-ch33-1
+#| label: E-sol-ch33-1
 #| eval: false
 library(tidyverse)
 
@@ -3462,7 +3462,7 @@ appear only in dedicated sections not captured by abstracts.
 Compare metadata completeness and OA rates across journals.
 
 ```{r}
-#| label: sol-ch33-2
+#| label: E-sol-ch33-2
 #| eval: false
 journal_ids <- c("S4210174107", "S49861241", "S137773608")
 
@@ -3489,7 +3489,7 @@ completeness, but the correlation is not perfect.
 Track transparency proxies over time.
 
 ```{r}
-#| label: sol-ch33-3
+#| label: E-sol-ch33-3
 #| eval: false
 transparency_trends <- works |>
  group_by(publication_year) |>
@@ -3519,7 +3519,7 @@ interpretation.
 Create a `_targets.R` file for a bibliometric workflow.
 
 ```{r}
-#| label: sol-ch34-1
+#| label: E-sol-ch34-1
 #| eval: false
 library(targets)
 
@@ -3564,7 +3564,7 @@ dependency-based pipelines.
 Demonstrate dependency management with renv.
 
 ```{r}
-#| label: sol-ch34-2
+#| label: E-sol-ch34-2
 #| eval: false
 # Step 1: Initialise renv
 # renv::init()
@@ -3593,7 +3593,7 @@ exact reproducibility of package versions across machines and time.
 Use dynamic branching to analyse multiple journals in parallel.
 
 ```{r}
-#| label: sol-ch34-3
+#| label: E-sol-ch34-3
 #| eval: false
 library(targets)
 
@@ -3633,7 +3633,7 @@ journal is processed independently and can run in parallel with
 Create a Quarto dashboard with two pages.
 
 ```{r}
-#| label: sol-ch35-1
+#| label: E-sol-ch35-1
 #| eval: false
 # Save as dashboard.qmd:
 # ---
@@ -3674,7 +3674,7 @@ tabs and row/column-level headings (`##`) for layout.
 Use plotly selection to filter a DT table.
 
 ```{r}
-#| label: sol-ch35-2
+#| label: E-sol-ch35-2
 #| eval: false
 library(plotly)
 library(crosstalk)
@@ -3701,7 +3701,7 @@ htmlwidget that supports it, without needing Shiny.
 Add informative hover text to a plotly chart.
 
 ```{r}
-#| label: sol-ch35-3
+#| label: E-sol-ch35-3
 #| eval: false
 library(plotly)
 library(tidyverse)
@@ -3729,7 +3729,7 @@ context-rich information on hover, improving dashboard usability.
 Create a parameterized report for institutional profiles.
 
 ```{r}
-#| label: sol-ch36-1
+#| label: E-sol-ch36-1
 #| eval: false
 # Save as inst_profile.qmd:
 # ---
@@ -3786,7 +3786,7 @@ batch rendering generates a portfolio of reports efficiently.
 Render the template for multiple journals.
 
 ```{r}
-#| label: sol-ch36-2
+#| label: E-sol-ch36-2
 #| eval: false
 library(quarto)
 
@@ -3817,7 +3817,7 @@ templates scales to hundreds of reports with minimal code.
 Add a warning when the sample is too small.
 
 ```{r}
-#| label: sol-ch36-3
+#| label: E-sol-ch36-3
 #| eval: false
 # In the parameterized .qmd file:
 #
@@ -3846,7 +3846,7 @@ switching --- essential for robust automated reports that handle edge cases.
 Extend the app with a co-authorship network visualisation.
 
 ```{r}
-#| label: sol-ch37-1
+#| label: E-sol-ch37-1
 #| eval: false
 library(shiny)
 library(visNetwork)
@@ -3890,7 +3890,7 @@ overwhelming the visualisation with hyper-authored papers.
 Implement server-side caching for repeated queries.
 
 ```{r}
-#| label: sol-ch37-2
+#| label: E-sol-ch37-2
 #| eval: false
 library(shiny)
 library(memoise)
@@ -3922,7 +3922,7 @@ never hits the API twice. Use `cachem::cache_disk()` for production apps.
 Deploy to shinyapps.io.
 
 ```{r}
-#| label: sol-ch37-3
+#| label: E-sol-ch37-3
 #| eval: false
 # Step 1: Install rsconnect
 # install.packages("rsconnect")
@@ -3955,7 +3955,7 @@ messages.
 Run biblioshiny and compare features.
 
 ```{r}
-#| label: sol-ch37-4
+#| label: E-sol-ch37-4
 #| eval: false
 library(bibliometrix)
 # biblioshiny()

@@ -15,7 +15,7 @@ After completing this chapter, you will be able to:
 ## Setup {#CHID-setup}
 
 ```{r}
-#| label: setup
+#| label: _template-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -37,7 +37,7 @@ set.seed(20260509)
 ### Acquiring the data
 
 ```{r}
-#| label: fetch-data
+#| label: _template-fetch-data
 #| cache: true
 # Example: fetch works from OpenAlex
 # works <- fetch_openalex(
@@ -50,14 +50,14 @@ set.seed(20260509)
 ### Analysis
 
 ```{r}
-#| label: analyse
+#| label: _template-analyse
 # Analysis code here
 ```
 
 ### Visualization
 
 ```{r}
-#| label: fig-CHID-main
+#| label: _template-fig-CHID-main
 #| fig-cap: "Descriptive caption for the figure."
 #| fig-alt: "Accessible text description of the figure content."
 #| fig-width: 6
@@ -114,6 +114,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#CHID-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: _template-session-info
 sessionInfo()
 ```

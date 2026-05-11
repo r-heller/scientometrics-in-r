@@ -42,3 +42,17 @@ local({
     if (file.exists(f)) file.copy(f, file.path(out, basename(f)), overwrite = TRUE)
   }
 })
+
+# Register a mermaid chunk engine for bookdown.
+# Bookdown does not ship a native mermaid engine like Quarto does; this
+# wraps the chunk source in <div class="mermaid">, and the mermaid JS
+# included via style/header.html renders it on page load.
+knitr::knit_engines$set(mermaid = function(options) {
+  if (isFALSE(options$eval)) return("")
+  code <- paste(options$code, collapse = "\n")
+  paste0(
+    '<div class="mermaid">\n',
+    code,
+    '\n</div>'
+  )
+})

@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#scimap-setup}
 
 ```{r}
-#| label: setup
+#| label: 19-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -49,7 +49,7 @@ Science maps provide intuitive, holistic overviews of research landscapes. Howev
 We construct a base map from citation flows between journals in a multidisciplinary sample.
 
 ```{r}
-#| label: fetch-basemap-data
+#| label: 19-fetch-basemap-data
 #| cache: true
 works_multi <- oa_fetch(
   entity = "works",
@@ -70,7 +70,7 @@ cat(glue("Unique source journals: {n_distinct(journal_data$source_display_name)}
 ```
 
 ```{r}
-#| label: journal-cocitation
+#| label: 19-journal-cocitation
 journal_cited <- journal_data |>
   select(citing_journal = source_display_name, cited_id)
 
@@ -96,7 +96,7 @@ cat(glue("Journal base map: {vcount(g_journals)} journals, {ecount(g_journals)} 
 ### Clustering journals into disciplines
 
 ```{r}
-#| label: journal-clusters
+#| label: 19-journal-clusters
 comm <- cluster_leiden(g_journals, resolution_parameter = 0.8,
                        objective_function = "modularity")
 V(g_journals)$cluster <- as.factor(membership(comm))
@@ -120,7 +120,7 @@ cluster_table |> head(8) |> gt()
 ### Visualising the base map
 
 ```{r}
-#| label: fig-scimap-basemap
+#| label: 19-fig-scimap-basemap
 #| fig-cap: "Journal co-citation base map coloured by discipline cluster."
 #| fig-alt: "Network map of journals positioned by co-citation similarity. Colours indicate discipline clusters. Journals that cite each other's papers are positioned nearby."
 #| fig-width: 7
@@ -145,7 +145,7 @@ ggraph(layout) +
 We overlay the publication profile of an institution.
 
 ```{r}
-#| label: fetch-overlay-data
+#| label: 19-fetch-overlay-data
 #| cache: true
 inst_works <- oa_fetch(
   entity = "works",
@@ -168,7 +168,7 @@ cat(glue("Institution journals matched to base map: {nrow(inst_journals_matched)
 ```
 
 ```{r}
-#| label: fig-scimap-overlay
+#| label: 19-fig-scimap-overlay
 #| fig-cap: "Overlay map showing Oxford's 2022 publication profile on the journal base map."
 #| fig-alt: "The journal base map with Oxford's publications overlaid as larger nodes. The overlay reveals which areas of science the university is active in."
 #| fig-width: 7
@@ -251,6 +251,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#scimap-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 19-session-info
 sessionInfo()
 ```

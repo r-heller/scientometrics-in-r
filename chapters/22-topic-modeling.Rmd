@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#topicmodel-setup}
 
 ```{r}
-#| label: setup
+#| label: 22-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -48,7 +48,7 @@ Topic models have been widely used in scientometrics to map research fields, tra
 ### Preparing the corpus
 
 ```{r}
-#| label: fetch-topic-data
+#| label: 22-fetch-topic-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -70,7 +70,7 @@ cat(glue("Documents for topic modelling: {nrow(text_df)}\n"))
 ```
 
 ```{r}
-#| label: build-dfm-topics
+#| label: 22-build-dfm-topics
 corp <- corpus(text_df, docid_field = "doc_id", text_field = "text")
 docvars(corp, "year") <- text_df$year
 
@@ -89,9 +89,9 @@ cat(glue("DFM: {nrow(dfmat)} docs x {ncol(dfmat)} features\n"))
 ### Fitting LDA
 
 ```{r}
-#| label: fit-lda
+#| label: 22-fit-lda
 #| cache: true
-dtm <- convert(dfmat, to = "topicmodels")
+dtm <- quanteda::convert(dfmat, to = "topicmodels")
 
 lda_model <- LDA(dtm, k = 8, control = list(seed = 42))
 
@@ -102,7 +102,7 @@ cat(glue("LDA fitted with K = 8 topics\n"))
 ```
 
 ```{r}
-#| label: fig-topicmodel-lda
+#| label: 22-fig-topicmodel-lda
 #| fig-cap: "Top 10 terms per LDA topic."
 #| fig-alt: "Faceted bar chart showing the 10 highest-probability terms for each of the 8 LDA topics. Each facet represents one topic."
 #| fig-width: 8
@@ -125,9 +125,9 @@ ggplot(lda_top_terms, aes(x = beta, y = term, fill = factor(topic))) +
 ### Fitting STM with year covariate
 
 ```{r}
-#| label: fit-stm
+#| label: 22-fit-stm
 #| cache: true
-stm_dfm <- convert(dfmat, to = "stm")
+stm_dfm <- quanteda::convert(dfmat, to = "stm")
 
 stm_model <- stm(
   documents = stm_dfm$documents,
@@ -143,7 +143,7 @@ cat(glue("STM fitted with K = 8 topics, year as prevalence covariate\n"))
 ```
 
 ```{r}
-#| label: fig-topicmodel-stm
+#| label: 22-fig-topicmodel-stm
 #| fig-cap: "Top terms per STM topic, showing FREX (frequent and exclusive) words."
 #| fig-alt: "Labelled list showing the top FREX terms for each of 8 STM topics. FREX terms are both frequent within and exclusive to each topic."
 #| fig-width: 7
@@ -155,7 +155,7 @@ plot(stm_model, type = "summary", n = 5,
 ### Topic prevalence over time
 
 ```{r}
-#| label: fig-topicmodel-temporal
+#| label: 22-fig-topicmodel-temporal
 #| fig-cap: "Estimated topic prevalence by publication year (STM)."
 #| fig-alt: "Line chart showing how the estimated proportion of each topic changes across publication years. Some topics grow while others decline."
 #| fig-width: 7
@@ -185,7 +185,7 @@ ggplot(effect_df, aes(x = factor(topic), y = estimate)) +
 ### Model diagnostics
 
 ```{r}
-#| label: model-diagnostics
+#| label: 22-model-diagnostics
 coherence <- semanticCoherence(stm_model, stm_dfm$documents)
 exclusivity <- exclusivity(stm_model)
 
@@ -254,6 +254,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#topicmodel-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 22-session-info
 sessionInfo()
 ```

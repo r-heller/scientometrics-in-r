@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#textmine-setup}
 
 ```{r}
-#| label: setup
+#| label: 21-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -46,7 +46,7 @@ Text mining complements network-based methods (\@ref(coword-background)). Co-wor
 ### Building a text corpus
 
 ```{r}
-#| label: fetch-textmine-data
+#| label: 21-fetch-textmine-data
 #| cache: true
 works <- oa_fetch(
   entity = "works",
@@ -68,7 +68,7 @@ cat(glue("Documents with abstracts: {nrow(text_df)}\n"))
 ```
 
 ```{r}
-#| label: build-corpus
+#| label: 21-build-corpus
 corp <- corpus(text_df, docid_field = "doc_id", text_field = "text")
 docvars(corp, "year") <- text_df$year
 
@@ -79,7 +79,7 @@ cat(glue("Total tokens: {sum(ntoken(corp))}\n"))
 ### Tokenisation and preprocessing
 
 ```{r}
-#| label: tokenise
+#| label: 21-tokenise
 toks <- tokens(corp,
                remove_punct = TRUE,
                remove_numbers = TRUE,
@@ -96,7 +96,7 @@ cat(glue("Tokens after preprocessing: {sum(ntoken(toks))}\n"))
 ### Document-feature matrix
 
 ```{r}
-#| label: build-dfm
+#| label: 21-build-dfm
 dfmat <- dfm(toks) |>
   dfm_trim(min_termfreq = 5, min_docfreq = 3)
 
@@ -105,7 +105,7 @@ cat(glue("Sparsity: {scales::percent(sparsity(dfmat))}\n"))
 ```
 
 ```{r}
-#| label: fig-textmine-topfeatures
+#| label: 21-fig-textmine-topfeatures
 #| fig-cap: "Top 20 most frequent terms in the Scientometrics corpus."
 #| fig-alt: "Horizontal bar chart showing the 20 most frequent terms after preprocessing, with term frequency on the x-axis."
 #| fig-width: 6
@@ -123,7 +123,7 @@ ggplot(top_terms, aes(x = frequency, y = term)) +
 ### TF-IDF weighting
 
 ```{r}
-#| label: compute-tfidf
+#| label: 21-compute-tfidf
 dfmat_tfidf <- dfm_tfidf(dfmat)
 
 tfidf_by_year <- text_df |>
@@ -147,7 +147,7 @@ tfidf_by_year |>
 ### Term frequency over time
 
 ```{r}
-#| label: fig-textmine-temporal
+#| label: 21-fig-textmine-temporal
 #| fig-cap: "Relative frequency of selected terms over time."
 #| fig-alt: "Line chart showing how the relative frequency of key terms changes across publication years, revealing shifts in research vocabulary."
 #| fig-width: 6
@@ -228,6 +228,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#textmine-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 21-session-info
 sessionInfo()
 ```

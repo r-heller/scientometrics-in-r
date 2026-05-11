@@ -13,7 +13,7 @@ After completing this chapter, you will be able to:
 ## Setup {#retraction-setup}
 
 ```{r}
-#| label: setup
+#| label: 29-setup
 #| message: false
 library(tidyverse)
 library(openalexR)
@@ -44,7 +44,7 @@ Bibliometric analysis of retractions must be approached carefully. The goal is t
 ### Finding retracted works
 
 ```{r}
-#| label: fetch-retraction-data
+#| label: 29-fetch-retraction-data
 #| cache: true
 retracted <- oa_fetch(
   entity = "works",
@@ -58,7 +58,7 @@ cat(glue("Retracted works retrieved: {nrow(retracted)}\n"))
 ```
 
 ```{r}
-#| label: retraction-by-year
+#| label: 29-retraction-by-year
 retraction_years <- retracted |>
   mutate(year = year(publication_date)) |>
   count(year, sort = FALSE)
@@ -69,7 +69,7 @@ retraction_years |> gt()
 ### Citation counts of retracted papers
 
 ```{r}
-#| label: fig-retraction-citations
+#| label: 29-fig-retraction-citations
 #| fig-cap: "Citation count distribution of retracted papers."
 #| fig-alt: "Histogram showing how many citations retracted papers have accumulated, revealing that many retracted papers continue to be cited."
 #| fig-width: 5
@@ -81,7 +81,7 @@ ggplot(retracted, aes(x = cited_by_count)) +
 ```
 
 ```{r}
-#| label: retraction-cite-stats
+#| label: 29-retraction-cite-stats
 cite_stats <- retracted |>
   summarise(
     n = n(),
@@ -97,7 +97,7 @@ cite_stats |> gt()
 ### Retracted papers by source
 
 ```{r}
-#| label: fig-retraction-sources
+#| label: 29-fig-retraction-sources
 #| fig-cap: "Top journals with the most retracted papers in the sample."
 #| fig-alt: "Horizontal bar chart showing which journals have the most retracted papers in the retrieved sample."
 #| fig-width: 6
@@ -116,7 +116,7 @@ retracted |>
 ### Citation persistence over time
 
 ```{r}
-#| label: fig-retraction-persistence
+#| label: 29-fig-retraction-persistence
 #| fig-cap: "Mean citations by publication age for retracted papers."
 #| fig-alt: "Line chart showing the mean citation count of retracted papers by years since publication, demonstrating that citations continue to accumulate."
 #| fig-width: 6
@@ -186,6 +186,6 @@ Solutions are provided in \@ref(solutions).
 ## Session info {#retraction-sessioninfo}
 
 ```{r}
-#| label: session-info
+#| label: 29-session-info
 sessionInfo()
 ```
