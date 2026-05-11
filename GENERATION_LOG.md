@@ -11,3 +11,12 @@ Append-only log of chapter and case study generation.
 
 - Added `images/cover.png` (1600×2400) to HTML landing page, EPUB `cover-image`, README thumbnail, and `book.cover-image` (Open Graph).
 - Copied to `.github/social-preview.png`. The image is portrait (1600×2400); GitHub social previews prefer 1280×640 landscape, so Raban may want to upload a cropped/landscape version manually via repo Settings → Social preview.
+
+## 2026-05-11 — Added LLM-use acknowledgment
+
+- index.qmd Acknowledgments: added "Use of LLM tools" subsection
+  (self-hosted Mistral Le Chat via Ollama/ollamar + Copilot in RStudio).
+- Commit: 5994c8f
+- This Quarto project has no 95-colophon.qmd; the pointer line from the
+  brief is therefore omitted. If a colophon file is added later, copy
+  the one-liner from the brief into it.
