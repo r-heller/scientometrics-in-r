@@ -1,0 +1,245 @@
+---
+title: "Co-word and Keyword Co-occurrence"
+---
+
+## Learning objectives {#coword-objectives}
+
+After completing this chapter, you will be able to:
+
+- Explain the principles of co-word analysis and its role in science mapping
+- Extract and clean keywords from OpenAlex data (author keywords and concepts)
+- Build a keyword co-occurrence matrix and convert it to a network
+- Apply community detection to identify topical clusters
+- Visualise keyword co-occurrence networks with interpretable layouts
+
+## Setup {#coword-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(igraph)
+library(tidygraph)
+library(ggraph)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#coword-background}
+
+Co-word analysis maps the conceptual structure of a research field by examining which terms appear together in the same documents. Introduced by @callon1983, the method assumes that when two keywords repeatedly co-occur across publications, they are thematically related. The resulting co-occurrence network reveals the topical landscape of a field: clusters of densely connected keywords represent coherent research themes, while bridges between clusters indicate interdisciplinary connections.
+
+The method works with several types of terms:
+
+- **Author keywords**: Terms selected by the paper's authors. These are intentional descriptors but suffer from inconsistency --- authors may use different terms for the same concept ("machine learning" vs. "ML" vs. "statistical learning").
+- **Indexed keywords**: Terms assigned by database indexers (e.g., MeSH terms in PubMed). More consistent but only available in some databases.
+- **OpenAlex concepts**: Algorithmically assigned topics at multiple levels of a hierarchical taxonomy. These provide broad coverage but may miss nuanced distinctions [@priem2022].
+- **Title/abstract words**: Extracted via text mining. Comprehensive but noisy; requires extensive preprocessing.
+
+Normalisation is important for co-word networks. Raw co-occurrence counts favour high-frequency terms. Common normalisations include the **association strength** (equivalent to pointwise mutual information) and the **equivalence index** (cosine of the co-occurrence vector). @waltman2012 demonstrated that association strength produces the most balanced network structures for bibliometric mapping.
+
+Co-word analysis complements citation-based methods (\@ref(cocit-background)). Citation networks reveal intellectual influence; co-word networks reveal thematic content. Combining both provides a more complete picture of a field's structure.
+
+## Worked example {#coword-example}
+
+### Extracting keywords
+
+We extract author keywords from a sample of scientometrics research.
+
+```{r}
+#| label: fetch-coword-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S148561398",
+  from_publication_date = "2019-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 500, seed = 42)
+)
+```
+
+```{r}
+#| label: extract-keywords
+keywords <- works |>
+  select(id, topics) |>
+  unnest(topics, names_sep = "_") |>
+  filter(topics_display_name != "") |>
+  select(work_id = id, keyword = topics_display_name) |>
+  mutate(keyword = str_to_lower(str_trim(keyword))) |>
+  filter(!is.na(keyword), nchar(keyword) >= 3)
+
+kw_counts <- keywords |>
+  count(keyword, sort = TRUE)
+
+cat(glue("Total keyword occurrences: {nrow(keywords)}\n"))
+cat(glue("Unique keywords: {n_distinct(keywords$keyword)}\n"))
+```
+
+```{r}
+#| label: fig-coword-topkeywords
+#| fig-cap: "Top 20 most frequent keywords in the Scientometrics sample."
+#| fig-alt: "Horizontal bar chart showing the 20 most frequently occurring keywords, with frequency counts on the x-axis."
+#| fig-width: 6
+#| fig-height: 5
+kw_counts |>
+  head(20) |>
+  mutate(keyword = fct_reorder(keyword, n)) |>
+  ggplot(aes(x = n, y = keyword)) +
+  geom_col(fill = palette_sci(1)) +
+  labs(x = "Frequency", y = NULL) +
+  theme_sci()
+```
+
+### Building the co-occurrence network
+
+We create edges between keywords that appear in the same paper.
+
+```{r}
+#| label: build-coword-network
+kw_frequent <- kw_counts |>
+  filter(n >= 5) |>
+  pull(keyword)
+
+kw_filtered <- keywords |>
+  filter(keyword %in% kw_frequent)
+
+coword_pairs <- kw_filtered |>
+  inner_join(kw_filtered, by = "work_id", suffix = c("_a", "_b"),
+             relationship = "many-to-many") |>
+  filter(keyword_a < keyword_b) |>
+  count(keyword_a, keyword_b, name = "cooccurrence")
+
+coword_top <- coword_pairs |>
+  filter(cooccurrence >= 3)
+
+g_kw <- graph_from_data_frame(
+  coword_top |> select(keyword_a, keyword_b, weight = cooccurrence),
+  directed = FALSE
+) |>
+  simplify(edge.attr.comb = list(weight = "sum"))
+
+cat(glue("Keyword network: {vcount(g_kw)} nodes, {ecount(g_kw)} edges\n"))
+```
+
+### Community detection for topical clusters
+
+```{r}
+#| label: keyword-communities
+V(g_kw)$degree <- degree(g_kw)
+V(g_kw)$strength <- strength(g_kw)
+
+communities <- cluster_leiden(g_kw, resolution_parameter = 0.8,
+                              objective_function = "modularity")
+V(g_kw)$community <- as.factor(membership(communities))
+
+cat(glue("Communities: {length(unique(membership(communities)))}\n"))
+cat(glue("Modularity: {round(modularity(g_kw, membership(communities)), 3)}\n"))
+```
+
+```{r}
+#| label: community-keywords
+community_summary <- tibble(
+  keyword = V(g_kw)$name,
+  community = V(g_kw)$community,
+  strength = V(g_kw)$strength
+) |>
+  group_by(community) |>
+  slice_max(strength, n = 5) |>
+  summarise(top_keywords = paste(keyword, collapse = ", "),
+            n_keywords = n(), .groups = "drop")
+
+community_summary |> gt()
+```
+
+### Visualisation
+
+```{r}
+#| label: fig-coword-network
+#| fig-cap: "Keyword co-occurrence network coloured by topical cluster."
+#| fig-alt: "Network graph where nodes are keywords and edges connect keywords that frequently co-occur. Node size reflects degree; colours indicate topical communities identified by the Leiden algorithm."
+#| fig-width: 7
+#| fig-height: 5.5
+set.seed(42)
+layout <- create_layout(as_tbl_graph(g_kw), layout = "fr")
+
+ggraph(layout) +
+  geom_edge_link(aes(width = weight), alpha = 0.15, colour = "grey60") +
+  scale_edge_width_continuous(range = c(0.3, 2), guide = "none") +
+  geom_node_point(aes(size = degree, colour = community), alpha = 0.8) +
+  geom_node_text(aes(label = ifelse(degree > quantile(degree, 0.85),
+                                     name, NA_character_)),
+                 repel = TRUE, size = 2.5, max.overlaps = 20, na.rm = TRUE) +
+  scale_size_continuous(range = c(1, 6), guide = "none") +
+  scale_colour_manual(values = palette_sci(
+    n_distinct(V(g_kw)$community)
+  )) +
+  labs(colour = "Cluster") +
+  theme_void(base_family = "sans", base_size = 11) +
+  theme(legend.position = "bottom")
+```
+
+## Diagnostics and interpretation {#coword-diagnostics}
+
+- **Keyword cleaning**: Inconsistent terminology inflates the vocabulary and creates spurious nodes. Standardise spelling, merge synonyms (e.g., "h-index" and "hirsch index"), and remove generic terms ("research", "analysis") that co-occur with everything but convey no topical information.
+- **Frequency threshold**: Including rare keywords produces large, sparse, unreadable networks. Start with keywords appearing in at least 5 papers and adjust based on corpus size.
+- **Community interpretability**: Each community should correspond to a recognisable research theme. If communities are uninterpretable, the resolution parameter may need adjustment or keywords need further cleaning.
+- **Centrality interpretation**: High-degree keywords are thematically central (used across many contexts). High-betweenness keywords bridge distinct topics and may represent interdisciplinary concepts.
+
+## Limitations and responsible use {#coword-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- **Vocabulary inconsistency.** Author keywords are not controlled vocabulary. The same concept may appear under multiple terms, fragmenting what should be a single node. Merging synonyms requires domain expertise.
+- **Algorithmic concepts.** OpenAlex concepts are assigned by machine learning and may contain errors — especially at fine-grained levels. Always validate topic assignments by reading sample papers [@priem2022].
+- **Static snapshots.** A co-word network represents a time-averaged view. Emerging topics with few publications may be invisible. Consider building temporal slices to track field evolution.
+- **Not evaluative.** Popular keywords indicate research activity, not research quality or societal impact. Do not equate topical centrality with importance [@hicks2015].
+</div>
+
+## Common pitfalls {#coword-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Not cleaning keywords.** Punctuation variants ("co-authorship" vs. "coauthorship"), case differences, and trailing whitespace create duplicate nodes. Clean before building the network.
+- **Including stop-keywords.** Generic terms like "research", "study", "analysis" co-occur with everything and dominate the network without conveying topical information. Remove them.
+- **Comparing co-occurrence counts across corpora of different sizes.** Larger corpora produce higher co-occurrence counts mechanically. Normalise or use relative measures.
+- **Over-reading small clusters.** A cluster with two or three keywords may reflect a single paper, not a research theme. Report cluster size alongside content.
+</div>
+
+## Exercises {#coword-exercises}
+
+1. **Author keywords vs. concepts.** Build co-occurrence networks from both author keywords (if available) and OpenAlex concepts for the same corpus. Compare the resulting topical clusters.
+
+2. **Temporal evolution.** Split the corpus into yearly slices. For each year, build a co-word network and identify the top 5 keywords by degree. Which keywords are consistently central, and which emerge over time?
+
+3. **Strategic diagram.** Compute density (internal cohesion) and centrality (external connections) for each keyword cluster. Plot them on a strategic diagram (density vs. centrality quadrants). Which clusters are core themes and which are peripheral?
+
+4. **Normalisation comparison.** Build two networks from the same data: one with raw co-occurrence counts and one with association strength normalisation. How do the most central keywords differ?
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#coword-reading}
+
+- @callon1983 --- The foundational paper on co-word analysis for mapping science.
+- @waltman2012 --- Unified framework for bibliometric network construction, including keyword networks.
+- @aria2017 --- `bibliometrix` includes co-word analysis via the `biblioNetwork()` function.
+- @priem2022 --- OpenAlex concepts and topic classification.
+
+## Session info {#coword-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

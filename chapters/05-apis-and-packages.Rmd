@@ -1,0 +1,224 @@
+---
+title: "APIs and Packages"
+---
+
+## Learning objectives {#apis-objectives}
+
+After completing this chapter, you will be able to:
+
+- Query the OpenAlex API using `openalexR` to retrieve works, authors, institutions, and concepts
+- Apply filters, pagination, and sampling to control the size and scope of API results
+- Deduplicate records by DOI and clean author and affiliation metadata
+- Cache API responses locally so repeated book builds do not re-query the API
+- Use `rcrossref` and `pubmedR` as complementary data sources
+
+## Setup {#apis-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(glue)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#apis-background}
+
+Bibliometric research begins with data. The quality and completeness of a bibliographic corpus determines the validity of every downstream analysis — from citation counts to network maps to topic models.
+
+Historically, Web of Science and Scopus have dominated as data sources for scientometric research. Both require institutional subscriptions and impose restrictions on bulk data use. The launch of **OpenAlex** in 2022 changed this landscape fundamentally [@priem2022]. OpenAlex is a fully open index of over 250 million scholarly works, built from Crossref, PubMed, institutional repositories, and other open sources. It provides a free REST API with no authentication required, making it the ideal backbone for reproducible bibliometric research.
+
+OpenAlex organises its data around five entity types: **works** (publications), **authors**, **sources** (journals, repositories), **institutions**, and **topics** (hierarchical subject tags). Each entity has a unique OpenAlex ID and can be queried via filters on metadata fields such as publication date, citation count, open-access status, and institutional affiliation.
+
+The `openalexR` package provides a tidy R interface to the OpenAlex API. It handles pagination, rate limiting, and result parsing, returning clean tibbles ready for analysis. For metadata not covered by OpenAlex — such as reference lists and funding information — `rcrossref` provides access to Crossref's extensive metadata registry, and `pubmedR` covers the biomedical literature indexed in PubMed/MEDLINE.
+
+## Worked example {#apis-example}
+
+We build a small corpus of recent scientometrics research, demonstrating the full acquisition-to-clean-data pipeline.
+
+### Querying works from OpenAlex
+
+The core function is `oa_fetch()`. We search for works published in the journal *Scientometrics* between 2020 and 2023, sampling 200 records for a manageable demonstration.
+
+```{r}
+#| label: fetch-works
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S148561398",
+  from_publication_date = "2020-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 200, seed = 42)
+)
+
+glimpse(works)
+```
+
+The result is a tibble where each row is a work and columns include `id`, `display_name`, `publication_date`, `cited_by_count`, `doi`, and nested list-columns for authors and concepts.
+
+### Inspecting the results
+
+```{r}
+#| label: inspect-works
+works |>
+  select(display_name, publication_date, cited_by_count, doi) |>
+  arrange(desc(cited_by_count)) |>
+  head(10)
+```
+
+### Querying authors
+
+We can also retrieve author-level data. Let us look up authors associated with scientometrics research by filtering on the relevant topic.
+
+```{r}
+#| label: fetch-authors
+#| cache: true
+authors <- oa_fetch(
+  entity = "authors",
+  topics.id = "T10102",
+  works_count = ">50",
+  options = list(sample = 50, seed = 42)
+)
+
+authors |>
+  select(display_name, works_count, cited_by_count) |>
+  arrange(desc(cited_by_count)) |>
+  head(10)
+```
+
+### Deduplication by DOI
+
+Real-world corpora often contain duplicates when merging results from multiple queries or sources. The `dedupe_by_doi()` function from our companion package handles this cleanly.
+
+```{r}
+#| label: deduplicate
+works_with_dupes <- bind_rows(works, works[1:10, ])
+cat(glue("Before dedup: {nrow(works_with_dupes)} rows\n\n"))
+
+works_clean <- dedupe_by_doi(works_with_dupes)
+cat(glue("After dedup:  {nrow(works_clean)} rows\n"))
+```
+
+### Caching for reproducible builds
+
+The `fetch_openalex()` wrapper in `R/api_helpers.R` automatically caches API responses to disk. On subsequent calls with the same arguments, it reads from cache instead of hitting the API.
+
+```{r}
+#| label: cached-fetch
+#| cache: true
+works_cached <- fetch_openalex(
+  entity = "works",
+  primary_location.source.id = "S148561398",
+  from_publication_date = "2023-01-01",
+  to_publication_date = "2023-06-30",
+  options = list(sample = 50, seed = 42),
+  cache_dir = "_freeze/openalex_cache",
+  cache_days = 30
+)
+
+nrow(works_cached)
+```
+
+### Complementary sources: Crossref
+
+For detailed metadata (reference lists, funders, licenses), Crossref is invaluable.
+
+```{r}
+#| label: crossref-example
+#| cache: true
+#| eval: false
+# Requires network access — cached output used in book builds
+cr_work <- rcrossref::cr_works(doi = "10.1007/s11192-017-2300-7")
+cr_work$data |>
+  select(title, container.title, deposited, is.referenced.by.count)
+```
+
+### Visualization
+
+```{r}
+#| label: fig-apis-publications-per-year
+#| fig-cap: "Annual publication counts for sampled Scientometrics articles (2020–2023)."
+#| fig-alt: "Bar chart showing the number of sampled publications per year from the journal Scientometrics, covering 2020 to 2023."
+#| fig-width: 6
+#| fig-height: 4
+works |>
+  mutate(year = year(publication_date)) |>
+  count(year) |>
+  ggplot(aes(x = year, y = n)) +
+  geom_col(fill = palette_sci(1)) +
+  labs(x = "Publication year", y = "Number of works") +
+  theme_sci()
+```
+
+## Diagnostics and interpretation {#apis-diagnostics}
+
+When working with API data, always verify:
+
+- **Completeness**: Compare your result count against the API's reported `meta$count` to confirm you received all expected records. With sampling, the count reflects the sample, not the full set.
+- **Coverage dates**: Check `min(works$publication_date)` and `max(works$publication_date)` to confirm your date filters were applied correctly.
+- **DOI presence**: Not all works have DOIs. Check `mean(!is.na(works$doi))` to understand the DOI coverage rate in your corpus.
+- **Nested columns**: Author and concept columns are list-columns. Use `tidyr::unnest()` carefully and inspect for `NULL` entries before unnesting.
+
+```{r}
+#| label: diagnostics
+cat(glue("Total works: {nrow(works)}\n"))
+cat(glue("DOI coverage: {scales::percent(mean(!is.na(works$doi)))}\n"))
+cat(glue("Date range: {min(works$publication_date)} to {max(works$publication_date)}\n"))
+```
+
+## Limitations and responsible use {#apis-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- **Coverage bias**: OpenAlex is strongest in English-language, peer-reviewed journal articles. Conference proceedings, books, and non-English literature may be underrepresented. Always report the data source and its known coverage limitations.
+- **Metadata quality**: Author names and affiliations are parsed algorithmically and may contain errors, especially for names with diacritics or non-Latin scripts.
+- **Temporal lag**: OpenAlex updates continuously but may lag behind primary databases by days or weeks. Very recent publications may be missing.
+- **API rate limits**: OpenAlex allows 10 requests per second for unauthenticated users (100/s with a polite pool email). Respect these limits to avoid being throttled.
+- **Reproducibility**: API results can change as OpenAlex updates its data. Always cache results and document the date of data collection for reproducibility [@hicks2015].
+</div>
+
+## Common pitfalls {#apis-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Not caching**: Running `oa_fetch()` directly in code chunks without caching means every `quarto render` hits the API, producing different results each time and risking rate limits.
+- **Ignoring pagination**: `oa_fetch()` handles pagination automatically, but very large queries (>10,000 works) can time out. Use filters to narrow your query or use cursor-based pagination.
+- **Confusing sampling with filtering**: `options = list(sample = 200)` returns a random sample from the full result set, not the first 200 records. This is useful for demonstrations but not for exhaustive analyses.
+- **Treating OpenAlex IDs as permanent**: While generally stable, OpenAlex IDs can change when entities are merged. Use DOIs as the primary identifier for works.
+- **Merging sources without deduplication**: When combining results from OpenAlex and Crossref, records may overlap. Always deduplicate by DOI before analysis.
+</div>
+
+## Exercises {#apis-exercises}
+
+1. **Fetch works by institution.** Use `oa_fetch()` to retrieve works affiliated with your own institution. How many works does OpenAlex index for it? What is the DOI coverage rate? *(Hint: find your institution's OpenAlex ID via `oa_fetch(entity = "institutions", search = "...")`)*
+
+2. **Compare Crossref metadata.** Pick a DOI from your fetched works and retrieve its metadata from Crossref using `rcrossref::cr_works()`. Compare the citation count reported by OpenAlex vs. Crossref. Why might they differ?
+
+3. **Build a multi-year corpus.** Fetch all works from a journal of your choice for 2015–2023 (without sampling). Plot the annual publication count and the median citation count per year. What trends do you observe?
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#apis-reading}
+
+- @priem2022 — The OpenAlex paper; describes the data model, coverage, and API design.
+- @aria2017 — The `bibliometrix` package; an alternative high-level interface for bibliometric data acquisition and analysis.
+- @garfield1955 — The foundational paper on citation indexing, motivating why these databases exist.
+
+## Session info {#apis-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

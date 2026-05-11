@@ -1,0 +1,276 @@
+---
+title: "Detecting Emerging Topics"
+---
+
+## Learning objectives {#emerging-objectives}
+
+After completing this chapter, you will be able to:
+
+- Define what constitutes an "emerging topic" in scientometric terms
+- Apply burst detection to keyword time series
+- Track topic prevalence over time using rolling-window analysis
+- Compute novelty and transience indicators for documents
+- Distinguish genuine emergence from database coverage artefacts
+
+## Setup {#emerging-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(quanteda)
+library(quanteda.textstats)
+library(tidytext)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#emerging-background}
+
+An **emerging topic** is a research area experiencing rapid growth in attention --- new publications, new keywords, increasing citation flows. Detecting emergence early has strategic value for researchers, funders, and policymakers. But distinguishing genuine intellectual emergence from database artefacts (a journal newly indexed, a conference proceedings batch-imported) requires careful methodology.
+
+**Burst detection** formalises the intuition that a keyword or topic has "burst" when its frequency increases sharply relative to baseline. @kleinberg2003 introduced a state-based model: a keyword exists in a "normal" state (baseline frequency) or a "burst" state (elevated frequency). The algorithm identifies time intervals during which each keyword is in its burst state. Cascading bursts at multiple time scales reveal both short-lived spikes and sustained surges.
+
+**Temporal topic tracking** extends topic models (\@ref(topicmodel-background)) by fitting models to time-sliced corpora or using dynamic topic models where topic distributions evolve smoothly over time. A simpler approach uses rolling windows: fit a model to each 3-year window and track how topic proportions change between windows.
+
+**Novelty and transience indicators** operate at the document level. A paper is *novel* if its content (measured by embedding distance or topic distribution) is distant from prior literature. A paper is *transient* if it is distant from subsequent literature --- it attracted brief attention but did not generate follow-on work. Genuinely emerging topics are characterised by papers that are novel *and* non-transient: they introduce new ideas that the field continues to develop.
+
+**Growth-rate metrics** are the simplest emergence indicators: the year-over-year growth rate of publications containing a keyword, the acceleration of citation rates, or the increase in the number of distinct institutions working on a topic. These are intuitive but sensitive to baseline effects (a keyword going from 1 to 3 papers is 200% growth but not meaningful emergence).
+
+## Worked example {#emerging-example}
+
+### Preparing temporal keyword data
+
+```{r}
+#| label: fetch-emerging-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S148561398",
+  from_publication_date = "2015-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 600, seed = 42)
+)
+
+text_df <- works |>
+  filter(!is.na(abstract), nchar(abstract) > 50) |>
+  transmute(
+    doc_id = id,
+    text = paste(display_name, abstract, sep = ". "),
+    year = year(publication_date)
+  )
+
+cat(glue("Documents: {nrow(text_df)}\n"))
+cat(glue("Year range: {min(text_df$year)}--{max(text_df$year)}\n"))
+```
+
+```{r}
+#| label: build-keyword-timeseries
+corp <- corpus(text_df, docid_field = "doc_id", text_field = "text")
+docvars(corp, "year") <- text_df$year
+
+toks <- tokens(corp, remove_punct = TRUE, remove_numbers = TRUE) |>
+  tokens_tolower() |>
+  tokens_remove(stopwords("en")) |>
+  tokens_remove(c("study", "paper", "results", "research", "analysis",
+                   "also", "however", "using", "based"))
+
+dfmat <- dfm(toks) |>
+  dfm_trim(min_termfreq = 10, min_docfreq = 5)
+
+kw_by_year <- convert(dfm_group(dfmat, groups = year), to = "data.frame") |>
+  pivot_longer(-doc_id, names_to = "term", values_to = "count") |>
+  rename(year = doc_id) |>
+  mutate(year = as.integer(year))
+
+cat(glue("Terms tracked: {n_distinct(kw_by_year$term)}\n"))
+```
+
+### Growth rate detection
+
+```{r}
+#| label: growth-rates
+growth <- kw_by_year |>
+  group_by(term) |>
+  arrange(year) |>
+  mutate(
+    growth = (count - lag(count)) / pmax(lag(count), 1),
+    total = sum(count)
+  ) |>
+  ungroup() |>
+  filter(!is.na(growth), total >= 20)
+
+recent_growth <- growth |>
+  filter(year >= 2021) |>
+  group_by(term) |>
+  summarise(mean_growth = mean(growth), total = first(total),
+            .groups = "drop") |>
+  filter(mean_growth > 0) |>
+  arrange(desc(mean_growth))
+
+recent_growth |>
+  head(15) |>
+  gt() |>
+  fmt_percent(columns = mean_growth, decimals = 0)
+```
+
+### Simple burst detection
+
+```{r}
+#| label: burst-detection
+detect_burst <- function(counts, threshold = 2) {
+  mean_count <- mean(counts)
+  sd_count <- sd(counts)
+  if (sd_count == 0) return(rep(FALSE, length(counts)))
+  z_scores <- (counts - mean_count) / sd_count
+  z_scores > threshold
+}
+
+bursts <- kw_by_year |>
+  group_by(term) |>
+  filter(n() >= 5, sum(count) >= 20) |>
+  arrange(year) |>
+  mutate(is_burst = detect_burst(count, threshold = 1.5)) |>
+  ungroup()
+
+burst_summary <- bursts |>
+  filter(is_burst) |>
+  group_by(term) |>
+  summarise(
+    burst_years = paste(year, collapse = ", "),
+    max_count = max(count),
+    .groups = "drop"
+  ) |>
+  arrange(desc(max_count))
+
+burst_summary |> head(15) |> gt()
+```
+
+### Visualising keyword trajectories
+
+```{r}
+#| label: fig-emerging-trajectories
+#| fig-cap: "Temporal trajectories of emerging keywords with burst periods highlighted."
+#| fig-alt: "Line chart showing the frequency of several keywords over time. Burst periods (unusually high frequency) are highlighted with background shading."
+#| fig-width: 7
+#| fig-height: 5
+top_burst_terms <- burst_summary |> head(6) |> pull(term)
+
+burst_plot_data <- bursts |>
+  filter(term %in% top_burst_terms)
+
+ggplot(burst_plot_data, aes(x = year, y = count)) +
+  geom_rect(data = burst_plot_data |> filter(is_burst),
+            aes(xmin = year - 0.5, xmax = year + 0.5,
+                ymin = -Inf, ymax = Inf),
+            fill = "gold", alpha = 0.3, inherit.aes = FALSE) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 1.5) +
+  facet_wrap(~ term, scales = "free_y", ncol = 3) +
+  labs(x = "Year", y = "Frequency") +
+  theme_sci(base_size = 9)
+```
+
+### Rolling-window topic tracking
+
+```{r}
+#| label: rolling-window
+window_size <- 3
+years <- sort(unique(text_df$year))
+windows <- years[1:(length(years) - window_size + 1)]
+
+window_top_terms <- map_dfr(windows, function(start_year) {
+  end_year <- start_year + window_size - 1
+  docs <- docvars(dfmat, "year") >= start_year &
+          docvars(dfmat, "year") <= end_year
+  if (sum(docs) < 10) return(tibble())
+  top <- topfeatures(dfmat[docs, ], 10)
+  tibble(window = glue("{start_year}-{end_year}"),
+         term = names(top), frequency = unname(top))
+})
+```
+
+```{r}
+#| label: fig-emerging-windows
+#| fig-cap: "Top terms in each 3-year rolling window, showing vocabulary evolution."
+#| fig-alt: "Heatmap or faceted bar chart showing the top terms for each rolling time window, revealing which terms gain or lose prominence."
+#| fig-width: 7
+#| fig-height: 5
+window_top_terms |>
+  group_by(window) |>
+  slice_max(frequency, n = 8) |>
+  mutate(term = reorder_within(term, frequency, window)) |>
+  ggplot(aes(x = frequency, y = term)) +
+  geom_col(fill = palette_sci(1)) +
+  facet_wrap(~ window, scales = "free_y", ncol = 3) +
+  scale_y_reordered() +
+  labs(x = "Frequency", y = NULL) +
+  theme_sci(base_size = 8)
+```
+
+## Diagnostics and interpretation {#emerging-diagnostics}
+
+- **Baseline effects**: A keyword going from 2 to 6 occurrences shows 200% growth but may not represent meaningful emergence. Set minimum frequency thresholds before computing growth rates.
+- **Database artefacts**: A newly indexed journal or a batch import of conference proceedings can create spurious "bursts". Cross-check with independent evidence.
+- **Burst duration**: Short bursts (1 year) may reflect a single influential paper or a special issue. Sustained bursts (3+ years) more likely indicate genuine emergence.
+- **Window sensitivity**: Rolling-window results change with window width. Report the chosen width and test sensitivity with wider and narrower windows.
+
+## Limitations and responsible use {#emerging-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- **Emergence is retrospective.** By the time bibliometric methods detect emergence, the topic has already gained momentum. These methods identify "recently emerged" topics, not future breakthroughs.
+- **Coverage bias.** OpenAlex coverage has expanded rapidly, meaning recent years have more records. Growth rates may reflect database growth rather than intellectual emergence [@priem2022].
+- **Language of emergence.** English-language terms dominate; emerging topics in non-English literatures may be invisible until translated or adopted by English-language publications.
+- **Not predictive.** Burst detection identifies past patterns. It does not predict which topics will continue growing. Many bursts are transient [@kleinberg2003].
+- **Strategic gaming.** If emergence metrics are used for funding decisions, researchers may strategically choose "hot" keywords, creating feedback loops [@hicks2015].
+</div>
+
+## Common pitfalls {#emerging-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Confusing absolute growth with relative emergence.** A field that publishes 10,000 papers/year growing by 5% adds 500 papers. A niche area growing from 10 to 30 papers shows 200% growth. The niche area is "emerging" but the large field is adding more absolute volume.
+- **Not controlling for corpus growth.** If the overall number of publications in the corpus grows, all keywords will grow. Use relative frequency (keyword count / total documents) rather than absolute counts.
+- **Overreacting to single-year spikes.** One conference proceedings volume or special issue can create a one-year spike. Require multi-year sustained growth before declaring emergence.
+- **Ignoring synonyms.** "Deep learning" and "neural networks" may both refer to the same emerging trend. Merge synonyms before analysis.
+</div>
+
+## Exercises {#emerging-exercises}
+
+1. **Relative burst detection.** Modify the burst detection to use relative frequency (keyword proportion) instead of absolute counts. Do the same terms still burst?
+
+2. **Emergence by journal.** Compare the most frequent emerging keywords in two different journals. Do they share emerging topics or focus on different frontiers?
+
+3. **Novelty scoring.** For each document, compute its cosine distance to the centroid of all prior-year documents (using TF-IDF vectors). Plot novelty scores over time. Are recent papers becoming more or less novel?
+
+4. **Validation.** Select 5 terms identified as "emerging" by burst detection. Search for qualitative evidence (review articles, conference themes) confirming their emergence. What is the false positive rate?
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#emerging-reading}
+
+- @kleinberg2003 --- Bursty patterns in temporal data: the foundational burst detection algorithm.
+- @price1963 --- Early observations on the growth of scientific literature and research fronts.
+- @priem2022 --- OpenAlex temporal coverage patterns relevant to emergence detection.
+- @callon1983 --- Co-word dynamics; an early approach to tracking topical evolution.
+
+## Session info {#emerging-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

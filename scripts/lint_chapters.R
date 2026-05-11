@@ -3,26 +3,26 @@
 
 library(stringr)
 
-qmd_files <- list.files(
+rmd_files <- list.files(
   c("chapters", "case-studies", "appendices"),
-  pattern = "\\.qmd$", full.names = TRUE, recursive = TRUE
+  pattern = "\\.Rmd$", full.names = TRUE, recursive = TRUE
 )
 
 issues <- character()
 
-for (f in qmd_files) {
+for (f in rmd_files) {
   lines <- readLines(f, warn = FALSE)
   text <- paste(lines, collapse = "\n")
 
   # Skip placeholder chapters
   if (grepl("under development", text, fixed = TRUE)) next
 
-  # Numbered method chapters follow the full scaffold from _template.qmd.
-  # Appendices, case studies, the navigator chapter (00-find-your-method.qmd),
+  # Numbered method chapters follow the full scaffold from _template.Rmd.
+  # Appendices, case studies, the navigator chapter (00-find-your-method.Rmd),
   # and the chapter template itself are intentional exceptions.
   is_method_chapter <- grepl("^chapters/[0-9]{2}-", f) &&
     !grepl("^chapters/00-", f) &&
-    !grepl("/_template\\.qmd$", f)
+    !grepl("/_template\\.Rmd$", f)
 
   if (is_method_chapter) {
     required <- c("Learning objectives", "Setup", "Session info")

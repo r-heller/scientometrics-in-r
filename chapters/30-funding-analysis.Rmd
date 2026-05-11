@@ -1,0 +1,184 @@
+---
+title: "Funding Analysis and Grant-to-Publication Linkage"
+---
+
+## Learning objectives {#funding-objectives}
+
+After completing this chapter, you will be able to:
+
+- Extract funder information from OpenAlex work records
+- Compute funder-level publication counts and citation impact
+- Analyse co-funding patterns (papers acknowledging multiple funders)
+- Interpret funding data critically, accounting for coverage and attribution challenges
+- Discuss why funding-output linkage is inherently imprecise
+
+## Setup {#funding-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#funding-background}
+
+Funding agencies invest billions in research and want to understand what their investment produces. **Funding acknowledgement analysis** extracts funder names and grant identifiers from publication metadata or full text, linking grants to the papers they supported.
+
+OpenAlex includes funder information for many works, derived from Crossref's funding metadata (which in turn comes from publisher-reported FundRef data). Coverage varies: journals that participate in Crossref's FundRef initiative have good coverage; others may have no funding data at all [@priem2022].
+
+Key analytical questions include: How many publications does a funder support? What is the citation impact of funded vs. unfunded research? Which funders frequently co-fund research? How does a funder's portfolio map onto the landscape of science?
+
+The fundamental challenge is **attribution**: a paper acknowledging three funders and seven authors is the result of contributions from all of them. Assigning full credit to each funder double-counts; fractional credit is more principled but harder to implement. Similar issues arise with multi-source funding: a paper may acknowledge an infrastructure grant, a project grant, and a fellowship, each with different levels of contribution.
+
+## Worked example {#funding-example}
+
+### Extracting funder data
+
+```{r}
+#| label: fetch-funding-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S148561398",
+  from_publication_date = "2020-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 400, seed = 42)
+)
+
+funded <- works |>
+  select(id, display_name, cited_by_count, funders) |>
+  filter(map_lgl(funders, \(g) !is.null(g) && length(g) > 0))
+
+cat(glue("Works with funder data: {nrow(funded)} / {nrow(works)} ({scales::percent(nrow(funded)/nrow(works))})\n"))
+```
+
+```{r}
+#| label: unnest-funders
+funder_data <- funded |>
+  unnest(funders, names_sep = "_") |>
+  select(work_id = id, funder = funders_display_name,
+         cited_by_count)
+
+cat(glue("Funder-work pairs: {nrow(funder_data)}\n"))
+cat(glue("Unique funders: {n_distinct(funder_data$funder)}\n"))
+```
+
+### Top funders by publication count
+
+```{r}
+#| label: fig-funding-top
+#| fig-cap: "Top 15 funders by number of supported publications."
+#| fig-alt: "Horizontal bar chart showing the 15 funders with the most publications in the sample."
+#| fig-width: 7
+#| fig-height: 5
+funder_counts <- funder_data |>
+  count(funder, sort = TRUE)
+
+funder_counts |>
+  head(15) |>
+  mutate(funder = fct_reorder(funder, n)) |>
+  ggplot(aes(x = n, y = funder)) +
+  geom_col(fill = palette_sci(1)) +
+  labs(x = "Publications supported", y = NULL) +
+  theme_sci()
+```
+
+### Citation impact by funder
+
+```{r}
+#| label: funder-impact
+funder_impact <- funder_data |>
+  group_by(funder) |>
+  summarise(
+    n_pubs = n(),
+    mean_cites = round(mean(cited_by_count), 1),
+    median_cites = median(cited_by_count),
+    .groups = "drop"
+  ) |>
+  filter(n_pubs >= 5) |>
+  arrange(desc(mean_cites))
+
+funder_impact |> head(10) |> gt()
+```
+
+### Funded vs. unfunded comparison
+
+```{r}
+#| label: fig-funding-comparison
+#| fig-cap: "Citation distribution for funded vs. unfunded papers."
+#| fig-alt: "Box plot comparing citation counts for papers with and without funding acknowledgements."
+#| fig-width: 5
+#| fig-height: 3.5
+works |>
+  mutate(has_funding = map_lgl(funders, \(g) !is.null(g) && length(g) > 0)) |>
+  ggplot(aes(x = has_funding, y = cited_by_count + 1)) +
+  geom_boxplot(fill = palette_sci(1), alpha = 0.7) +
+  scale_y_log10() +
+  labs(x = "Has funding acknowledgement", y = "Citations (log scale)") +
+  theme_sci()
+```
+
+## Diagnostics and interpretation {#funding-diagnostics}
+
+- **Coverage rate**: The fraction of papers with funder data depends on the journal, publisher, and field. Report this rate before interpreting funder statistics.
+- **Funder name normalisation**: The same funder may appear under different names ("NSF", "National Science Foundation", "US NSF"). Merge variants using funder IDs where available.
+- **Selection bias**: Papers with funding acknowledgements may be systematically different from unfunded papers (larger teams, more resources). The funded/unfunded citation gap reflects this selection, not necessarily the causal effect of funding.
+- **Multi-funder attribution**: Papers acknowledging multiple funders inflate the publication count for each. Consider fractional counting.
+
+## Limitations and responsible use {#funding-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- **Coverage is incomplete.** Not all publishers report funding data to Crossref. Missing funder acknowledgements do not mean research was unfunded.
+- **Attribution is ambiguous.** A grant acknowledgement does not specify which part of the work the grant supported. Infrastructure grants, salary support, and project funding all appear identically.
+- **Correlation ≠ causation.** Funded papers receive more citations, but this may reflect that better-resourced labs produce both more funding applications and more cited papers.
+- **Do not rank funders by citation impact.** Funders support different fields, career stages, and risk levels. Comparing mean citations across funders is misleading without field normalisation [@hicks2015].
+</div>
+
+## Common pitfalls {#funding-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Ignoring funder coverage rates.** Comparing funder portfolios without accounting for differential coverage produces biased results.
+- **Treating every acknowledgement as equal.** A paper may acknowledge a major project grant and a minor travel grant. Both appear identically in metadata.
+- **Comparing across fields.** A biomedical funder's publications will have higher citation counts than a humanities funder's publications due to field-level citation norms.
+- **Using funder data for individual evaluation.** Whether a researcher has funding reflects many factors beyond research quality: field norms, career stage, institutional support, and luck.
+</div>
+
+## Exercises {#funding-exercises}
+
+1. **Funder co-occurrence.** Identify papers with multiple funders. Which funder pairs most frequently co-fund research?
+
+2. **Funder portfolios.** For two major funders, fetch their supported publications and compare topical profiles using keyword analysis.
+
+3. **Temporal trends.** Track the number of papers with funding acknowledgements by year. Is the coverage rate increasing over time?
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#funding-reading}
+
+- @priem2022 --- OpenAlex funder metadata from Crossref FundRef.
+- @hicks2015 --- Responsible use of metrics in funding evaluation.
+- @waltman2016 --- Citation indicators and their application to funding assessment.
+
+## Session info {#funding-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
