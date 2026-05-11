@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 4 Ethics and Responsible Metrics | Scientometrics in R</title>
+<meta name="author" content="R. Heller">
+<meta name="description" content="4.1 Learning objectives After completing this chapter, you will be able to: Summarize the ten principles of the Leiden Manifesto and explain their implications for research evaluation Describe the...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 4 Ethics and Responsible Metrics | Scientometrics in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/scientometrics-in-r/ethics-and-responsible-metrics.html">
+<meta property="og:image" content="https://r-heller.github.io/scientometrics-in-r/images/cover.png">
+<meta property="og:description" content="4.1 Learning objectives After completing this chapter, you will be able to: Summarize the ten principles of the Leiden Manifesto and explain their implications for research evaluation Describe the...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 4 Ethics and Responsible Metrics | Scientometrics in R">
+<meta name="twitter:description" content="4.1 Learning objectives After completing this chapter, you will be able to: Summarize the ten principles of the Leiden Manifesto and explain their implications for research evaluation Describe the...">
+<meta name="twitter:image" content="https://r-heller.github.io/scientometrics-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><link href="libs/vis-9.1.0/vis-network.min.css" rel="stylesheet">
+<script src="libs/vis-9.1.0/vis-network.min.js"></script><script src="libs/visNetwork-binding-2.1.4/visNetwork.js"></script><link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="libs/plotly-binding-4.12.0/plotly.js"></script><script src="libs/typedarray-0.1/typedarray.min.js"></script><link href="libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="libs/crosstalk-1.2.2/js/crosstalk.min.js"></script><link href="libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="libs/plotly-main-2.25.2/plotly-latest.min.js"></script><link href="libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+<script src="libs/datatables-binding-0.34.0/datatables.js"></script><link href="libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet">
+<script src="libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script><link href="libs/nouislider-7.0.10/jquery.nouislider.min.css" rel="stylesheet">
+<script src="libs/nouislider-7.0.10/jquery.nouislider.min.js"></script><link href="libs/selectize-0.12.0/selectize.bootstrap3.css" rel="stylesheet">
+<script src="libs/selectize-0.12.0/selectize.min.js"></script><link href="libs/dt-plugin-searchhighlight-1.13.6/source.css" rel="stylesheet">
+<script src="libs/dt-plugin-searchhighlight-1.13.6/jquery.highlight.js"></script><script src="libs/dt-plugin-searchhighlight-1.13.6/source.min.js"></script><!-- Fonts (Hugo Coder set) --><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Local Font Awesome 6 (woff2 in style/webfonts/) --><link rel="stylesheet" href="style/font-awesome.min.css">
+<!-- Mermaid (for diagram chunks in chapter 0) --><script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+<link rel="stylesheet" href="style/font-awesome.min.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Bibliometrics, Network Science, and Research Evaluation">Scientometrics in R</a>:
+        <small class="text-muted">Bibliometrics, Network Science, and Research Evaluation</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Welcome!</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="find-your-method.html"><span class="header-section-number">1</span> Find Your Method</a></li>
+<li class="book-part">Foundations</li>
+<li><a class="" href="what-is-scientometrics.html"><span class="header-section-number">2</span> What Is Scientometrics?</a></li>
+<li><a class="" href="theoretical-underpinnings.html"><span class="header-section-number">3</span> Theoretical Underpinnings</a></li>
+<li><a class="active" href="ethics-and-responsible-metrics.html"><span class="header-section-number">4</span> Ethics and Responsible Metrics</a></li>
+<li><a class="" href="data-sources-compared.html"><span class="header-section-number">5</span> Data Sources Compared</a></li>
+<li class="book-part">Data Acquisition in R</li>
+<li><a class="" href="apis-and-packages.html"><span class="header-section-number">6</span> APIs and Packages</a></li>
+<li><a class="" href="parsing-native-exports.html"><span class="header-section-number">7</span> Parsing Native Exports</a></li>
+<li><a class="" href="building-reproducible-corpora.html"><span class="header-section-number">8</span> Building Reproducible Corpora</a></li>
+<li><a class="" href="working-with-full-text.html"><span class="header-section-number">9</span> Working with Full Text</a></li>
+<li class="book-part">Core Bibliometric Analysis</li>
+<li><a class="" href="descriptive-bibliometrics.html"><span class="header-section-number">10</span> Descriptive Bibliometrics</a></li>
+<li><a class="" href="productivity-and-impact-indicators.html"><span class="header-section-number">11</span> Productivity and Impact Indicators</a></li>
+<li><a class="" href="journal-metrics.html"><span class="header-section-number">12</span> Journal Metrics</a></li>
+<li><a class="" href="author-level-analysis-and-disambiguation.html"><span class="header-section-number">13</span> Author-Level Analysis and Disambiguation</a></li>
+<li><a class="" href="institutional-and-country-analysis.html"><span class="header-section-number">14</span> Institutional and Country Analysis</a></li>
+<li><a class="" href="temporal-analysis-and-citation-aging.html"><span class="header-section-number">15</span> Temporal Analysis and Citation Aging</a></li>
+<li class="book-part">Network &amp; Mapping Methods</li>
+<li><a class="" href="co-authorship-networks.html"><span class="header-section-number">16</span> Co-authorship Networks</a></li>
+<li><a class="" href="co-citation-and-bibliographic-coupling.html"><span class="header-section-number">17</span> Co-citation and Bibliographic Coupling</a></li>
+<li><a class="" href="co-word-and-keyword-co-occurrence.html"><span class="header-section-number">18</span> Co-word and Keyword Co-occurrence</a></li>
+<li><a class="" href="community-detection-and-backbone-extraction.html"><span class="header-section-number">19</span> Community Detection and Backbone Extraction</a></li>
+<li><a class="" href="science-mapping-and-overlay-maps.html"><span class="header-section-number">20</span> Science Mapping and Overlay Maps</a></li>
+<li><a class="" href="network-visualization-and-interoperability.html"><span class="header-section-number">21</span> Network Visualization and Interoperability</a></li>
+<li class="book-part">Text &amp; Topic Analysis</li>
+<li><a class="" href="text-mining-bibliographic-corpora.html"><span class="header-section-number">22</span> Text Mining Bibliographic Corpora</a></li>
+<li><a class="" href="topic-modeling.html"><span class="header-section-number">23</span> Topic Modeling</a></li>
+<li><a class="" href="keyword-extraction.html"><span class="header-section-number">24</span> Keyword Extraction</a></li>
+<li><a class="" href="embeddings-for-scientometrics.html"><span class="header-section-number">25</span> Embeddings for Scientometrics</a></li>
+<li><a class="" href="detecting-emerging-topics.html"><span class="header-section-number">26</span> Detecting Emerging Topics</a></li>
+<li class="book-part">Advanced Topics</li>
+<li><a class="" href="altmetrics.html"><span class="header-section-number">27</span> Altmetrics</a></li>
+<li><a class="" href="open-science-indicators.html"><span class="header-section-number">28</span> Open Science Indicators</a></li>
+<li><a class="" href="gender-and-equity-analysis.html"><span class="header-section-number">29</span> Gender and Equity Analysis</a></li>
+<li><a class="" href="retraction-analysis.html"><span class="header-section-number">30</span> Retraction Analysis</a></li>
+<li><a class="" href="funding-analysis-and-grant-to-publication-linkage.html"><span class="header-section-number">31</span> Funding Analysis and Grant-to-Publication Linkage</a></li>
+<li><a class="" href="patentpaper-linkages.html"><span class="header-section-number">32</span> Patent–Paper Linkages</a></li>
+<li><a class="" href="causal-inference-in-scientometrics.html"><span class="header-section-number">33</span> Causal Inference in Scientometrics</a></li>
+<li><a class="" href="reproducibility-rrids-and-badges.html"><span class="header-section-number">34</span> Reproducibility, RRIDs, and Badges</a></li>
+<li class="book-part">Production &amp; Reporting</li>
+<li><a class="" href="reproducible-pipelines.html"><span class="header-section-number">35</span> Reproducible Pipelines</a></li>
+<li><a class="" href="interactive-dashboards.html"><span class="header-section-number">36</span> Interactive Dashboards</a></li>
+<li><a class="" href="parameterized-quarto-reports.html"><span class="header-section-number">37</span> Parameterized Quarto Reports</a></li>
+<li><a class="" href="building-a-bibliometric-shiny-app.html"><span class="header-section-number">38</span> Building a Bibliometric Shiny App</a></li>
+<li class="book-part">Case Studies</li>
+<li><a class="" href="case-study-1-crispr-field-review-20102024.html"><span class="header-section-number">39</span> Case Study 1: CRISPR Field Review (2010–2024)</a></li>
+<li><a class="" href="case-study-2-institutional-benchmarking.html"><span class="header-section-number">40</span> Case Study 2: Institutional Benchmarking</a></li>
+<li><a class="" href="case-study-3-journal-portfolio-analysis.html"><span class="header-section-number">41</span> Case Study 3: Journal Portfolio Analysis</a></li>
+<li><a class="" href="case-study-4-gender-gap-in-scientific-publishing.html"><span class="header-section-number">42</span> Case Study 4: Gender Gap in Scientific Publishing</a></li>
+<li><a class="" href="case-study-5-detecting-emerging-topics.html"><span class="header-section-number">43</span> Case Study 5: Detecting Emerging Topics</a></li>
+<li class="book-part">Appendix</li>
+<li><a class="" href="r-setup-renv-and-docker.html"><span class="header-section-number">A</span> R Setup, renv, and Docker</a></li>
+<li><a class="" href="sql-primer-for-the-openalex-snapshot.html"><span class="header-section-number">B</span> SQL Primer for the OpenAlex Snapshot</a></li>
+<li><a class="" href="indicator-crosswalk-across-databases.html"><span class="header-section-number">C</span> Indicator Crosswalk Across Databases</a></li>
+<li><a class="" href="cheatsheets-and-quick-reference.html"><span class="header-section-number">D</span> Cheatsheets and Quick Reference</a></li>
+<li><a class="" href="exercise-solutions.html"><span class="header-section-number">E</span> Exercise Solutions</a></li>
+<li><a class="" href="solutions.html"><span class="header-section-number">F</span> Exercise Solutions</a></li>
+<li><a class="" href="glossary.html">Glossary</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/scientometrics-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="ethics-and-responsible-metrics" class="section level1" number="4">
+<h1>
+<span class="header-section-number">4</span> Ethics and Responsible Metrics<a class="anchor" aria-label="anchor" href="#ethics-and-responsible-metrics"><i class="fas fa-link"></i></a>
+</h1>
+<div id="ethics-objectives" class="section level2" number="4.1">
+<h2>
+<span class="header-section-number">4.1</span> Learning objectives<a class="anchor" aria-label="anchor" href="#ethics-objectives"><i class="fas fa-link"></i></a>
+</h2>
+<p>After completing this chapter, you will be able to:</p>
+<ul>
+<li>Summarize the ten principles of the Leiden Manifesto and explain their implications for research evaluation</li>
+<li>Describe the key commitments of the San Francisco Declaration on Research Assessment (DORA)</li>
+<li>Identify common forms of metric gaming, including self-citation cartels, citation stacking, and salami slicing</li>
+<li>Evaluate when quantitative indicators are appropriate — and when they are not</li>
+<li>Compute and interpret author-level self-citation rates using OpenAlex data</li>
+<li>Apply a responsible-use framework when designing or reviewing bibliometric analyses</li>
+</ul>
+</div>
+<div id="ethics-setup" class="section level2" number="4.2">
+<h2>
+<span class="header-section-number">4.2</span> Setup<a class="anchor" aria-label="anchor" href="#ethics-setup"><i class="fas fa-link"></i></a>
+</h2>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/openalexR">openalexR</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://glue.tidyverse.org/">glue</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://gt.rstudio.com">gt</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">20260509</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"api_helpers.R"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"utils.R"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"sci_palette.R"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="ethics-background" class="section level2" number="4.3">
+<h2>
+<span class="header-section-number">4.3</span> Conceptual background<a class="anchor" aria-label="anchor" href="#ethics-background"><i class="fas fa-link"></i></a>
+</h2>
+<p>Metrics shape behaviour. When a number is used to judge researchers, departments, or journals, people adjust their actions to improve that number — regardless of whether the number actually captures what it was meant to measure. This insight, often called <strong>Goodhart’s Law</strong>, is the intellectual foundation for the responsible metrics movement: “When a measure becomes a target, it ceases to be a good measure” <span class="citation">(<a href="references.html#ref-goodhart1984">Goodhart 1984</a>)</span>.</p>
+<div id="the-leiden-manifesto" class="section level3" number="4.3.1">
+<h3>
+<span class="header-section-number">4.3.1</span> The Leiden Manifesto<a class="anchor" aria-label="anchor" href="#the-leiden-manifesto"><i class="fas fa-link"></i></a>
+</h3>
+<p>In 2015, <span class="citation">Hicks et al. (<a href="references.html#ref-hicks2015">2015</a>)</span> published the <strong>Leiden Manifesto for Research Metrics</strong> — ten principles distilled from decades of experience in bibliometric practice. The principles are:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Quantitative evaluation should support qualitative, expert assessment.</strong> Metrics should inform human judgement, never replace it.</li>
+<li>
+<strong>Measure performance against the research missions of the institution, group, or researcher.</strong> Not everyone pursues the same goals; evaluation criteria must reflect this.</li>
+<li>
+<strong>Protect excellence in locally relevant research.</strong> Research published in regional languages or addressing local problems must not be penalised for lower citation rates.</li>
+<li>
+<strong>Keep data collection and analytical processes open, transparent, and simple.</strong> Black-box indicators erode trust and prevent scrutiny.</li>
+<li>
+<strong>Allow those evaluated to verify data and analysis.</strong> Researchers should be able to inspect and challenge the data used to judge them.</li>
+<li>
+<strong>Account for variation by field in publication and citation practices.</strong> Citation rates in mathematics and molecular biology differ by an order of magnitude; raw counts cannot be compared across fields.</li>
+<li>
+<strong>Base assessment of individual researchers on a qualitative judgement of their portfolio.</strong> A single number (such as the h-index) cannot capture the breadth of a researcher’s contribution.</li>
+<li>
+<strong>Avoid misplaced concreteness and false precision.</strong> Three decimal places do not make a flawed indicator meaningful.</li>
+<li>
+<strong>Recognize the systemic effects of assessment and indicators.</strong> Indicators reshape the system they measure. If you reward publication volume, you incentivise salami slicing.</li>
+<li>
+<strong>Scrutinize indicators regularly and update them.</strong> The research landscape evolves; indicators must evolve with it.</li>
+</ol>
+</div>
+<div id="the-san-francisco-declaration-dora" class="section level3" number="4.3.2">
+<h3>
+<span class="header-section-number">4.3.2</span> The San Francisco Declaration (DORA)<a class="anchor" aria-label="anchor" href="#the-san-francisco-declaration-dora"><i class="fas fa-link"></i></a>
+</h3>
+<p>The <strong>San Francisco Declaration on Research Assessment</strong> <span class="citation">(<a href="references.html#ref-dora2012">American Society for Cell Biology 2012</a>)</span> emerged from the 2012 Annual Meeting of the American Society for Cell Biology. Its central demand is straightforward: do not use journal-level metrics — especially the Journal Impact Factor — as a proxy for the quality of individual research articles. DORA’s key commitments include:</p>
+<ul>
+<li>
+<strong>For funders and institutions</strong>: evaluate research on its own merits, not on the journal in which it was published. Use article-level metrics and qualitative indicators.</li>
+<li>
+<strong>For publishers</strong>: reduce emphasis on the Journal Impact Factor as a promotional tool. Make article-level metrics (downloads, citations, altmetrics) available.</li>
+<li>
+<strong>For researchers</strong>: challenge evaluation practices that rely on journal-based metrics. When serving on hiring or promotion committees, assess the content of papers, not where they appeared.</li>
+</ul>
+<p>As of 2026, DORA has been signed by over 3,000 organisations and 20,000 individuals. Many major funders — including the European Commission, Wellcome Trust, and the Dutch Research Council (NWO) — have formally adopted DORA principles.</p>
+</div>
+<div id="the-metric-tide" class="section level3" number="4.3.3">
+<h3>
+<span class="header-section-number">4.3.3</span> The Metric Tide<a class="anchor" aria-label="anchor" href="#the-metric-tide"><i class="fas fa-link"></i></a>
+</h3>
+<p>The UK’s independent review of metrics in research assessment, <em>The Metric Tide</em> <span class="citation">(<a href="references.html#ref-wilsdon2015">Wilsdon et al. 2015</a>)</span>, reinforced these principles with a systematic evidence base. The report concluded that no metric can substitute for expert peer review, and recommended that the UK research system adopt a framework of “responsible metrics” built on five dimensions: robustness, humility, transparency, diversity, and reflexivity.</p>
+</div>
+<div id="goodharts-law-in-practice" class="section level3" number="4.3.4">
+<h3>
+<span class="header-section-number">4.3.4</span> Goodhart’s Law in practice<a class="anchor" aria-label="anchor" href="#goodharts-law-in-practice"><i class="fas fa-link"></i></a>
+</h3>
+<p>When metrics are attached to career consequences, the incentive to game them becomes powerful <span class="citation">(<a href="references.html#ref-goodhart1984">Goodhart 1984</a>)</span>. Common forms of metric manipulation include:</p>
+<ul>
+<li>
+<strong>Self-citation inflation</strong>: authors systematically cite their own prior work to boost citation counts, even when those citations are not intellectually necessary.</li>
+<li>
+<strong>Citation cartels</strong>: informal agreements among groups of authors or journals to cite each other’s work, inflating citation counts reciprocally.</li>
+<li>
+<strong>Citation stacking</strong>: journals encourage or require authors to add citations to recently published articles in the same journal, artificially increasing the Impact Factor.</li>
+<li>
+<strong>Salami slicing</strong>: splitting a single study into the maximum number of “least publishable units” to inflate publication counts.</li>
+</ul>
+<p>These practices are not merely hypothetical. Clarivate has repeatedly suspended journals from the Journal Citation Reports for citation stacking, and several high-profile cases of self-citation manipulation have led to editorial sanctions.</p>
+</div>
+<div id="publish-or-perish" class="section level3" number="4.3.5">
+<h3>
+<span class="header-section-number">4.3.5</span> Publish or perish<a class="anchor" aria-label="anchor" href="#publish-or-perish"><i class="fas fa-link"></i></a>
+</h3>
+<p>The systemic root of metric gaming is the <strong>“publish or perish”</strong> culture that dominates academic career structures worldwide. When hiring, promotion, and tenure decisions are driven by publication volume and citation counts, researchers face relentless pressure to produce more papers, chase high-impact journals, and avoid risky long-term projects. The consequences include:</p>
+<ul>
+<li>
+<strong>Reduced risk-taking</strong>: researchers avoid novel or interdisciplinary questions that might not produce quick, high-citation publications.</li>
+<li>
+<strong>Replication crisis</strong>: pressure to publish positive results contributes to publication bias and irreproducible findings.</li>
+<li>
+<strong>Mental health harms</strong>: the relentless pressure to produce has been linked to elevated rates of anxiety, burnout, and attrition in academia.</li>
+<li>
+<strong>Erosion of research quality</strong>: when volume is rewarded over substance, the incentive structure favours quantity at the expense of depth and rigour.</li>
+</ul>
+<p>These dynamics make the responsible use of metrics not merely a technical concern but an ethical imperative.</p>
+</div>
+</div>
+<div id="ethics-example" class="section level2" number="4.4">
+<h2>
+<span class="header-section-number">4.4</span> Worked example<a class="anchor" aria-label="anchor" href="#ethics-example"><i class="fas fa-link"></i></a>
+</h2>
+<p>We now demonstrate a practical analysis: computing self-citation rates for a sample of researchers in the field of scientometrics. This illustrates how OpenAlex data can be used to flag potential self-citation inflation — and the care required to interpret such analysis responsibly.</p>
+<div id="acquiring-author-data" class="section level3" number="4.4.1">
+<h3>
+<span class="header-section-number">4.4.1</span> Acquiring author data<a class="anchor" aria-label="anchor" href="#acquiring-author-data"><i class="fas fa-link"></i></a>
+</h3>
+<p>We fetch a sample of authors associated with scientometrics research who have at least 50 works, ensuring we have enough output to compute meaningful self-citation rates.</p>
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">authors_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html">oa_fetch</a></span><span class="op">(</span></span>
+<span>  entity <span class="op">=</span> <span class="st">"authors"</span>,</span>
+<span>  topics.id <span class="op">=</span> <span class="st">"T10102"</span>,</span>
+<span>  works_count <span class="op">=</span> <span class="st">"&gt;50"</span>,</span>
+<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sample <span class="op">=</span> <span class="fl">30</span>, seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">authors</span> <span class="op">&lt;-</span> <span class="va">authors_raw</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">display_name</span>, <span class="va">works_count</span>, <span class="va">cited_by_count</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">display_name</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html">glimpse</a></span><span class="op">(</span><span class="va">authors</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Rows: 30
+#&gt; Columns: 4
+#&gt; $ id             &lt;chr&gt; "https://openalex.org/A5101609367", "https://openalex.o…
+#&gt; $ display_name   &lt;chr&gt; "V. R. Renjith", "Manghi P.", "Giangiacomo Bravo", "Jon…
+#&gt; $ works_count    &lt;int&gt; 56, 145, 160, 75, 144, 51, 185, 105, 150, 357, 75, 139,…
+#&gt; $ cited_by_count &lt;int&gt; 739, 1, 4446, 393, 200, 245, 2, 4984, 16, 13592, 2907, …</code></pre>
+</div>
+<div id="fetching-works-and-computing-self-citations" class="section level3" number="4.4.2">
+<h3>
+<span class="header-section-number">4.4.2</span> Fetching works and computing self-citations<a class="anchor" aria-label="anchor" href="#fetching-works-and-computing-self-citations"><i class="fas fa-link"></i></a>
+</h3>
+<p>For each author, we retrieve a sample of their recent works and examine how many of the citations come from the author’s own papers. OpenAlex provides <code>cited_by_count</code> at the work level and allows us to query an author’s works directly.</p>
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># For a manageable demonstration, pick 10 authors</span></span>
+<span><span class="va">authors_sample</span> <span class="op">&lt;-</span> <span class="va">authors</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_sample</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">authors</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Function to estimate self-citation rate for one author</span></span>
+<span><span class="va">estimate_self_citation</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">author_id</span>, <span class="va">author_name</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Fetch up to 50 recent works by this author</span></span>
+<span>  <span class="va">works</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html">tryCatch</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html">oa_fetch</a></span><span class="op">(</span></span>
+<span>      entity <span class="op">=</span> <span class="st">"works"</span>,</span>
+<span>      author.id <span class="op">=</span> <span class="va">author_id</span>,</span>
+<span>      from_publication_date <span class="op">=</span> <span class="st">"2018-01-01"</span>,</span>
+<span>      options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sample <span class="op">=</span> <span class="fl">50</span>, seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    error <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">works</span><span class="op">)</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">works</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>      author_id <span class="op">=</span> <span class="va">author_id</span>,</span>
+<span>      author_name <span class="op">=</span> <span class="va">author_name</span>,</span>
+<span>      n_works <span class="op">=</span> <span class="fl">0L</span>,</span>
+<span>      total_citations <span class="op">=</span> <span class="cn">NA_integer_</span>,</span>
+<span>      self_citations <span class="op">=</span> <span class="cn">NA_integer_</span>,</span>
+<span>      self_cite_rate <span class="op">=</span> <span class="cn">NA_real_</span></span>
+<span>    <span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="co"># Count references that point to the same author's works</span></span>
+<span>  <span class="co"># We look at the referenced_works and check which are by the same author</span></span>
+<span>  <span class="va">total_cites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">works</span><span class="op">$</span><span class="va">cited_by_count</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># For self-citation, we check which of the works' referenced_works</span></span>
+<span></span>
+<span>  <span class="co"># are also in the author's own works list</span></span>
+<span>  <span class="va">own_work_ids</span> <span class="op">&lt;-</span> <span class="va">works</span><span class="op">$</span><span class="va">id</span></span>
+<span></span>
+<span>  <span class="va">self_cite_count</span> <span class="op">&lt;-</span> <span class="va">works</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html">pull</a></span><span class="op">(</span><span class="va">referenced_works</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_int</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">.x</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="va">own_work_ids</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>    author_id <span class="op">=</span> <span class="va">author_id</span>,</span>
+<span>    author_name <span class="op">=</span> <span class="va">author_name</span>,</span>
+<span>    n_works <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">works</span><span class="op">)</span>,</span>
+<span>    total_references <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_int</a></span><span class="op">(</span><span class="va">works</span><span class="op">$</span><span class="va">referenced_works</span>, <span class="va">length</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    self_references <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">self_cite_count</span><span class="op">)</span>,</span>
+<span>    self_cite_rate <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/if_else.html">if_else</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_int</a></span><span class="op">(</span><span class="va">works</span><span class="op">$</span><span class="va">referenced_works</span>, <span class="va">length</span><span class="op">)</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">self_cite_count</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_int</a></span><span class="op">(</span><span class="va">works</span><span class="op">$</span><span class="va">referenced_works</span>, <span class="va">length</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>      <span class="cn">NA_real_</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">self_cite_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map2_dfr</a></span><span class="op">(</span></span>
+<span>  <span class="va">authors_sample</span><span class="op">$</span><span class="va">id</span>,</span>
+<span>  <span class="va">authors_sample</span><span class="op">$</span><span class="va">display_name</span>,</span>
+<span>  <span class="va">estimate_self_citation</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="summarizing-results" class="section level3" number="4.4.3">
+<h3>
+<span class="header-section-number">4.4.3</span> Summarizing results<a class="anchor" aria-label="anchor" href="#summarizing-results"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">self_cite_results</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">self_cite_rate</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">self_cite_rate</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>self_cite_rate <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/percent_format.html">percent</a></span><span class="op">(</span><span class="va">self_cite_rate</span>, accuracy <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/tab_header.html">tab_header</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Self-citation rates among sampled scientometrics authors"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"Based on references in up to 50 recent works per author"</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/cols_label.html">cols_label</a></span><span class="op">(</span></span>
+<span>    author_name <span class="op">=</span> <span class="st">"Author"</span>,</span>
+<span>    n_works <span class="op">=</span> <span class="st">"Works sampled"</span>,</span>
+<span>    total_references <span class="op">=</span> <span class="st">"Total references"</span>,</span>
+<span>    self_references <span class="op">=</span> <span class="st">"Self-references"</span>,</span>
+<span>    self_cite_rate <span class="op">=</span> <span class="st">"Self-citation rate"</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/cols_hide.html">cols_hide</a></span><span class="op">(</span><span class="va">author_id</span><span class="op">)</span></span></code></pre></div>
+<div id="dvwtvjrxrt" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#dvwtvjrxrt table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#dvwtvjrxrt thead, #dvwtvjrxrt tbody, #dvwtvjrxrt tfoot, #dvwtvjrxrt tr, #dvwtvjrxrt td, #dvwtvjrxrt th {
+  border-style: none;
+}
+
+#dvwtvjrxrt p {
+  margin: 0;
+  padding: 0;
+}
+
+#dvwtvjrxrt .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#dvwtvjrxrt .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#dvwtvjrxrt .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#dvwtvjrxrt .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#dvwtvjrxrt .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#dvwtvjrxrt .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#dvwtvjrxrt .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#dvwtvjrxrt .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#dvwtvjrxrt .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#dvwtvjrxrt .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#dvwtvjrxrt .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#dvwtvjrxrt .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#dvwtvjrxrt .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#dvwtvjrxrt .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#dvwtvjrxrt .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#dvwtvjrxrt .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#dvwtvjrxrt .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#dvwtvjrxrt .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#dvwtvjrxrt .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dvwtvjrxrt .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#dvwtvjrxrt .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#dvwtvjrxrt .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#dvwtvjrxrt .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dvwtvjrxrt .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#dvwtvjrxrt .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#dvwtvjrxrt .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#dvwtvjrxrt .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dvwtvjrxrt .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#dvwtvjrxrt .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#dvwtvjrxrt .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#dvwtvjrxrt .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#dvwtvjrxrt .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#dvwtvjrxrt .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dvwtvjrxrt .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#dvwtvjrxrt .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dvwtvjrxrt .gt_left {
+  text-align: left;
+}
+
+#dvwtvjrxrt .gt_center {
+  text-align: center;
+}
+
+#dvwtvjrxrt .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#dvwtvjrxrt .gt_font_normal {
+  font-weight: normal;
+}
+
+#dvwtvjrxrt .gt_font_bold {
+  font-weight: bold;
+}
+
+#dvwtvjrxrt .gt_font_italic {
+  font-style: italic;
+}
+
+#dvwtvjrxrt .gt_super {
+  font-size: 65%;
+}
+
+#dvwtvjrxrt .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#dvwtvjrxrt .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#dvwtvjrxrt .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#dvwtvjrxrt .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#dvwtvjrxrt .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#dvwtvjrxrt .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#dvwtvjrxrt .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#dvwtvjrxrt .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#dvwtvjrxrt div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<div class="inline-table"><table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading">
+<td colspan="7" class="gt_heading gt_title gt_font_normal" style>Self-citation rates among sampled scientometrics authors</td>
+    </tr>
+<tr class="gt_heading">
+<td colspan="7" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style>Based on references in up to 50 recent works per author</td>
+    </tr>
+<tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="author_name">Author</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="n_works">Works sampled</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="total_references">Total references</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="self_references">Self-references</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="self_cite_rate">Self-citation rate</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="total_citations">total_citations</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="self_citations">self_citations</th>
+    </tr>
+</thead>
+<tbody class="gt_table_body">
+<tr>
+<td headers="author_name" class="gt_row gt_left">Mark Oromaner</td>
+<td headers="n_works" class="gt_row gt_right">7</td>
+<td headers="total_references" class="gt_row gt_right">12</td>
+<td headers="self_references" class="gt_row gt_right">2</td>
+<td headers="self_cite_rate" class="gt_row gt_right">16.7%</td>
+<td headers="total_citations" class="gt_row gt_right">NA</td>
+<td headers="self_citations" class="gt_row gt_right">NA</td>
+</tr>
+<tr>
+<td headers="author_name" class="gt_row gt_left">Neal W. Pollock</td>
+<td headers="n_works" class="gt_row gt_right">50</td>
+<td headers="total_references" class="gt_row gt_right">567</td>
+<td headers="self_references" class="gt_row gt_right">11</td>
+<td headers="self_cite_rate" class="gt_row gt_right">1.9%</td>
+<td headers="total_citations" class="gt_row gt_right">NA</td>
+<td headers="self_citations" class="gt_row gt_right">NA</td>
+</tr>
+<tr>
+<td headers="author_name" class="gt_row gt_left">Bruna de Paula Fonseca e Fonseca</td>
+<td headers="n_works" class="gt_row gt_right">31</td>
+<td headers="total_references" class="gt_row gt_right">791</td>
+<td headers="self_references" class="gt_row gt_right">15</td>
+<td headers="self_cite_rate" class="gt_row gt_right">1.9%</td>
+<td headers="total_citations" class="gt_row gt_right">NA</td>
+<td headers="self_citations" class="gt_row gt_right">NA</td>
+</tr>
+<tr>
+<td headers="author_name" class="gt_row gt_left">Jonathan Grossman</td>
+<td headers="n_works" class="gt_row gt_right">27</td>
+<td headers="total_references" class="gt_row gt_right">842</td>
+<td headers="self_references" class="gt_row gt_right">9</td>
+<td headers="self_cite_rate" class="gt_row gt_right">1.1%</td>
+<td headers="total_citations" class="gt_row gt_right">NA</td>
+<td headers="self_citations" class="gt_row gt_right">NA</td>
+</tr>
+<tr>
+<td headers="author_name" class="gt_row gt_left">Antonio Vélez García‐Nieto</td>
+<td headers="n_works" class="gt_row gt_right">18</td>
+<td headers="total_references" class="gt_row gt_right">407</td>
+<td headers="self_references" class="gt_row gt_right">3</td>
+<td headers="self_cite_rate" class="gt_row gt_right">0.7%</td>
+<td headers="total_citations" class="gt_row gt_right">NA</td>
+<td headers="self_citations" class="gt_row gt_right">NA</td>
+</tr>
+<tr>
+<td headers="author_name" class="gt_row gt_left">Jesper Wiborg Schneider</td>
+<td headers="n_works" class="gt_row gt_right">50</td>
+<td headers="total_references" class="gt_row gt_right">1521</td>
+<td headers="self_references" class="gt_row gt_right">10</td>
+<td headers="self_cite_rate" class="gt_row gt_right">0.7%</td>
+<td headers="total_citations" class="gt_row gt_right">NA</td>
+<td headers="self_citations" class="gt_row gt_right">NA</td>
+</tr>
+<tr>
+<td headers="author_name" class="gt_row gt_left">Fugang Wang</td>
+<td headers="n_works" class="gt_row gt_right">33</td>
+<td headers="total_references" class="gt_row gt_right">1154</td>
+<td headers="self_references" class="gt_row gt_right">2</td>
+<td headers="self_cite_rate" class="gt_row gt_right">0.2%</td>
+<td headers="total_citations" class="gt_row gt_right">NA</td>
+<td headers="self_citations" class="gt_row gt_right">NA</td>
+</tr>
+<tr>
+<td headers="author_name" class="gt_row gt_left">Kiera Tauro</td>
+<td headers="n_works" class="gt_row gt_right">43</td>
+<td headers="total_references" class="gt_row gt_right">73</td>
+<td headers="self_references" class="gt_row gt_right">0</td>
+<td headers="self_cite_rate" class="gt_row gt_right">0.0%</td>
+<td headers="total_citations" class="gt_row gt_right">NA</td>
+<td headers="self_citations" class="gt_row gt_right">NA</td>
+</tr>
+<tr>
+<td headers="author_name" class="gt_row gt_left">Raymond Hubbard</td>
+<td headers="n_works" class="gt_row gt_right">3</td>
+<td headers="total_references" class="gt_row gt_right">107</td>
+<td headers="self_references" class="gt_row gt_right">0</td>
+<td headers="self_cite_rate" class="gt_row gt_right">0.0%</td>
+<td headers="total_citations" class="gt_row gt_right">NA</td>
+<td headers="self_citations" class="gt_row gt_right">NA</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div id="visualization" class="section level3" number="4.4.4">
+<h3>
+<span class="header-section-number">4.4.4</span> Visualization<a class="anchor" aria-label="anchor" href="#visualization"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">self_cite_clean</span> <span class="op">&lt;-</span> <span class="va">self_cite_results</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">self_cite_rate</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">self_cite_clean</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">self_cite_clean</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">self_cite_rate</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html">geom_histogram</a></span><span class="op">(</span></span>
+<span>      binwidth <span class="op">=</span> <span class="fl">0.02</span>,</span>
+<span>      fill <span class="op">=</span> <span class="fu">palette_sci</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>,</span>
+<span>      colour <span class="op">=</span> <span class="st">"white"</span></span>
+<span>    <span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span><span class="op">(</span></span>
+<span>      xintercept <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">self_cite_clean</span><span class="op">$</span><span class="va">self_cite_rate</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>      linetype <span class="op">=</span> <span class="st">"dashed"</span>, linewidth <span class="op">=</span> <span class="fl">0.8</span></span>
+<span>    <span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/percent_format.html">percent_format</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span></span>
+<span>      x <span class="op">=</span> <span class="st">"Self-citation rate (proportion of references to own works)"</span>,</span>
+<span>      y <span class="op">=</span> <span class="st">"Number of authors"</span></span>
+<span>    <span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">theme_sci</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:03-fig-ethics-self-citation"></span>
+<img src="scientometrics-in-r_files/figure-html/03-fig-ethics-self-citation-1.png" alt="Histogram showing the distribution of self-citation rates for sampled authors. A dashed vertical line indicates the median self-citation rate." width="90%"><p class="caption">
+Figure 4.1: Distribution of self-citation rates across sampled scientometrics authors. The dashed line marks the sample median.
+</p>
+</div>
+</div>
+<div id="a-per-author-comparison" class="section level3" number="4.4.5">
+<h3>
+<span class="header-section-number">4.4.5</span> A per-author comparison<a class="anchor" aria-label="anchor" href="#a-per-author-comparison"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">self_cite_clean</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">self_cite_clean</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>author_name <span class="op">=</span> <span class="fu"><a href="https://forcats.tidyverse.org/reference/fct_reorder.html">fct_reorder</a></span><span class="op">(</span><span class="va">author_name</span>, <span class="va">self_cite_rate</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">self_cite_rate</span>, y <span class="op">=</span> <span class="va">author_name</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_col</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="fu">palette_sci</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/percent_format.html">percent_format</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Self-citation rate"</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">theme_sci</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:03-fig-ethics-self-cite-bar"></span>
+<img src="scientometrics-in-r_files/figure-html/03-fig-ethics-self-cite-bar-1.png" alt="Horizontal bar chart showing each sampled author's self-citation rate, ordered from highest to lowest." width="90%"><p class="caption">
+Figure 4.2: Self-citation rates by author, sorted from highest to lowest.
+</p>
+</div>
+</div>
+</div>
+<div id="ethics-diagnostics" class="section level2" number="4.5">
+<h2>
+<span class="header-section-number">4.5</span> Diagnostics and interpretation<a class="anchor" aria-label="anchor" href="#ethics-diagnostics"><i class="fas fa-link"></i></a>
+</h2>
+<p>Self-citation rates vary enormously across disciplines, career stages, and research specialities. When interpreting these results, keep the following in mind:</p>
+<ul>
+<li>
+<strong>Baseline rates differ by field.</strong> In small, specialised fields, self-citation is often necessary because few other researchers work on the same topic. Self-citation rates of 15–25% are common in niche subfields and do not, by themselves, indicate manipulation.</li>
+<li>
+<strong>Career stage matters.</strong> Senior researchers with large publication portfolios naturally accumulate more self-citations simply because they have more prior work to build on.</li>
+<li>
+<strong>Our estimate is a lower bound.</strong> We only count self-references to works that appear in the author’s sampled works from OpenAlex. Works outside our sample window (before 2018) or works not indexed by OpenAlex are missed, so the true self-citation rate is likely higher.</li>
+<li>
+<strong>Context is essential.</strong> A self-citation rate of 30% might be perfectly reasonable for a researcher building a coherent long-term programme, while a rate of 10% could still be problematic if those citations are strategically placed to inflate a particular metric.</li>
+<li>
+<strong>Never use self-citation rates alone to accuse individuals of misconduct.</strong> As the Leiden Manifesto insists, quantitative indicators must support — not replace — qualitative judgement <span class="citation">(<a href="references.html#ref-hicks2015">Hicks et al. 2015</a>)</span>.</li>
+</ul>
+</div>
+<div id="ethics-limitations" class="section level2" number="4.6">
+<h2>
+<span class="header-section-number">4.6</span> Limitations and responsible use<a class="anchor" aria-label="anchor" href="#ethics-limitations"><i class="fas fa-link"></i></a>
+</h2>
+</div>
+<div id="limitations-and-responsible-use-2" class="section level2 callout callout-warn" number="4.7">
+<h2>
+<span class="header-section-number">4.7</span> Limitations and responsible use<a class="anchor" aria-label="anchor" href="#limitations-and-responsible-use-2"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Self-citation analysis is not misconduct detection.</strong> High self-citation rates have many legitimate explanations. Presenting a self-citation analysis as evidence of gaming without qualitative context is itself a form of metric misuse.</li>
+<li>
+<strong>Coverage gaps matter.</strong> OpenAlex does not index all scholarly works. Authors who publish in venues not well covered by OpenAlex will have incomplete reference lists, biasing self-citation estimates.</li>
+<li>
+<strong>Author disambiguation is imperfect.</strong> OpenAlex uses algorithmic author disambiguation. Common names may be conflated (merging two people into one profile) or split (one person appearing as multiple profiles), distorting individual-level statistics.</li>
+<li>
+<strong>Snapshot bias.</strong> Our analysis uses a sample of works from a particular time window. Conclusions should not be generalised beyond that window without further analysis.</li>
+<li>
+<strong>The Leiden Manifesto applies here too.</strong> Every principle in <a href="ethics-and-responsible-metrics.html#ethics-background">4.3</a> applies to <em>our own</em> analysis. We must be transparent about methods, allow those evaluated to verify data, and avoid false precision <span class="citation">(<a href="references.html#ref-hicks2015">Hicks et al. 2015</a>)</span>.</li>
+</ul>
+</div>
+<div id="ethics-pitfalls" class="section level2" number="4.8">
+<h2>
+<span class="header-section-number">4.8</span> Common pitfalls<a class="anchor" aria-label="anchor" href="#ethics-pitfalls"><i class="fas fa-link"></i></a>
+</h2>
+</div>
+<div id="common-pitfalls-2" class="section level2 callout callout-stop" number="4.9">
+<h2>
+<span class="header-section-number">4.9</span> Common pitfalls<a class="anchor" aria-label="anchor" href="#common-pitfalls-2"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Equating self-citation with misconduct.</strong> Self-citation is a normal part of scientific writing. Only excessive, strategically motivated self-citation is problematic — and even then, the boundary is context-dependent.</li>
+<li>
+<strong>Using the Journal Impact Factor to judge individual articles.</strong> This is precisely what DORA warns against. A journal’s average citation rate says nothing about any single paper in that journal <span class="citation">(<a href="references.html#ref-dora2012">American Society for Cell Biology 2012</a>)</span>.</li>
+<li>
+<strong>Ignoring field differences when comparing metrics.</strong> A citation count of 20 is exceptional in mathematics but unremarkable in biomedical research. Any cross-field comparison requires field normalisation <span class="citation">(<a href="references.html#ref-waltman2016">Waltman 2016</a>)</span>.</li>
+<li>
+<strong>Treating indicators as objective truth.</strong> All bibliometric indicators are constructed measures with specific assumptions, coverage limitations, and known biases. Present them as approximations, not facts.</li>
+<li>
+<strong>Forgetting Goodhart’s Law.</strong> If you propose a new indicator for evaluation purposes, consider how rational actors will respond to being measured by it. Every metric creates incentives, and those incentives may not align with the goals of good research <span class="citation">(<a href="references.html#ref-goodhart1984">Goodhart 1984</a>)</span>.</li>
+</ul>
+</div>
+<div id="ethics-exercises" class="section level2" number="4.10">
+<h2>
+<span class="header-section-number">4.10</span> Exercises<a class="anchor" aria-label="anchor" href="#ethics-exercises"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Leiden Manifesto audit.</strong> Select a recent hiring or promotion policy document from a university (many are publicly available). Evaluate it against all ten Leiden Manifesto principles. Which principles does it satisfy? Which does it violate? Write a one-page assessment.</p></li>
+<li><p><strong>Self-citation across fields.</strong> Modify the worked example to compare self-citation rates between two different research fields (e.g., “bibliometrics” and “genomics”). Do you observe different baseline self-citation rates? What might explain the difference?</p></li>
+<li><p><strong>DORA compliance check.</strong> Visit the DORA website (<a href="https://sfdora.org">sfdora.org</a>) and identify three major funders that have signed the declaration. For each, find their current grant evaluation criteria and assess whether their stated practices are consistent with DORA commitments.</p></li>
+<li><p><strong>Goodhart’s Law thought experiment.</strong> Propose a new indicator for measuring research quality that is not currently in wide use. Then, write a brief analysis of how researchers might game this indicator if it were adopted for promotion decisions. <em>(Hint: think about both the numerator and denominator of any ratio-based metric.)</em></p></li>
+</ol>
+</div>
+<div id="solutions-2" class="section level2 callout callout-ok" number="4.11">
+<h2>
+<span class="header-section-number">4.11</span> Solutions<a class="anchor" aria-label="anchor" href="#solutions-2"><i class="fas fa-link"></i></a>
+</h2>
+<p>Solutions are provided in <a href="what-is-scientometrics.html#solutions">2.11</a>.</p>
+</div>
+<div id="ethics-reading" class="section level2" number="4.12">
+<h2>
+<span class="header-section-number">4.12</span> Further reading<a class="anchor" aria-label="anchor" href="#ethics-reading"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<span class="citation">Hicks et al. (<a href="references.html#ref-hicks2015">2015</a>)</span> — The Leiden Manifesto for Research Metrics. The single most important reference on responsible use of bibliometric indicators.</li>
+<li>
+<span class="citation">American Society for Cell Biology (<a href="references.html#ref-dora2012">2012</a>)</span> — The San Francisco Declaration on Research Assessment. The landmark declaration against using journal-level metrics to evaluate individual researchers.</li>
+<li>
+<span class="citation">Wilsdon et al. (<a href="references.html#ref-wilsdon2015">2015</a>)</span> — <em>The Metric Tide</em>. A comprehensive UK government review of the role of metrics in research assessment, proposing a framework of responsible metrics.</li>
+<li>
+<span class="citation">Goodhart (<a href="references.html#ref-goodhart1984">1984</a>)</span> — Goodhart’s original articulation of the principle that a measure ceases to be useful when it becomes a target.</li>
+<li>
+<span class="citation">Waltman (<a href="references.html#ref-waltman2016">2016</a>)</span> — A thorough review of citation impact indicators, including their known biases and appropriate uses.</li>
+<li>
+<span class="citation">Merton (<a href="references.html#ref-merton1968">1968</a>)</span> — The Matthew Effect in science; describes how advantage accumulates, a dynamic that citation metrics can reinforce.</li>
+<li>
+<span class="citation">Garfield (<a href="references.html#ref-garfield1955">1955</a>)</span> — The foundational paper on citation indexing. Essential for understanding the origins of the system we now critique.</li>
+</ul>
+</div>
+<div id="ethics-sessioninfo" class="section level2" number="4.13">
+<h2>
+<span class="header-section-number">4.13</span> Session info<a class="anchor" aria-label="anchor" href="#ethics-sessioninfo"><i class="fas fa-link"></i></a>
+</h2>
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; R version 4.4.1 (2024-06-14)
+#&gt; Platform: x86_64-pc-linux-gnu
+#&gt; Running under: Ubuntu 24.04.4 LTS
+#&gt; 
+#&gt; Matrix products: default
+#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+#&gt; 
+#&gt; locale:
+#&gt;  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
+#&gt;  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
+#&gt;  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          
+#&gt; [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+#&gt; 
+#&gt; time zone: UTC
+#&gt; tzcode source: system (glibc)
+#&gt; 
+#&gt; attached base packages:
+#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     
+#&gt; 
+#&gt; other attached packages:
+#&gt;  [1] gt_1.3.0        tidytext_0.4.3  glue_1.8.1      openalexR_3.0.1
+#&gt;  [5] lubridate_1.9.5 forcats_1.0.1   stringr_1.6.0   dplyr_1.2.1    
+#&gt;  [9] purrr_1.2.2     readr_2.2.0     tidyr_1.3.2     tibble_3.3.1   
+#&gt; [13] ggplot2_4.0.3   tidyverse_2.0.0
+#&gt; 
+#&gt; loaded via a namespace (and not attached):
+#&gt;  [1] gtable_0.3.6       xfun_0.57          bslib_0.10.0       lattice_0.22-6    
+#&gt;  [5] tzdb_0.5.0         vctrs_0.7.3        tools_4.4.1        generics_0.1.4    
+#&gt;  [9] curl_7.1.0         janeaustenr_1.0.0  tokenizers_0.3.0   pkgconfig_2.0.3   
+#&gt; [13] Matrix_1.7-0       RColorBrewer_1.1-3 S7_0.2.2           lifecycle_1.0.5   
+#&gt; [17] compiler_4.4.1     farver_2.1.2       codetools_0.2-20   SnowballC_0.7.1   
+#&gt; [21] htmltools_0.5.9    sass_0.4.10        yaml_2.3.12        pillar_1.11.1     
+#&gt; [25] jquerylib_0.1.4    cachem_1.1.0       viridis_0.6.5      stopwords_2.3     
+#&gt; [29] tidyselect_1.2.1   digest_0.6.39      stringi_1.8.7      bookdown_0.46     
+#&gt; [33] labeling_0.4.3     rprojroot_2.1.1    fastmap_1.2.0      grid_4.4.1        
+#&gt; [37] here_1.0.2         cli_3.6.6          magrittr_2.0.5     dichromat_2.0-0.1 
+#&gt; [41] utf8_1.2.6         withr_3.0.2        scales_1.4.0       timechange_0.4.0  
+#&gt; [45] rmarkdown_2.31     httr_1.4.8         otel_0.2.0         gridExtra_2.3     
+#&gt; [49] hms_1.1.4          memoise_2.0.1      evaluate_1.0.5     knitr_1.51        
+#&gt; [53] viridisLite_0.4.3  rlang_1.2.0        Rcpp_1.1.1-1.1     downlit_0.4.5     
+#&gt; [57] brand.yml_0.1.0    xml2_1.5.2         rstudioapi_0.18.0  jsonlite_2.0.0    
+#&gt; [61] R6_2.6.1           fs_2.1.0</code></pre>
+
+</div>
+</div>
+<!-- Dark/light mode toggle -->
+<div class="sticky-item">
+  <button type="button" id="mode-switch" class="btn-circle-mode" aria-label="Toggle dark mode">
+    <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+  </button>
+</div>
+
+<script>
+  (function () {
+    var stored = localStorage.getItem('themeMode');
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var initial = stored || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', initial);
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var btn = document.getElementById('mode-switch');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('themeMode', next);
+      });
+    });
+  })();
+</script><!-- Per-chapter PDF download button --><script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!file || file === ".pdf") return;
+    var btn = document.createElement("a");
+    btn.href = "pdf-chapters/" + file;
+    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+    btn.style = "float:right;margin-top:0.5em;";
+    btn.textContent = "⬇ Download this chapter (PDF)";
+    var header = document.querySelector("main h1, .page-inner h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      header.appendChild(btn);
+    }
+  });
+</script><!-- Footer attribution --><div class="bookdown-attribution">
+  This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
+</div>
+  <div class="chapter-nav">
+<div class="prev"><a href="theoretical-underpinnings.html"><span class="header-section-number">3</span> Theoretical Underpinnings</a></div>
+<div class="next"><a href="data-sources-compared.html"><span class="header-section-number">5</span> Data Sources Compared</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#ethics-and-responsible-metrics"><span class="header-section-number">4</span> Ethics and Responsible Metrics</a></li>
+<li><a class="nav-link" href="#ethics-objectives"><span class="header-section-number">4.1</span> Learning objectives</a></li>
+<li><a class="nav-link" href="#ethics-setup"><span class="header-section-number">4.2</span> Setup</a></li>
+<li>
+<a class="nav-link" href="#ethics-background"><span class="header-section-number">4.3</span> Conceptual background</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#the-leiden-manifesto"><span class="header-section-number">4.3.1</span> The Leiden Manifesto</a></li>
+<li><a class="nav-link" href="#the-san-francisco-declaration-dora"><span class="header-section-number">4.3.2</span> The San Francisco Declaration (DORA)</a></li>
+<li><a class="nav-link" href="#the-metric-tide"><span class="header-section-number">4.3.3</span> The Metric Tide</a></li>
+<li><a class="nav-link" href="#goodharts-law-in-practice"><span class="header-section-number">4.3.4</span> Goodhart’s Law in practice</a></li>
+<li><a class="nav-link" href="#publish-or-perish"><span class="header-section-number">4.3.5</span> Publish or perish</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#ethics-example"><span class="header-section-number">4.4</span> Worked example</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#acquiring-author-data"><span class="header-section-number">4.4.1</span> Acquiring author data</a></li>
+<li><a class="nav-link" href="#fetching-works-and-computing-self-citations"><span class="header-section-number">4.4.2</span> Fetching works and computing self-citations</a></li>
+<li><a class="nav-link" href="#summarizing-results"><span class="header-section-number">4.4.3</span> Summarizing results</a></li>
+<li><a class="nav-link" href="#visualization"><span class="header-section-number">4.4.4</span> Visualization</a></li>
+<li><a class="nav-link" href="#a-per-author-comparison"><span class="header-section-number">4.4.5</span> A per-author comparison</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#ethics-diagnostics"><span class="header-section-number">4.5</span> Diagnostics and interpretation</a></li>
+<li><a class="nav-link" href="#ethics-limitations"><span class="header-section-number">4.6</span> Limitations and responsible use</a></li>
+<li><a class="nav-link" href="#limitations-and-responsible-use-2"><span class="header-section-number">4.7</span> Limitations and responsible use</a></li>
+<li><a class="nav-link" href="#ethics-pitfalls"><span class="header-section-number">4.8</span> Common pitfalls</a></li>
+<li><a class="nav-link" href="#common-pitfalls-2"><span class="header-section-number">4.9</span> Common pitfalls</a></li>
+<li><a class="nav-link" href="#ethics-exercises"><span class="header-section-number">4.10</span> Exercises</a></li>
+<li><a class="nav-link" href="#solutions-2"><span class="header-section-number">4.11</span> Solutions</a></li>
+<li><a class="nav-link" href="#ethics-reading"><span class="header-section-number">4.12</span> Further reading</a></li>
+<li><a class="nav-link" href="#ethics-sessioninfo"><span class="header-section-number">4.13</span> Session info</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/scientometrics-in-r/blob/main/chapters/03-ethics-responsible-metrics.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/scientometrics-in-r/edit/main/chapters/03-ethics-responsible-metrics.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 25 Embeddings for Scientometrics | Scientometrics in R</title>
+<meta name="author" content="R. Heller">
+<meta name="description" content="25.1 Learning objectives After completing this chapter, you will be able to: Explain how word and document embeddings differ from bag-of-words representations Train simple word embeddings on a...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 25 Embeddings for Scientometrics | Scientometrics in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/scientometrics-in-r/embeddings-for-scientometrics.html">
+<meta property="og:image" content="https://r-heller.github.io/scientometrics-in-r/images/cover.png">
+<meta property="og:description" content="25.1 Learning objectives After completing this chapter, you will be able to: Explain how word and document embeddings differ from bag-of-words representations Train simple word embeddings on a...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 25 Embeddings for Scientometrics | Scientometrics in R">
+<meta name="twitter:description" content="25.1 Learning objectives After completing this chapter, you will be able to: Explain how word and document embeddings differ from bag-of-words representations Train simple word embeddings on a...">
+<meta name="twitter:image" content="https://r-heller.github.io/scientometrics-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><link href="libs/vis-9.1.0/vis-network.min.css" rel="stylesheet">
+<script src="libs/vis-9.1.0/vis-network.min.js"></script><script src="libs/visNetwork-binding-2.1.4/visNetwork.js"></script><link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="libs/plotly-binding-4.12.0/plotly.js"></script><script src="libs/typedarray-0.1/typedarray.min.js"></script><link href="libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="libs/crosstalk-1.2.2/js/crosstalk.min.js"></script><link href="libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="libs/plotly-main-2.25.2/plotly-latest.min.js"></script><link href="libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+<script src="libs/datatables-binding-0.34.0/datatables.js"></script><link href="libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet">
+<script src="libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script><link href="libs/nouislider-7.0.10/jquery.nouislider.min.css" rel="stylesheet">
+<script src="libs/nouislider-7.0.10/jquery.nouislider.min.js"></script><link href="libs/selectize-0.12.0/selectize.bootstrap3.css" rel="stylesheet">
+<script src="libs/selectize-0.12.0/selectize.min.js"></script><link href="libs/dt-plugin-searchhighlight-1.13.6/source.css" rel="stylesheet">
+<script src="libs/dt-plugin-searchhighlight-1.13.6/jquery.highlight.js"></script><script src="libs/dt-plugin-searchhighlight-1.13.6/source.min.js"></script><!-- Fonts (Hugo Coder set) --><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Local Font Awesome 6 (woff2 in style/webfonts/) --><link rel="stylesheet" href="style/font-awesome.min.css">
+<!-- Mermaid (for diagram chunks in chapter 0) --><script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+<link rel="stylesheet" href="style/font-awesome.min.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Bibliometrics, Network Science, and Research Evaluation">Scientometrics in R</a>:
+        <small class="text-muted">Bibliometrics, Network Science, and Research Evaluation</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Welcome!</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="find-your-method.html"><span class="header-section-number">1</span> Find Your Method</a></li>
+<li class="book-part">Foundations</li>
+<li><a class="" href="what-is-scientometrics.html"><span class="header-section-number">2</span> What Is Scientometrics?</a></li>
+<li><a class="" href="theoretical-underpinnings.html"><span class="header-section-number">3</span> Theoretical Underpinnings</a></li>
+<li><a class="" href="ethics-and-responsible-metrics.html"><span class="header-section-number">4</span> Ethics and Responsible Metrics</a></li>
+<li><a class="" href="data-sources-compared.html"><span class="header-section-number">5</span> Data Sources Compared</a></li>
+<li class="book-part">Data Acquisition in R</li>
+<li><a class="" href="apis-and-packages.html"><span class="header-section-number">6</span> APIs and Packages</a></li>
+<li><a class="" href="parsing-native-exports.html"><span class="header-section-number">7</span> Parsing Native Exports</a></li>
+<li><a class="" href="building-reproducible-corpora.html"><span class="header-section-number">8</span> Building Reproducible Corpora</a></li>
+<li><a class="" href="working-with-full-text.html"><span class="header-section-number">9</span> Working with Full Text</a></li>
+<li class="book-part">Core Bibliometric Analysis</li>
+<li><a class="" href="descriptive-bibliometrics.html"><span class="header-section-number">10</span> Descriptive Bibliometrics</a></li>
+<li><a class="" href="productivity-and-impact-indicators.html"><span class="header-section-number">11</span> Productivity and Impact Indicators</a></li>
+<li><a class="" href="journal-metrics.html"><span class="header-section-number">12</span> Journal Metrics</a></li>
+<li><a class="" href="author-level-analysis-and-disambiguation.html"><span class="header-section-number">13</span> Author-Level Analysis and Disambiguation</a></li>
+<li><a class="" href="institutional-and-country-analysis.html"><span class="header-section-number">14</span> Institutional and Country Analysis</a></li>
+<li><a class="" href="temporal-analysis-and-citation-aging.html"><span class="header-section-number">15</span> Temporal Analysis and Citation Aging</a></li>
+<li class="book-part">Network &amp; Mapping Methods</li>
+<li><a class="" href="co-authorship-networks.html"><span class="header-section-number">16</span> Co-authorship Networks</a></li>
+<li><a class="" href="co-citation-and-bibliographic-coupling.html"><span class="header-section-number">17</span> Co-citation and Bibliographic Coupling</a></li>
+<li><a class="" href="co-word-and-keyword-co-occurrence.html"><span class="header-section-number">18</span> Co-word and Keyword Co-occurrence</a></li>
+<li><a class="" href="community-detection-and-backbone-extraction.html"><span class="header-section-number">19</span> Community Detection and Backbone Extraction</a></li>
+<li><a class="" href="science-mapping-and-overlay-maps.html"><span class="header-section-number">20</span> Science Mapping and Overlay Maps</a></li>
+<li><a class="" href="network-visualization-and-interoperability.html"><span class="header-section-number">21</span> Network Visualization and Interoperability</a></li>
+<li class="book-part">Text &amp; Topic Analysis</li>
+<li><a class="" href="text-mining-bibliographic-corpora.html"><span class="header-section-number">22</span> Text Mining Bibliographic Corpora</a></li>
+<li><a class="" href="topic-modeling.html"><span class="header-section-number">23</span> Topic Modeling</a></li>
+<li><a class="" href="keyword-extraction.html"><span class="header-section-number">24</span> Keyword Extraction</a></li>
+<li><a class="active" href="embeddings-for-scientometrics.html"><span class="header-section-number">25</span> Embeddings for Scientometrics</a></li>
+<li><a class="" href="detecting-emerging-topics.html"><span class="header-section-number">26</span> Detecting Emerging Topics</a></li>
+<li class="book-part">Advanced Topics</li>
+<li><a class="" href="altmetrics.html"><span class="header-section-number">27</span> Altmetrics</a></li>
+<li><a class="" href="open-science-indicators.html"><span class="header-section-number">28</span> Open Science Indicators</a></li>
+<li><a class="" href="gender-and-equity-analysis.html"><span class="header-section-number">29</span> Gender and Equity Analysis</a></li>
+<li><a class="" href="retraction-analysis.html"><span class="header-section-number">30</span> Retraction Analysis</a></li>
+<li><a class="" href="funding-analysis-and-grant-to-publication-linkage.html"><span class="header-section-number">31</span> Funding Analysis and Grant-to-Publication Linkage</a></li>
+<li><a class="" href="patentpaper-linkages.html"><span class="header-section-number">32</span> Patent–Paper Linkages</a></li>
+<li><a class="" href="causal-inference-in-scientometrics.html"><span class="header-section-number">33</span> Causal Inference in Scientometrics</a></li>
+<li><a class="" href="reproducibility-rrids-and-badges.html"><span class="header-section-number">34</span> Reproducibility, RRIDs, and Badges</a></li>
+<li class="book-part">Production &amp; Reporting</li>
+<li><a class="" href="reproducible-pipelines.html"><span class="header-section-number">35</span> Reproducible Pipelines</a></li>
+<li><a class="" href="interactive-dashboards.html"><span class="header-section-number">36</span> Interactive Dashboards</a></li>
+<li><a class="" href="parameterized-quarto-reports.html"><span class="header-section-number">37</span> Parameterized Quarto Reports</a></li>
+<li><a class="" href="building-a-bibliometric-shiny-app.html"><span class="header-section-number">38</span> Building a Bibliometric Shiny App</a></li>
+<li class="book-part">Case Studies</li>
+<li><a class="" href="case-study-1-crispr-field-review-20102024.html"><span class="header-section-number">39</span> Case Study 1: CRISPR Field Review (2010–2024)</a></li>
+<li><a class="" href="case-study-2-institutional-benchmarking.html"><span class="header-section-number">40</span> Case Study 2: Institutional Benchmarking</a></li>
+<li><a class="" href="case-study-3-journal-portfolio-analysis.html"><span class="header-section-number">41</span> Case Study 3: Journal Portfolio Analysis</a></li>
+<li><a class="" href="case-study-4-gender-gap-in-scientific-publishing.html"><span class="header-section-number">42</span> Case Study 4: Gender Gap in Scientific Publishing</a></li>
+<li><a class="" href="case-study-5-detecting-emerging-topics.html"><span class="header-section-number">43</span> Case Study 5: Detecting Emerging Topics</a></li>
+<li class="book-part">Appendix</li>
+<li><a class="" href="r-setup-renv-and-docker.html"><span class="header-section-number">A</span> R Setup, renv, and Docker</a></li>
+<li><a class="" href="sql-primer-for-the-openalex-snapshot.html"><span class="header-section-number">B</span> SQL Primer for the OpenAlex Snapshot</a></li>
+<li><a class="" href="indicator-crosswalk-across-databases.html"><span class="header-section-number">C</span> Indicator Crosswalk Across Databases</a></li>
+<li><a class="" href="cheatsheets-and-quick-reference.html"><span class="header-section-number">D</span> Cheatsheets and Quick Reference</a></li>
+<li><a class="" href="exercise-solutions.html"><span class="header-section-number">E</span> Exercise Solutions</a></li>
+<li><a class="" href="solutions.html"><span class="header-section-number">F</span> Exercise Solutions</a></li>
+<li><a class="" href="glossary.html">Glossary</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/scientometrics-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="embeddings-for-scientometrics" class="section level1" number="25">
+<h1>
+<span class="header-section-number">25</span> Embeddings for Scientometrics<a class="anchor" aria-label="anchor" href="#embeddings-for-scientometrics"><i class="fas fa-link"></i></a>
+</h1>
+<div id="embed-objectives" class="section level2" number="25.1">
+<h2>
+<span class="header-section-number">25.1</span> Learning objectives<a class="anchor" aria-label="anchor" href="#embed-objectives"><i class="fas fa-link"></i></a>
+</h2>
+<p>After completing this chapter, you will be able to:</p>
+<ul>
+<li>Explain how word and document embeddings differ from bag-of-words representations</li>
+<li>Train simple word embeddings on a bibliometric corpus</li>
+<li>Use pre-trained embeddings to compute document similarity</li>
+<li>Apply UMAP or t-SNE to visualise document clusters in embedding space</li>
+<li>Assess when embeddings add value over simpler text representations</li>
+</ul>
+</div>
+<div id="embed-setup" class="section level2" number="25.2">
+<h2>
+<span class="header-section-number">25.2</span> Setup<a class="anchor" aria-label="anchor" href="#embed-setup"><i class="fas fa-link"></i></a>
+</h2>
+<div class="sourceCode" id="cb368"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/openalexR">openalexR</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://quanteda.io">quanteda</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/bnosac/word2vec">word2vec</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jlmelville/uwot">uwot</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://glue.tidyverse.org/">glue</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://gt.rstudio.com">gt</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">20260509</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"api_helpers.R"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"utils.R"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"sci_palette.R"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="embed-background" class="section level2" number="25.3">
+<h2>
+<span class="header-section-number">25.3</span> Conceptual background<a class="anchor" aria-label="anchor" href="#embed-background"><i class="fas fa-link"></i></a>
+</h2>
+<p>Bag-of-words representations (<a href="text-mining-bibliographic-corpora.html#textmine-background">22.3</a>) treat each word as an independent dimension. “Citation analysis” and “bibliometric study” share no features despite being semantically related. <strong>Word embeddings</strong> address this by mapping words into a dense, low-dimensional vector space where semantically similar words are close together. The word2vec algorithm learns these representations by predicting words from their context (skip-gram) or context from words (CBOW) in a large training corpus.</p>
+<p><strong>Document embeddings</strong> extend the idea to whole documents. Simple approaches average the word vectors of a document’s words (mean pooling). More sophisticated approaches include Doc2Vec (Paragraph Vector), which learns document-specific vectors alongside word vectors, and transformer-based models like <strong>SPECTER</strong>, which is pre-trained on scientific paper titles and abstracts using citation-based training signals.</p>
+<p>For scientometrics, embeddings enable several applications:</p>
+<ul>
+<li>
+<strong>Semantic similarity</strong>: Finding papers with similar meaning, even when they use different terminology.</li>
+<li>
+<strong>Clustering</strong>: Grouping papers by content in embedding space, complementing topic models (<a href="topic-modeling.html#topicmodel-background">23.3</a>).</li>
+<li>
+<strong>Visualisation</strong>: Projecting embeddings to 2D with UMAP or t-SNE to create interpretable “maps” of a corpus.</li>
+<li>
+<strong>Anomaly detection</strong>: Identifying papers that are semantically distant from their assigned field or cluster.</li>
+</ul>
+<p>The trade-off is interpretability: while TF-IDF features are directly readable (the word “citation” has a specific weight), embedding dimensions are opaque. Embeddings are powerful for similarity and clustering but resist the kind of term-level interpretation that co-word analysis provides.</p>
+</div>
+<div id="embed-example" class="section level2" number="25.4">
+<h2>
+<span class="header-section-number">25.4</span> Worked example<a class="anchor" aria-label="anchor" href="#embed-example"><i class="fas fa-link"></i></a>
+</h2>
+<div id="preparing-text-data" class="section level3" number="25.4.1">
+<h3>
+<span class="header-section-number">25.4.1</span> Preparing text data<a class="anchor" aria-label="anchor" href="#preparing-text-data"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb369"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">works</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html">oa_fetch</a></span><span class="op">(</span></span>
+<span>  entity <span class="op">=</span> <span class="st">"works"</span>,</span>
+<span>  primary_location.source.id <span class="op">=</span> <span class="st">"S148561398"</span>,</span>
+<span>  from_publication_date <span class="op">=</span> <span class="st">"2019-01-01"</span>,</span>
+<span>  to_publication_date <span class="op">=</span> <span class="st">"2023-12-31"</span>,</span>
+<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sample <span class="op">=</span> <span class="fl">400</span>, seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">text_df</span> <span class="op">&lt;-</span> <span class="va">works</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">abstract</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nchar.html">nchar</a></span><span class="op">(</span><span class="va">abstract</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">100</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/transmute.html">transmute</a></span><span class="op">(</span></span>
+<span>    doc_id <span class="op">=</span> <span class="va">id</span>,</span>
+<span>    title <span class="op">=</span> <span class="va">display_name</span>,</span>
+<span>    text <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">display_name</span>, <span class="va">abstract</span>, sep <span class="op">=</span> <span class="st">". "</span><span class="op">)</span>,</span>
+<span>    year <span class="op">=</span> <span class="fu"><a href="https://lubridate.tidyverse.org/reference/year.html">year</a></span><span class="op">(</span><span class="va">publication_date</span><span class="op">)</span>,</span>
+<span>    <span class="va">cited_by_count</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Documents for embedding: {nrow(text_df)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Documents for embedding: 104</code></pre>
+</div>
+<div id="training-word2vec-embeddings" class="section level3" number="25.4.2">
+<h3>
+<span class="header-section-number">25.4.2</span> Training word2vec embeddings<a class="anchor" aria-label="anchor" href="#training-word2vec-embeddings"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb371"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">clean_text</span> <span class="op">&lt;-</span> <span class="va">text_df</span><span class="op">$</span><span class="va">text</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://stringr.tidyverse.org/reference/case.html">str_to_lower</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_replace.html">str_replace_all</a></span><span class="op">(</span><span class="st">"[^a-z ]"</span>, <span class="st">" "</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_trim.html">str_squish</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/word2vec/man/word2vec.html">word2vec</a></span><span class="op">(</span><span class="va">clean_text</span>, dim <span class="op">=</span> <span class="fl">100</span>, iter <span class="op">=</span> <span class="fl">20</span>, min_count <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                  type <span class="op">=</span> <span class="st">"skip-gram"</span>, threads <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Vocabulary size: {nrow(as.matrix(model))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Vocabulary size: 1269</code></pre>
+<div class="sourceCode" id="cb373"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="st">"citation"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">nn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">model</span>, newdata <span class="op">=</span> <span class="st">"citation"</span>, type <span class="op">=</span> <span class="st">"nearest"</span>, top_n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Nearest neighbours of 'citation':\n"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">nn</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt; Nearest neighbours of 'citation':
+#&gt; $citation
+#&gt;       term1           term2 similarity rank
+#&gt; 1  citation          counts      0.748    1
+#&gt; 2  citation     measurement      0.719    2
+#&gt; 3  citation     comparisons      0.702    3
+#&gt; 4  citation    correlations      0.683    4
+#&gt; 5  citation           parts      0.680    5
+#&gt; 6  citation          intent      0.673    6
+#&gt; 7  citation      predicting      0.671    7
+#&gt; 8  citation             jif      0.667    8
+#&gt; 9  citation classifications      0.661    9
+#&gt; 10 citation       indicated      0.658   10</code></pre>
+</div>
+<div id="computing-document-embeddings-via-mean-pooling" class="section level3" number="25.4.3">
+<h3>
+<span class="header-section-number">25.4.3</span> Computing document embeddings via mean pooling<a class="anchor" aria-label="anchor" href="#computing-document-embeddings-via-mean-pooling"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb375"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">word_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">doc_embed</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">text</span>, <span class="va">wm</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">words</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_split.html">str_split</a></span><span class="op">(</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/case.html">str_to_lower</a></span><span class="op">(</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_replace.html">str_replace_all</a></span><span class="op">(</span><span class="va">text</span>, <span class="st">"[^a-z ]"</span>, <span class="st">" "</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                     <span class="st">"\\s+"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="va">matched</span> <span class="op">&lt;-</span> <span class="va">words</span><span class="op">[</span><span class="va">words</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">wm</span><span class="op">)</span><span class="op">]</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">matched</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="cn">NA_real_</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">wm</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums-methods.html">colMeans</a></span><span class="op">(</span><span class="va">wm</span><span class="op">[</span><span class="va">matched</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">doc_embeddings</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">text_df</span><span class="op">$</span><span class="va">text</span>, \<span class="op">(</span><span class="va">t</span><span class="op">)</span> <span class="fu">doc_embed</span><span class="op">(</span><span class="va">t</span>, <span class="va">word_matrix</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">embed_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">doc_embeddings</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">valid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html">complete.cases</a></span><span class="op">(</span><span class="va">embed_mat</span><span class="op">)</span></span>
+<span><span class="va">embed_mat</span> <span class="op">&lt;-</span> <span class="va">embed_mat</span><span class="op">[</span><span class="va">valid</span>, <span class="op">]</span></span>
+<span><span class="va">text_df_valid</span> <span class="op">&lt;-</span> <span class="va">text_df</span><span class="op">[</span><span class="va">valid</span>, <span class="op">]</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Valid document embeddings: {nrow(embed_mat)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Valid document embeddings: 104</code></pre>
+</div>
+<div id="dimensionality-reduction-with-umap" class="section level3" number="25.4.4">
+<h3>
+<span class="header-section-number">25.4.4</span> Dimensionality reduction with UMAP<a class="anchor" aria-label="anchor" href="#dimensionality-reduction-with-umap"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb377"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">umap_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://jlmelville.github.io/uwot/reference/umap.html">umap</a></span><span class="op">(</span><span class="va">embed_mat</span>, n_neighbors <span class="op">=</span> <span class="fl">15</span>, min_dist <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>                    n_components <span class="op">=</span> <span class="fl">2</span>, ret_model <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">text_df_valid</span><span class="op">$</span><span class="va">umap_x</span> <span class="op">&lt;-</span> <span class="va">umap_result</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span></span>
+<span><span class="va">text_df_valid</span><span class="op">$</span><span class="va">umap_y</span> <span class="op">&lt;-</span> <span class="va">umap_result</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span></span></code></pre></div>
+<div class="sourceCode" id="cb378"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">text_df_valid</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">umap_x</span>, y <span class="op">=</span> <span class="va">umap_y</span>, colour <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">0.6</span>, size <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu">palette_sci</span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/n_distinct.html">n_distinct</a></span><span class="op">(</span><span class="va">text_df_valid</span><span class="op">$</span><span class="va">year</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"UMAP 1"</span>, y <span class="op">=</span> <span class="st">"UMAP 2"</span>, colour <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_sci</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>, axis.ticks <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:24-fig-embed-umap"></span>
+<img src="scientometrics-in-r_files/figure-html/24-fig-embed-umap-1.png" alt="Scatter plot showing documents positioned by semantic similarity in UMAP space. Colour indicates publication year, revealing whether temporal patterns correspond to semantic clusters." width="90%"><p class="caption">
+Figure 25.1: UMAP projection of document embeddings, coloured by publication year.
+</p>
+</div>
+</div>
+<div id="document-similarity-search" class="section level3" number="25.4.5">
+<h3>
+<span class="header-section-number">25.4.5</span> Document similarity search<a class="anchor" aria-label="anchor" href="#document-similarity-search"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb379"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cosine_sim</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">a</span> <span class="op">*</span> <span class="va">b</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">a</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">b</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">query_idx</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span><span class="va">sims</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_dbl</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">embed_mat</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                \<span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="fu">cosine_sim</span><span class="op">(</span><span class="va">embed_mat</span><span class="op">[</span><span class="va">query_idx</span>, <span class="op">]</span>, <span class="va">embed_mat</span><span class="op">[</span><span class="va">i</span>, <span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">top_similar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/order.html">order</a></span><span class="op">(</span><span class="va">sims</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[</span><span class="fl">2</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Query: {text_df_valid$title[query_idx]}\n\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Query: The link between countries’ economic and scientific wealth has a complex dependence on technological activity and research policy</code></pre>
+<div class="sourceCode" id="cb381"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Most similar documents:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Most similar documents:</code></pre>
+<div class="sourceCode" id="cb383"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">walk</a></span><span class="op">(</span><span class="va">top_similar</span>, \<span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"  [{round(sims[i], 3)}] {text_df_valid$title[i]}\n"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [0.924] Sample size in bibliometric analysis[0.923] Draw me Science[0.923] COVID-19 enabled co-authoring networks: a country-case analysis[0.908] Academic social networks metrics: an effective indicator for university performance?[0.907] Analysis of the evolution and collaboration networks of citizen science scientific publications</code></pre>
+</div>
+<div id="embedding-clusters-vs.-citation-impact" class="section level3" number="25.4.6">
+<h3>
+<span class="header-section-number">25.4.6</span> Embedding clusters vs. citation impact<a class="anchor" aria-label="anchor" href="#embedding-clusters-vs.-citation-impact"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb385"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">text_df_valid</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">umap_x</span>, y <span class="op">=</span> <span class="va">umap_y</span>,</span>
+<span>                          colour <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log1p</a></span><span class="op">(</span><span class="va">cited_by_count</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">0.6</span>, size <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html">scale_colour_viridis_c</a></span><span class="op">(</span>option <span class="op">=</span> <span class="st">"C"</span>, name <span class="op">=</span> <span class="st">"log(cites + 1)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"UMAP 1"</span>, y <span class="op">=</span> <span class="st">"UMAP 2"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_sci</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>, axis.ticks <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:24-fig-embed-impact"></span>
+<img src="scientometrics-in-r_files/figure-html/24-fig-embed-impact-1.png" alt="Scatter plot in UMAP space with documents coloured by log citation count, showing whether highly cited papers cluster together semantically." width="90%"><p class="caption">
+Figure 25.2: UMAP embedding coloured by citation impact (log scale).
+</p>
+</div>
+</div>
+</div>
+<div id="embed-diagnostics" class="section level2" number="25.5">
+<h2>
+<span class="header-section-number">25.5</span> Diagnostics and interpretation<a class="anchor" aria-label="anchor" href="#embed-diagnostics"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Vocabulary coverage</strong>: Check what fraction of abstract words appear in the embedding vocabulary. Low coverage (&lt; 80%) indicates the training corpus is too small or preprocessing is too aggressive.</li>
+<li>
+<strong>Nearest neighbours</strong>: Inspect the nearest neighbours of key domain terms. If “citation” is closest to “references” and “bibliometric”, the embeddings capture domain structure.</li>
+<li>
+<strong>UMAP stability</strong>: UMAP is stochastic. Run with multiple seeds and check whether the global cluster structure is stable. Individual point positions will vary but clusters should persist.</li>
+<li>
+<strong>Embedding dimensionality</strong>: 100–300 dimensions is standard. Below 50, embeddings lose semantic resolution; above 300, training becomes slow with diminishing returns.</li>
+</ul>
+</div>
+<div id="embed-limitations" class="section level2" number="25.6">
+<h2>
+<span class="header-section-number">25.6</span> Limitations and responsible use<a class="anchor" aria-label="anchor" href="#embed-limitations"><i class="fas fa-link"></i></a>
+</h2>
+</div>
+<div id="limitations-and-responsible-use-23" class="section level2 callout callout-warn" number="25.7">
+<h2>
+<span class="header-section-number">25.7</span> Limitations and responsible use<a class="anchor" aria-label="anchor" href="#limitations-and-responsible-use-23"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Embeddings are opaque.</strong> Unlike TF-IDF weights, embedding dimensions have no interpretable meaning. You can measure similarity but not explain <em>why</em> two documents are similar without additional analysis.</li>
+<li>
+<strong>Training data bias.</strong> Embeddings reflect the biases of their training corpus. If the corpus overrepresents certain topics or perspectives, the embeddings will too.</li>
+<li>
+<strong>Small corpora produce poor embeddings.</strong> Word2vec needs tens of thousands of documents for reliable training. For small bibliometric corpora (&lt; 1,000 papers), use pre-trained embeddings instead.</li>
+<li>
+<strong>UMAP/t-SNE distort distances.</strong> These methods preserve local structure but distort global distances. Documents that appear close in 2D may not be the most similar in high-dimensional space <span class="citation">(<a href="references.html#ref-hicks2015">Hicks et al. 2015</a>)</span>.</li>
+</ul>
+</div>
+<div id="embed-pitfalls" class="section level2" number="25.8">
+<h2>
+<span class="header-section-number">25.8</span> Common pitfalls<a class="anchor" aria-label="anchor" href="#embed-pitfalls"><i class="fas fa-link"></i></a>
+</h2>
+</div>
+<div id="common-pitfalls-23" class="section level2 callout callout-stop" number="25.9">
+<h2>
+<span class="header-section-number">25.9</span> Common pitfalls<a class="anchor" aria-label="anchor" href="#common-pitfalls-23"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Training on too few documents.</strong> Word2vec on 200 abstracts produces unreliable embeddings. Use at least 5,000 documents or switch to pre-trained models.</li>
+<li>
+<strong>Averaging without weighting.</strong> Simple mean pooling treats every word equally. TF-IDF-weighted averaging gives more weight to distinctive terms and often produces better document embeddings.</li>
+<li>
+<strong>Over-interpreting UMAP clusters.</strong> Visual clusters in UMAP may reflect projection artifacts. Validate clusters with a separate method (e.g., k-means in the full embedding space).</li>
+<li>
+<strong>Comparing embeddings from different models.</strong> Embedding spaces are not aligned across different training runs. Cosine similarity is only meaningful within a single embedding space.</li>
+</ul>
+</div>
+<div id="embed-exercises" class="section level2" number="25.10">
+<h2>
+<span class="header-section-number">25.10</span> Exercises<a class="anchor" aria-label="anchor" href="#embed-exercises"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Weighted averaging.</strong> Compute document embeddings using TF-IDF-weighted word vectors instead of simple means. Does the UMAP visualisation change?</p></li>
+<li><p><strong>K-means clustering.</strong> Apply k-means (k = 5, 8, 12) to the document embeddings. Compare the resulting clusters with LDA topics from <a href="topic-modeling.html#topicmodel-example">23.4</a>. Do they agree?</p></li>
+<li><p><strong>Pre-trained embeddings.</strong> If available, use SPECTER embeddings (via reticulate and Python) instead of corpus-trained word2vec. How does similarity search quality change?</p></li>
+<li><p><strong>Analogy test.</strong> Test whether the word2vec model captures analogical relationships (e.g., “journal” - “article” + “book” ≈ “publisher”). What does the result tell you about the model?</p></li>
+</ol>
+</div>
+<div id="solutions-23" class="section level2 callout callout-ok" number="25.11">
+<h2>
+<span class="header-section-number">25.11</span> Solutions<a class="anchor" aria-label="anchor" href="#solutions-23"><i class="fas fa-link"></i></a>
+</h2>
+<p>Solutions are provided in <a href="what-is-scientometrics.html#solutions">2.11</a>.</p>
+</div>
+<div id="embed-reading" class="section level2" number="25.12">
+<h2>
+<span class="header-section-number">25.12</span> Further reading<a class="anchor" aria-label="anchor" href="#embed-reading"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<span class="citation">Silge and Robinson (<a href="references.html#ref-silge2017">2017</a>)</span> — Text embeddings in R, including integration with word2vec.</li>
+<li>
+<span class="citation">Priem et al. (<a href="references.html#ref-priem2022">2022</a>)</span> — OpenAlex concept embeddings and their relationship to document content.</li>
+<li>
+<span class="citation">Waltman et al. (<a href="references.html#ref-waltman2012">2010</a>)</span> — Bibliometric similarity measures as context for embedding-based approaches.</li>
+</ul>
+</div>
+<div id="embed-sessioninfo" class="section level2" number="25.13">
+<h2>
+<span class="header-section-number">25.13</span> Session info<a class="anchor" aria-label="anchor" href="#embed-sessioninfo"><i class="fas fa-link"></i></a>
+</h2>
+<div class="sourceCode" id="cb386"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; R version 4.4.1 (2024-06-14)
+#&gt; Platform: x86_64-pc-linux-gnu
+#&gt; Running under: Ubuntu 24.04.4 LTS
+#&gt; 
+#&gt; Matrix products: default
+#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+#&gt; 
+#&gt; locale:
+#&gt;  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8        LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8   
+#&gt;  [6] LC_MESSAGES=C.UTF-8    LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C           LC_TELEPHONE=C        
+#&gt; [11] LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+#&gt; 
+#&gt; time zone: UTC
+#&gt; tzcode source: system (glibc)
+#&gt; 
+#&gt; attached base packages:
+#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     
+#&gt; 
+#&gt; other attached packages:
+#&gt;  [1] uwot_0.2.4                Matrix_1.7-0              word2vec_0.4.1            stm_1.3.8                
+#&gt;  [5] topicmodels_0.2-17        quanteda.textstats_0.97.2 visNetwork_2.1.4          ggraph_2.2.2             
+#&gt;  [9] tidygraph_1.3.1           igraph_2.3.1              quanteda_4.4              pdftools_3.8.0           
+#&gt; [13] arrow_24.0.0              bibliometrix_5.3.0        RefManageR_1.4.0          bib2df_1.1.2.0           
+#&gt; [17] rcrossref_1.2.1           gt_1.3.0                  tidytext_0.4.3            glue_1.8.1               
+#&gt; [21] openalexR_3.0.1           lubridate_1.9.5           forcats_1.0.1             stringr_1.6.0            
+#&gt; [25] dplyr_1.2.1               purrr_1.2.2               readr_2.2.0               tidyr_1.3.2              
+#&gt; [29] tibble_3.3.1              ggplot2_4.0.3             tidyverse_2.0.0          
+#&gt; 
+#&gt; loaded via a namespace (and not attached):
+#&gt;   [1] bibtex_0.5.2           RColorBrewer_1.1-3     rstudioapi_0.18.0      jsonlite_2.0.0         magrittr_2.0.5        
+#&gt;   [6] modeltools_0.2-24      farver_2.1.2           rmarkdown_2.31         fs_2.1.0               vctrs_0.7.3           
+#&gt;  [11] memoise_2.0.1          askpass_1.2.1          base64enc_0.1-6        htmltools_0.5.9        contentanalysis_1.0.0 
+#&gt;  [16] curl_7.1.0             janeaustenr_1.0.0      cellranger_1.1.0       sass_0.4.10            bslib_0.10.0          
+#&gt;  [21] htmlwidgets_1.6.4      tokenizers_0.3.0       plyr_1.8.9             httr2_1.2.2            plotly_4.12.0         
+#&gt;  [26] cachem_1.1.0           dimensionsR_0.0.3      mime_0.13              lifecycle_1.0.5        pkgconfig_2.0.3       
+#&gt;  [31] R6_2.6.1               fastmap_1.2.0          shiny_1.13.0           digest_0.6.39          patchwork_1.3.2       
+#&gt;  [36] shinycssloaders_1.1.0  rprojroot_2.1.1        RSpectra_0.16-2        SnowballC_0.7.1        labeling_0.4.3        
+#&gt;  [41] urltools_1.7.3.1       timechange_0.4.0       polyclip_1.10-7        httr_1.4.8             compiler_4.4.1        
+#&gt;  [46] here_1.0.2             bit64_4.8.0            withr_3.0.2            S7_0.2.2               backports_1.5.1       
+#&gt;  [51] viridis_0.6.5          ggforce_0.5.0          MASS_7.3-60.2          rappdirs_0.3.4         bibliometrixData_0.3.0
+#&gt;  [56] tools_4.4.1            otel_0.2.0             stopwords_2.3          zip_2.3.3              httpuv_1.6.17         
+#&gt;  [61] rentrez_1.2.4          promises_1.5.0         grid_4.4.1             stringdist_0.9.17      reshape2_1.4.5        
+#&gt;  [66] generics_0.1.4         gtable_0.3.6           tzdb_0.5.0             rscopus_0.9.0          ca_0.71.1             
+#&gt;  [71] data.table_1.18.4      hms_1.1.4              xml2_1.5.2             utf8_1.2.6             ggrepel_0.9.8         
+#&gt;  [76] pillar_1.11.1          nsyllable_1.0.1        vroom_1.7.1            later_1.4.8            tweenr_2.0.3          
+#&gt;  [81] brand.yml_0.1.0        lattice_0.22-6         FNN_1.1.4.1            bit_4.6.0              tidyselect_1.2.1      
+#&gt;  [86] tm_0.7-18              miniUI_0.1.2           downlit_0.4.5          knitr_1.51             gridExtra_2.3         
+#&gt;  [91] NLP_0.3-2              bookdown_0.46          stats4_4.4.1           crul_1.6.0             xfun_0.57             
+#&gt;  [96] graphlayouts_1.2.3     matrixStats_1.5.0      DT_0.34.0              humaniformat_0.6.0     stringi_1.8.7         
+#&gt; [101] lazyeval_0.2.3         qpdf_1.4.1             yaml_2.3.12            evaluate_1.0.5         codetools_0.2-20      
+#&gt; [106] httpcode_0.3.0         cli_3.6.6              xtable_1.8-8           jquerylib_0.1.4        dichromat_2.0-0.1     
+#&gt; [111] Rcpp_1.1.1-1.1         readxl_1.4.5           triebeard_0.4.1        XML_3.99-0.23          parallel_4.4.1        
+#&gt; [116] assertthat_0.2.1       pubmedR_1.0.2          slam_0.1-55            viridisLite_0.4.3      scales_1.4.0          
+#&gt; [121] crayon_1.5.3           openxlsx_4.2.8.1       rlang_1.2.0            fastmatch_1.1-8</code></pre>
+
+</div>
+</div>
+<!-- Dark/light mode toggle -->
+<div class="sticky-item">
+  <button type="button" id="mode-switch" class="btn-circle-mode" aria-label="Toggle dark mode">
+    <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+  </button>
+</div>
+
+<script>
+  (function () {
+    var stored = localStorage.getItem('themeMode');
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var initial = stored || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', initial);
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var btn = document.getElementById('mode-switch');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('themeMode', next);
+      });
+    });
+  })();
+</script><!-- Per-chapter PDF download button --><script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!file || file === ".pdf") return;
+    var btn = document.createElement("a");
+    btn.href = "pdf-chapters/" + file;
+    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+    btn.style = "float:right;margin-top:0.5em;";
+    btn.textContent = "⬇ Download this chapter (PDF)";
+    var header = document.querySelector("main h1, .page-inner h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      header.appendChild(btn);
+    }
+  });
+</script><!-- Footer attribution --><div class="bookdown-attribution">
+  This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
+</div>
+  <div class="chapter-nav">
+<div class="prev"><a href="keyword-extraction.html"><span class="header-section-number">24</span> Keyword Extraction</a></div>
+<div class="next"><a href="detecting-emerging-topics.html"><span class="header-section-number">26</span> Detecting Emerging Topics</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#embeddings-for-scientometrics"><span class="header-section-number">25</span> Embeddings for Scientometrics</a></li>
+<li><a class="nav-link" href="#embed-objectives"><span class="header-section-number">25.1</span> Learning objectives</a></li>
+<li><a class="nav-link" href="#embed-setup"><span class="header-section-number">25.2</span> Setup</a></li>
+<li><a class="nav-link" href="#embed-background"><span class="header-section-number">25.3</span> Conceptual background</a></li>
+<li>
+<a class="nav-link" href="#embed-example"><span class="header-section-number">25.4</span> Worked example</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#preparing-text-data"><span class="header-section-number">25.4.1</span> Preparing text data</a></li>
+<li><a class="nav-link" href="#training-word2vec-embeddings"><span class="header-section-number">25.4.2</span> Training word2vec embeddings</a></li>
+<li><a class="nav-link" href="#computing-document-embeddings-via-mean-pooling"><span class="header-section-number">25.4.3</span> Computing document embeddings via mean pooling</a></li>
+<li><a class="nav-link" href="#dimensionality-reduction-with-umap"><span class="header-section-number">25.4.4</span> Dimensionality reduction with UMAP</a></li>
+<li><a class="nav-link" href="#document-similarity-search"><span class="header-section-number">25.4.5</span> Document similarity search</a></li>
+<li><a class="nav-link" href="#embedding-clusters-vs.-citation-impact"><span class="header-section-number">25.4.6</span> Embedding clusters vs. citation impact</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#embed-diagnostics"><span class="header-section-number">25.5</span> Diagnostics and interpretation</a></li>
+<li><a class="nav-link" href="#embed-limitations"><span class="header-section-number">25.6</span> Limitations and responsible use</a></li>
+<li><a class="nav-link" href="#limitations-and-responsible-use-23"><span class="header-section-number">25.7</span> Limitations and responsible use</a></li>
+<li><a class="nav-link" href="#embed-pitfalls"><span class="header-section-number">25.8</span> Common pitfalls</a></li>
+<li><a class="nav-link" href="#common-pitfalls-23"><span class="header-section-number">25.9</span> Common pitfalls</a></li>
+<li><a class="nav-link" href="#embed-exercises"><span class="header-section-number">25.10</span> Exercises</a></li>
+<li><a class="nav-link" href="#solutions-23"><span class="header-section-number">25.11</span> Solutions</a></li>
+<li><a class="nav-link" href="#embed-reading"><span class="header-section-number">25.12</span> Further reading</a></li>
+<li><a class="nav-link" href="#embed-sessioninfo"><span class="header-section-number">25.13</span> Session info</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/scientometrics-in-r/blob/main/chapters/24-embeddings-scientometrics.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/scientometrics-in-r/edit/main/chapters/24-embeddings-scientometrics.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

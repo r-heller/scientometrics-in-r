@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 26 Detecting Emerging Topics | Scientometrics in R</title>
+<meta name="author" content="R. Heller">
+<meta name="description" content="26.1 Learning objectives After completing this chapter, you will be able to: Define what constitutes an “emerging topic” in scientometric terms Apply burst detection to keyword time series Track...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 26 Detecting Emerging Topics | Scientometrics in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/scientometrics-in-r/detecting-emerging-topics.html">
+<meta property="og:image" content="https://r-heller.github.io/scientometrics-in-r/images/cover.png">
+<meta property="og:description" content="26.1 Learning objectives After completing this chapter, you will be able to: Define what constitutes an “emerging topic” in scientometric terms Apply burst detection to keyword time series Track...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 26 Detecting Emerging Topics | Scientometrics in R">
+<meta name="twitter:description" content="26.1 Learning objectives After completing this chapter, you will be able to: Define what constitutes an “emerging topic” in scientometric terms Apply burst detection to keyword time series Track...">
+<meta name="twitter:image" content="https://r-heller.github.io/scientometrics-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><link href="libs/vis-9.1.0/vis-network.min.css" rel="stylesheet">
+<script src="libs/vis-9.1.0/vis-network.min.js"></script><script src="libs/visNetwork-binding-2.1.4/visNetwork.js"></script><link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="libs/plotly-binding-4.12.0/plotly.js"></script><script src="libs/typedarray-0.1/typedarray.min.js"></script><link href="libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="libs/crosstalk-1.2.2/js/crosstalk.min.js"></script><link href="libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="libs/plotly-main-2.25.2/plotly-latest.min.js"></script><link href="libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+<script src="libs/datatables-binding-0.34.0/datatables.js"></script><link href="libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet">
+<script src="libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script><link href="libs/nouislider-7.0.10/jquery.nouislider.min.css" rel="stylesheet">
+<script src="libs/nouislider-7.0.10/jquery.nouislider.min.js"></script><link href="libs/selectize-0.12.0/selectize.bootstrap3.css" rel="stylesheet">
+<script src="libs/selectize-0.12.0/selectize.min.js"></script><link href="libs/dt-plugin-searchhighlight-1.13.6/source.css" rel="stylesheet">
+<script src="libs/dt-plugin-searchhighlight-1.13.6/jquery.highlight.js"></script><script src="libs/dt-plugin-searchhighlight-1.13.6/source.min.js"></script><!-- Fonts (Hugo Coder set) --><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Local Font Awesome 6 (woff2 in style/webfonts/) --><link rel="stylesheet" href="style/font-awesome.min.css">
+<!-- Mermaid (for diagram chunks in chapter 0) --><script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+<link rel="stylesheet" href="style/font-awesome.min.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Bibliometrics, Network Science, and Research Evaluation">Scientometrics in R</a>:
+        <small class="text-muted">Bibliometrics, Network Science, and Research Evaluation</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Welcome!</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="find-your-method.html"><span class="header-section-number">1</span> Find Your Method</a></li>
+<li class="book-part">Foundations</li>
+<li><a class="" href="what-is-scientometrics.html"><span class="header-section-number">2</span> What Is Scientometrics?</a></li>
+<li><a class="" href="theoretical-underpinnings.html"><span class="header-section-number">3</span> Theoretical Underpinnings</a></li>
+<li><a class="" href="ethics-and-responsible-metrics.html"><span class="header-section-number">4</span> Ethics and Responsible Metrics</a></li>
+<li><a class="" href="data-sources-compared.html"><span class="header-section-number">5</span> Data Sources Compared</a></li>
+<li class="book-part">Data Acquisition in R</li>
+<li><a class="" href="apis-and-packages.html"><span class="header-section-number">6</span> APIs and Packages</a></li>
+<li><a class="" href="parsing-native-exports.html"><span class="header-section-number">7</span> Parsing Native Exports</a></li>
+<li><a class="" href="building-reproducible-corpora.html"><span class="header-section-number">8</span> Building Reproducible Corpora</a></li>
+<li><a class="" href="working-with-full-text.html"><span class="header-section-number">9</span> Working with Full Text</a></li>
+<li class="book-part">Core Bibliometric Analysis</li>
+<li><a class="" href="descriptive-bibliometrics.html"><span class="header-section-number">10</span> Descriptive Bibliometrics</a></li>
+<li><a class="" href="productivity-and-impact-indicators.html"><span class="header-section-number">11</span> Productivity and Impact Indicators</a></li>
+<li><a class="" href="journal-metrics.html"><span class="header-section-number">12</span> Journal Metrics</a></li>
+<li><a class="" href="author-level-analysis-and-disambiguation.html"><span class="header-section-number">13</span> Author-Level Analysis and Disambiguation</a></li>
+<li><a class="" href="institutional-and-country-analysis.html"><span class="header-section-number">14</span> Institutional and Country Analysis</a></li>
+<li><a class="" href="temporal-analysis-and-citation-aging.html"><span class="header-section-number">15</span> Temporal Analysis and Citation Aging</a></li>
+<li class="book-part">Network &amp; Mapping Methods</li>
+<li><a class="" href="co-authorship-networks.html"><span class="header-section-number">16</span> Co-authorship Networks</a></li>
+<li><a class="" href="co-citation-and-bibliographic-coupling.html"><span class="header-section-number">17</span> Co-citation and Bibliographic Coupling</a></li>
+<li><a class="" href="co-word-and-keyword-co-occurrence.html"><span class="header-section-number">18</span> Co-word and Keyword Co-occurrence</a></li>
+<li><a class="" href="community-detection-and-backbone-extraction.html"><span class="header-section-number">19</span> Community Detection and Backbone Extraction</a></li>
+<li><a class="" href="science-mapping-and-overlay-maps.html"><span class="header-section-number">20</span> Science Mapping and Overlay Maps</a></li>
+<li><a class="" href="network-visualization-and-interoperability.html"><span class="header-section-number">21</span> Network Visualization and Interoperability</a></li>
+<li class="book-part">Text &amp; Topic Analysis</li>
+<li><a class="" href="text-mining-bibliographic-corpora.html"><span class="header-section-number">22</span> Text Mining Bibliographic Corpora</a></li>
+<li><a class="" href="topic-modeling.html"><span class="header-section-number">23</span> Topic Modeling</a></li>
+<li><a class="" href="keyword-extraction.html"><span class="header-section-number">24</span> Keyword Extraction</a></li>
+<li><a class="" href="embeddings-for-scientometrics.html"><span class="header-section-number">25</span> Embeddings for Scientometrics</a></li>
+<li><a class="active" href="detecting-emerging-topics.html"><span class="header-section-number">26</span> Detecting Emerging Topics</a></li>
+<li class="book-part">Advanced Topics</li>
+<li><a class="" href="altmetrics.html"><span class="header-section-number">27</span> Altmetrics</a></li>
+<li><a class="" href="open-science-indicators.html"><span class="header-section-number">28</span> Open Science Indicators</a></li>
+<li><a class="" href="gender-and-equity-analysis.html"><span class="header-section-number">29</span> Gender and Equity Analysis</a></li>
+<li><a class="" href="retraction-analysis.html"><span class="header-section-number">30</span> Retraction Analysis</a></li>
+<li><a class="" href="funding-analysis-and-grant-to-publication-linkage.html"><span class="header-section-number">31</span> Funding Analysis and Grant-to-Publication Linkage</a></li>
+<li><a class="" href="patentpaper-linkages.html"><span class="header-section-number">32</span> Patent–Paper Linkages</a></li>
+<li><a class="" href="causal-inference-in-scientometrics.html"><span class="header-section-number">33</span> Causal Inference in Scientometrics</a></li>
+<li><a class="" href="reproducibility-rrids-and-badges.html"><span class="header-section-number">34</span> Reproducibility, RRIDs, and Badges</a></li>
+<li class="book-part">Production &amp; Reporting</li>
+<li><a class="" href="reproducible-pipelines.html"><span class="header-section-number">35</span> Reproducible Pipelines</a></li>
+<li><a class="" href="interactive-dashboards.html"><span class="header-section-number">36</span> Interactive Dashboards</a></li>
+<li><a class="" href="parameterized-quarto-reports.html"><span class="header-section-number">37</span> Parameterized Quarto Reports</a></li>
+<li><a class="" href="building-a-bibliometric-shiny-app.html"><span class="header-section-number">38</span> Building a Bibliometric Shiny App</a></li>
+<li class="book-part">Case Studies</li>
+<li><a class="" href="case-study-1-crispr-field-review-20102024.html"><span class="header-section-number">39</span> Case Study 1: CRISPR Field Review (2010–2024)</a></li>
+<li><a class="" href="case-study-2-institutional-benchmarking.html"><span class="header-section-number">40</span> Case Study 2: Institutional Benchmarking</a></li>
+<li><a class="" href="case-study-3-journal-portfolio-analysis.html"><span class="header-section-number">41</span> Case Study 3: Journal Portfolio Analysis</a></li>
+<li><a class="" href="case-study-4-gender-gap-in-scientific-publishing.html"><span class="header-section-number">42</span> Case Study 4: Gender Gap in Scientific Publishing</a></li>
+<li><a class="" href="case-study-5-detecting-emerging-topics.html"><span class="header-section-number">43</span> Case Study 5: Detecting Emerging Topics</a></li>
+<li class="book-part">Appendix</li>
+<li><a class="" href="r-setup-renv-and-docker.html"><span class="header-section-number">A</span> R Setup, renv, and Docker</a></li>
+<li><a class="" href="sql-primer-for-the-openalex-snapshot.html"><span class="header-section-number">B</span> SQL Primer for the OpenAlex Snapshot</a></li>
+<li><a class="" href="indicator-crosswalk-across-databases.html"><span class="header-section-number">C</span> Indicator Crosswalk Across Databases</a></li>
+<li><a class="" href="cheatsheets-and-quick-reference.html"><span class="header-section-number">D</span> Cheatsheets and Quick Reference</a></li>
+<li><a class="" href="exercise-solutions.html"><span class="header-section-number">E</span> Exercise Solutions</a></li>
+<li><a class="" href="solutions.html"><span class="header-section-number">F</span> Exercise Solutions</a></li>
+<li><a class="" href="glossary.html">Glossary</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/scientometrics-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="detecting-emerging-topics" class="section level1" number="26">
+<h1>
+<span class="header-section-number">26</span> Detecting Emerging Topics<a class="anchor" aria-label="anchor" href="#detecting-emerging-topics"><i class="fas fa-link"></i></a>
+</h1>
+<div id="emerging-objectives" class="section level2" number="26.1">
+<h2>
+<span class="header-section-number">26.1</span> Learning objectives<a class="anchor" aria-label="anchor" href="#emerging-objectives"><i class="fas fa-link"></i></a>
+</h2>
+<p>After completing this chapter, you will be able to:</p>
+<ul>
+<li>Define what constitutes an “emerging topic” in scientometric terms</li>
+<li>Apply burst detection to keyword time series</li>
+<li>Track topic prevalence over time using rolling-window analysis</li>
+<li>Compute novelty and transience indicators for documents</li>
+<li>Distinguish genuine emergence from database coverage artefacts</li>
+</ul>
+</div>
+<div id="emerging-setup" class="section level2" number="26.2">
+<h2>
+<span class="header-section-number">26.2</span> Setup<a class="anchor" aria-label="anchor" href="#emerging-setup"><i class="fas fa-link"></i></a>
+</h2>
+<div class="sourceCode" id="cb388"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/openalexR">openalexR</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://quanteda.io">quanteda</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://quanteda.io">quanteda.textstats</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://juliasilge.github.io/tidytext/">tidytext</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://glue.tidyverse.org/">glue</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://gt.rstudio.com">gt</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">20260509</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"api_helpers.R"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"utils.R"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"sci_palette.R"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="emerging-background" class="section level2" number="26.3">
+<h2>
+<span class="header-section-number">26.3</span> Conceptual background<a class="anchor" aria-label="anchor" href="#emerging-background"><i class="fas fa-link"></i></a>
+</h2>
+<p>An <strong>emerging topic</strong> is a research area experiencing rapid growth in attention — new publications, new keywords, increasing citation flows. Detecting emergence early has strategic value for researchers, funders, and policymakers. But distinguishing genuine intellectual emergence from database artefacts (a journal newly indexed, a conference proceedings batch-imported) requires careful methodology.</p>
+<p><strong>Burst detection</strong> formalises the intuition that a keyword or topic has “burst” when its frequency increases sharply relative to baseline. <span class="citation">Kleinberg (<a href="references.html#ref-kleinberg2003">2003</a>)</span> introduced a state-based model: a keyword exists in a “normal” state (baseline frequency) or a “burst” state (elevated frequency). The algorithm identifies time intervals during which each keyword is in its burst state. Cascading bursts at multiple time scales reveal both short-lived spikes and sustained surges.</p>
+<p><strong>Temporal topic tracking</strong> extends topic models (<a href="topic-modeling.html#topicmodel-background">23.3</a>) by fitting models to time-sliced corpora or using dynamic topic models where topic distributions evolve smoothly over time. A simpler approach uses rolling windows: fit a model to each 3-year window and track how topic proportions change between windows.</p>
+<p><strong>Novelty and transience indicators</strong> operate at the document level. A paper is <em>novel</em> if its content (measured by embedding distance or topic distribution) is distant from prior literature. A paper is <em>transient</em> if it is distant from subsequent literature — it attracted brief attention but did not generate follow-on work. Genuinely emerging topics are characterised by papers that are novel <em>and</em> non-transient: they introduce new ideas that the field continues to develop.</p>
+<p><strong>Growth-rate metrics</strong> are the simplest emergence indicators: the year-over-year growth rate of publications containing a keyword, the acceleration of citation rates, or the increase in the number of distinct institutions working on a topic. These are intuitive but sensitive to baseline effects (a keyword going from 1 to 3 papers is 200% growth but not meaningful emergence).</p>
+</div>
+<div id="emerging-example" class="section level2" number="26.4">
+<h2>
+<span class="header-section-number">26.4</span> Worked example<a class="anchor" aria-label="anchor" href="#emerging-example"><i class="fas fa-link"></i></a>
+</h2>
+<div id="preparing-temporal-keyword-data" class="section level3" number="26.4.1">
+<h3>
+<span class="header-section-number">26.4.1</span> Preparing temporal keyword data<a class="anchor" aria-label="anchor" href="#preparing-temporal-keyword-data"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb389"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">works</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html">oa_fetch</a></span><span class="op">(</span></span>
+<span>  entity <span class="op">=</span> <span class="st">"works"</span>,</span>
+<span>  primary_location.source.id <span class="op">=</span> <span class="st">"S148561398"</span>,</span>
+<span>  from_publication_date <span class="op">=</span> <span class="st">"2015-01-01"</span>,</span>
+<span>  to_publication_date <span class="op">=</span> <span class="st">"2023-12-31"</span>,</span>
+<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sample <span class="op">=</span> <span class="fl">600</span>, seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">text_df</span> <span class="op">&lt;-</span> <span class="va">works</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">abstract</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nchar.html">nchar</a></span><span class="op">(</span><span class="va">abstract</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">50</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/transmute.html">transmute</a></span><span class="op">(</span></span>
+<span>    doc_id <span class="op">=</span> <span class="va">id</span>,</span>
+<span>    text <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">display_name</span>, <span class="va">abstract</span>, sep <span class="op">=</span> <span class="st">". "</span><span class="op">)</span>,</span>
+<span>    year <span class="op">=</span> <span class="fu"><a href="https://lubridate.tidyverse.org/reference/year.html">year</a></span><span class="op">(</span><span class="va">publication_date</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Documents: {nrow(text_df)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Documents: 114</code></pre>
+<div class="sourceCode" id="cb391"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Year range: {min(text_df$year)}--{max(text_df$year)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Year range: 2015--2023</code></pre>
+<div class="sourceCode" id="cb393"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">corp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/corpus.html">corpus</a></span><span class="op">(</span><span class="va">text_df</span>, docid_field <span class="op">=</span> <span class="st">"doc_id"</span>, text_field <span class="op">=</span> <span class="st">"text"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://quanteda.io/reference/docvars.html">docvars</a></span><span class="op">(</span><span class="va">corp</span>, <span class="st">"year"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">text_df</span><span class="op">$</span><span class="va">year</span></span>
+<span></span>
+<span><span class="va">toks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/tokens.html">tokens</a></span><span class="op">(</span><span class="va">corp</span>, remove_punct <span class="op">=</span> <span class="cn">TRUE</span>, remove_numbers <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://quanteda.io/reference/tokens_tolower.html">tokens_tolower</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://quanteda.io/reference/tokens_select.html">tokens_remove</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/stopwords/man/stopwords.html">stopwords</a></span><span class="op">(</span><span class="st">"en"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://quanteda.io/reference/tokens_select.html">tokens_remove</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"study"</span>, <span class="st">"paper"</span>, <span class="st">"results"</span>, <span class="st">"research"</span>, <span class="st">"analysis"</span>,</span>
+<span>                   <span class="st">"also"</span>, <span class="st">"however"</span>, <span class="st">"using"</span>, <span class="st">"based"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">dfmat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/dfm.html">dfm</a></span><span class="op">(</span><span class="va">toks</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://quanteda.io/reference/dfm_trim.html">dfm_trim</a></span><span class="op">(</span>min_termfreq <span class="op">=</span> <span class="fl">10</span>, min_docfreq <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">kw_by_year</span> <span class="op">&lt;-</span> <span class="fu">quanteda</span><span class="fu">::</span><span class="fu"><a href="https://quanteda.io/reference/convert.html">convert</a></span><span class="op">(</span><span class="fu"><a href="https://quanteda.io/reference/dfm_group.html">dfm_group</a></span><span class="op">(</span><span class="va">dfmat</span>, groups <span class="op">=</span> <span class="va">year</span><span class="op">)</span>, to <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span><span class="op">-</span><span class="va">doc_id</span>, names_to <span class="op">=</span> <span class="st">"term"</span>, values_to <span class="op">=</span> <span class="st">"count"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html">rename</a></span><span class="op">(</span>year <span class="op">=</span> <span class="va">doc_id</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Terms tracked: {n_distinct(kw_by_year$term)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Terms tracked: 243</code></pre>
+</div>
+<div id="growth-rate-detection" class="section level3" number="26.4.2">
+<h3>
+<span class="header-section-number">26.4.2</span> Growth rate detection<a class="anchor" aria-label="anchor" href="#growth-rate-detection"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb395"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">growth</span> <span class="op">&lt;-</span> <span class="va">kw_by_year</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">term</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
+<span>    growth <span class="op">=</span> <span class="op">(</span><span class="va">count</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html">lag</a></span><span class="op">(</span><span class="va">count</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">pmax</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html">lag</a></span><span class="op">(</span><span class="va">count</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>    total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">count</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">growth</span><span class="op">)</span>, <span class="va">total</span> <span class="op">&gt;=</span> <span class="fl">20</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">recent_growth</span> <span class="op">&lt;-</span> <span class="va">growth</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">year</span> <span class="op">&gt;=</span> <span class="fl">2021</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">term</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>mean_growth <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">growth</span><span class="op">)</span>, total <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html">first</a></span><span class="op">(</span><span class="va">total</span><span class="op">)</span>,</span>
+<span>            .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">mean_growth</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">mean_growth</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">recent_growth</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="fl">15</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/fmt_percent.html">fmt_percent</a></span><span class="op">(</span>columns <span class="op">=</span> <span class="va">mean_growth</span>, decimals <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
+<div id="wuolgkrdww" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#wuolgkrdww table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#wuolgkrdww thead, #wuolgkrdww tbody, #wuolgkrdww tfoot, #wuolgkrdww tr, #wuolgkrdww td, #wuolgkrdww th {
+  border-style: none;
+}
+
+#wuolgkrdww p {
+  margin: 0;
+  padding: 0;
+}
+
+#wuolgkrdww .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#wuolgkrdww .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#wuolgkrdww .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#wuolgkrdww .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#wuolgkrdww .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#wuolgkrdww .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#wuolgkrdww .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#wuolgkrdww .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#wuolgkrdww .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#wuolgkrdww .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#wuolgkrdww .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#wuolgkrdww .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#wuolgkrdww .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#wuolgkrdww .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#wuolgkrdww .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wuolgkrdww .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#wuolgkrdww .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#wuolgkrdww .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#wuolgkrdww .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wuolgkrdww .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#wuolgkrdww .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wuolgkrdww .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#wuolgkrdww .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wuolgkrdww .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wuolgkrdww .gt_left {
+  text-align: left;
+}
+
+#wuolgkrdww .gt_center {
+  text-align: center;
+}
+
+#wuolgkrdww .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#wuolgkrdww .gt_font_normal {
+  font-weight: normal;
+}
+
+#wuolgkrdww .gt_font_bold {
+  font-weight: bold;
+}
+
+#wuolgkrdww .gt_font_italic {
+  font-style: italic;
+}
+
+#wuolgkrdww .gt_super {
+  font-size: 65%;
+}
+
+#wuolgkrdww .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#wuolgkrdww .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#wuolgkrdww .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#wuolgkrdww .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#wuolgkrdww .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#wuolgkrdww .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#wuolgkrdww .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#wuolgkrdww .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#wuolgkrdww div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<div class="inline-table"><table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead><tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="term">term</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="mean_growth">mean_growth</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="total">total</th>
+    </tr></thead>
+<tbody class="gt_table_body">
+<tr>
+<td headers="term" class="gt_row gt_left">network</td>
+<td headers="mean_growth" class="gt_row gt_right">475%</td>
+<td headers="total" class="gt_row gt_right">38</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">number</td>
+<td headers="mean_growth" class="gt_row gt_right">413%</td>
+<td headers="total" class="gt_row gt_right">43</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">sciences</td>
+<td headers="mean_growth" class="gt_row gt_right">300%</td>
+<td headers="total" class="gt_row gt_right">33</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">index</td>
+<td headers="mean_growth" class="gt_row gt_right">243%</td>
+<td headers="total" class="gt_row gt_right">23</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">medical</td>
+<td headers="mean_growth" class="gt_row gt_right">234%</td>
+<td headers="total" class="gt_row gt_right">32</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">p</td>
+<td headers="mean_growth" class="gt_row gt_right">222%</td>
+<td headers="total" class="gt_row gt_right">24</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">available</td>
+<td headers="mean_growth" class="gt_row gt_right">216%</td>
+<td headers="total" class="gt_row gt_right">20</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">gender</td>
+<td headers="mean_growth" class="gt_row gt_right">200%</td>
+<td headers="total" class="gt_row gt_right">23</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">covid-19</td>
+<td headers="mean_growth" class="gt_row gt_right">155%</td>
+<td headers="total" class="gt_row gt_right">31</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">structure</td>
+<td headers="mean_growth" class="gt_row gt_right">144%</td>
+<td headers="total" class="gt_row gt_right">20</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">networks</td>
+<td headers="mean_growth" class="gt_row gt_right">119%</td>
+<td headers="total" class="gt_row gt_right">29</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">countries</td>
+<td headers="mean_growth" class="gt_row gt_right">113%</td>
+<td headers="total" class="gt_row gt_right">36</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">data</td>
+<td headers="mean_growth" class="gt_row gt_right">111%</td>
+<td headers="total" class="gt_row gt_right">104</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">twitter</td>
+<td headers="mean_growth" class="gt_row gt_right">100%</td>
+<td headers="total" class="gt_row gt_right">26</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">impact</td>
+<td headers="mean_growth" class="gt_row gt_right">96%</td>
+<td headers="total" class="gt_row gt_right">82</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div id="simple-burst-detection" class="section level3" number="26.4.3">
+<h3>
+<span class="header-section-number">26.4.3</span> Simple burst detection<a class="anchor" aria-label="anchor" href="#simple-burst-detection"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb396"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">detect_burst</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">counts</span>, <span class="va">threshold</span> <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">mean_count</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span></span>
+<span>  <span class="va">sd_count</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">sd_count</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">z_scores</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">counts</span> <span class="op">-</span> <span class="va">mean_count</span><span class="op">)</span> <span class="op">/</span> <span class="va">sd_count</span></span>
+<span>  <span class="va">z_scores</span> <span class="op">&gt;</span> <span class="va">threshold</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">bursts</span> <span class="op">&lt;-</span> <span class="va">kw_by_year</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">term</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">n</a></span><span class="op">(</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">5</span>, <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">count</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">20</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>is_burst <span class="op">=</span> <span class="fu">detect_burst</span><span class="op">(</span><span class="va">count</span>, threshold <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">burst_summary</span> <span class="op">&lt;-</span> <span class="va">bursts</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">is_burst</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">term</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span></span>
+<span>    burst_years <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">year</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>,</span>
+<span>    max_count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">count</span><span class="op">)</span>,</span>
+<span>    .groups <span class="op">=</span> <span class="st">"drop"</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">max_count</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">burst_summary</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="fl">15</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div id="vhdvwtvjrx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#vhdvwtvjrx table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#vhdvwtvjrx thead, #vhdvwtvjrx tbody, #vhdvwtvjrx tfoot, #vhdvwtvjrx tr, #vhdvwtvjrx td, #vhdvwtvjrx th {
+  border-style: none;
+}
+
+#vhdvwtvjrx p {
+  margin: 0;
+  padding: 0;
+}
+
+#vhdvwtvjrx .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#vhdvwtvjrx .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#vhdvwtvjrx .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#vhdvwtvjrx .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#vhdvwtvjrx .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#vhdvwtvjrx .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vhdvwtvjrx .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#vhdvwtvjrx .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#vhdvwtvjrx .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#vhdvwtvjrx .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#vhdvwtvjrx .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#vhdvwtvjrx .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#vhdvwtvjrx .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#vhdvwtvjrx .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#vhdvwtvjrx .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#vhdvwtvjrx .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#vhdvwtvjrx .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#vhdvwtvjrx .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#vhdvwtvjrx .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vhdvwtvjrx .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#vhdvwtvjrx .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#vhdvwtvjrx .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#vhdvwtvjrx .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vhdvwtvjrx .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#vhdvwtvjrx .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#vhdvwtvjrx .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vhdvwtvjrx .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vhdvwtvjrx .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#vhdvwtvjrx .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vhdvwtvjrx .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#vhdvwtvjrx .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vhdvwtvjrx .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#vhdvwtvjrx .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vhdvwtvjrx .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#vhdvwtvjrx .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vhdvwtvjrx .gt_left {
+  text-align: left;
+}
+
+#vhdvwtvjrx .gt_center {
+  text-align: center;
+}
+
+#vhdvwtvjrx .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#vhdvwtvjrx .gt_font_normal {
+  font-weight: normal;
+}
+
+#vhdvwtvjrx .gt_font_bold {
+  font-weight: bold;
+}
+
+#vhdvwtvjrx .gt_font_italic {
+  font-style: italic;
+}
+
+#vhdvwtvjrx .gt_super {
+  font-size: 65%;
+}
+
+#vhdvwtvjrx .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#vhdvwtvjrx .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#vhdvwtvjrx .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#vhdvwtvjrx .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#vhdvwtvjrx .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#vhdvwtvjrx .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#vhdvwtvjrx .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#vhdvwtvjrx .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#vhdvwtvjrx div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<div class="inline-table"><table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead><tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="term">term</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="burst_years">burst_years</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="max_count">max_count</th>
+    </tr></thead>
+<tbody class="gt_table_body">
+<tr>
+<td headers="term" class="gt_row gt_left">data</td>
+<td headers="burst_years" class="gt_row gt_right">2022</td>
+<td headers="max_count" class="gt_row gt_right">47</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">scientific</td>
+<td headers="burst_years" class="gt_row gt_right">2021</td>
+<td headers="max_count" class="gt_row gt_right">28</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">impact</td>
+<td headers="burst_years" class="gt_row gt_right">2022</td>
+<td headers="max_count" class="gt_row gt_right">26</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">journals</td>
+<td headers="burst_years" class="gt_row gt_right">2023</td>
+<td headers="max_count" class="gt_row gt_right">26</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">publications</td>
+<td headers="burst_years" class="gt_row gt_right">2022</td>
+<td headers="max_count" class="gt_row gt_right">26</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">articles</td>
+<td headers="burst_years" class="gt_row gt_right">2023</td>
+<td headers="max_count" class="gt_row gt_right">22</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">citation</td>
+<td headers="burst_years" class="gt_row gt_right">2022</td>
+<td headers="max_count" class="gt_row gt_right">22</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">papers</td>
+<td headers="burst_years" class="gt_row gt_right">2022</td>
+<td headers="max_count" class="gt_row gt_right">22</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">covid-19</td>
+<td headers="burst_years" class="gt_row gt_right">2021</td>
+<td headers="max_count" class="gt_row gt_right">21</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">can</td>
+<td headers="burst_years" class="gt_row gt_right">2022</td>
+<td headers="max_count" class="gt_row gt_right">18</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">network</td>
+<td headers="burst_years" class="gt_row gt_right">2022</td>
+<td headers="max_count" class="gt_row gt_right">16</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">open</td>
+<td headers="burst_years" class="gt_row gt_right">2020</td>
+<td headers="max_count" class="gt_row gt_right">16</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">p</td>
+<td headers="burst_years" class="gt_row gt_right">2022</td>
+<td headers="max_count" class="gt_row gt_right">16</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">number</td>
+<td headers="burst_years" class="gt_row gt_right">2022</td>
+<td headers="max_count" class="gt_row gt_right">15</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">field</td>
+<td headers="burst_years" class="gt_row gt_right">2020</td>
+<td headers="max_count" class="gt_row gt_right">14</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div id="visualising-keyword-trajectories" class="section level3" number="26.4.4">
+<h3>
+<span class="header-section-number">26.4.4</span> Visualising keyword trajectories<a class="anchor" aria-label="anchor" href="#visualising-keyword-trajectories"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb397"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">top_burst_terms</span> <span class="op">&lt;-</span> <span class="va">burst_summary</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html">pull</a></span><span class="op">(</span><span class="va">term</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">burst_plot_data</span> <span class="op">&lt;-</span> <span class="va">bursts</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">term</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="va">top_burst_terms</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">burst_plot_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span>, y <span class="op">=</span> <span class="va">count</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html">geom_rect</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">burst_plot_data</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">is_burst</span><span class="op">)</span>,</span>
+<span>            <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>xmin <span class="op">=</span> <span class="va">year</span> <span class="op">-</span> <span class="fl">0.5</span>, xmax <span class="op">=</span> <span class="va">year</span> <span class="op">+</span> <span class="fl">0.5</span>,</span>
+<span>                ymin <span class="op">=</span> <span class="op">-</span><span class="cn">Inf</span>, ymax <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span>,</span>
+<span>            fill <span class="op">=</span> <span class="st">"gold"</span>, alpha <span class="op">=</span> <span class="fl">0.3</span>, inherit.aes <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span> <span class="va">term</span>, scales <span class="op">=</span> <span class="st">"free_y"</span>, ncol <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Year"</span>, y <span class="op">=</span> <span class="st">"Frequency"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_sci</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">9</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:25-fig-emerging-trajectories"></span>
+<img src="scientometrics-in-r_files/figure-html/25-fig-emerging-trajectories-1.png" alt="Line chart showing the frequency of several keywords over time. Burst periods (unusually high frequency) are highlighted with background shading." width="90%"><p class="caption">
+Figure 26.1: Temporal trajectories of emerging keywords with burst periods highlighted.
+</p>
+</div>
+</div>
+<div id="rolling-window-topic-tracking" class="section level3" number="26.4.5">
+<h3>
+<span class="header-section-number">26.4.5</span> Rolling-window topic tracking<a class="anchor" aria-label="anchor" href="#rolling-window-topic-tracking"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb398"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">window_size</span> <span class="op">&lt;-</span> <span class="fl">3</span></span>
+<span><span class="va">years</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">text_df</span><span class="op">$</span><span class="va">year</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">windows</span> <span class="op">&lt;-</span> <span class="va">years</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">years</span><span class="op">)</span> <span class="op">-</span> <span class="va">window_size</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">window_top_terms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map_dfr</a></span><span class="op">(</span><span class="va">windows</span>, <span class="kw">function</span><span class="op">(</span><span class="va">start_year</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">end_year</span> <span class="op">&lt;-</span> <span class="va">start_year</span> <span class="op">+</span> <span class="va">window_size</span> <span class="op">-</span> <span class="fl">1</span></span>
+<span>  <span class="va">docs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/docvars.html">docvars</a></span><span class="op">(</span><span class="va">dfmat</span>, <span class="st">"year"</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="va">start_year</span> <span class="op">&amp;</span></span>
+<span>          <span class="fu"><a href="https://quanteda.io/reference/docvars.html">docvars</a></span><span class="op">(</span><span class="va">dfmat</span>, <span class="st">"year"</span><span class="op">)</span> <span class="op">&lt;=</span> <span class="va">end_year</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">docs</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">10</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">top</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/topfeatures.html">topfeatures</a></span><span class="op">(</span><span class="va">dfmat</span><span class="op">[</span><span class="va">docs</span>, <span class="op">]</span>, <span class="fl">10</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>window <span class="op">=</span> <span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"{start_year}-{end_year}"</span><span class="op">)</span>,</span>
+<span>         term <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">top</span><span class="op">)</span>, frequency <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html">unname</a></span><span class="op">(</span><span class="va">top</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb399"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">window_top_terms</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">window</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_max</a></span><span class="op">(</span><span class="va">frequency</span>, n <span class="op">=</span> <span class="fl">8</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>term <span class="op">=</span> <span class="fu"><a href="https://juliasilge.github.io/tidytext/reference/reorder_within.html">reorder_within</a></span><span class="op">(</span><span class="va">term</span>, <span class="va">frequency</span>, <span class="va">window</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">frequency</span>, y <span class="op">=</span> <span class="va">term</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_col</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="fu">palette_sci</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span> <span class="va">window</span>, scales <span class="op">=</span> <span class="st">"free_y"</span>, ncol <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://juliasilge.github.io/tidytext/reference/reorder_within.html">scale_y_reordered</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Frequency"</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_sci</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:25-fig-emerging-windows"></span>
+<img src="scientometrics-in-r_files/figure-html/25-fig-emerging-windows-1.png" alt="Heatmap or faceted bar chart showing the top terms for each rolling time window, revealing which terms gain or lose prominence." width="90%"><p class="caption">
+Figure 26.2: Top terms in each 3-year rolling window, showing vocabulary evolution.
+</p>
+</div>
+</div>
+</div>
+<div id="emerging-diagnostics" class="section level2" number="26.5">
+<h2>
+<span class="header-section-number">26.5</span> Diagnostics and interpretation<a class="anchor" aria-label="anchor" href="#emerging-diagnostics"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Baseline effects</strong>: A keyword going from 2 to 6 occurrences shows 200% growth but may not represent meaningful emergence. Set minimum frequency thresholds before computing growth rates.</li>
+<li>
+<strong>Database artefacts</strong>: A newly indexed journal or a batch import of conference proceedings can create spurious “bursts”. Cross-check with independent evidence.</li>
+<li>
+<strong>Burst duration</strong>: Short bursts (1 year) may reflect a single influential paper or a special issue. Sustained bursts (3+ years) more likely indicate genuine emergence.</li>
+<li>
+<strong>Window sensitivity</strong>: Rolling-window results change with window width. Report the chosen width and test sensitivity with wider and narrower windows.</li>
+</ul>
+</div>
+<div id="emerging-limitations" class="section level2" number="26.6">
+<h2>
+<span class="header-section-number">26.6</span> Limitations and responsible use<a class="anchor" aria-label="anchor" href="#emerging-limitations"><i class="fas fa-link"></i></a>
+</h2>
+</div>
+<div id="limitations-and-responsible-use-24" class="section level2 callout callout-warn" number="26.7">
+<h2>
+<span class="header-section-number">26.7</span> Limitations and responsible use<a class="anchor" aria-label="anchor" href="#limitations-and-responsible-use-24"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Emergence is retrospective.</strong> By the time bibliometric methods detect emergence, the topic has already gained momentum. These methods identify “recently emerged” topics, not future breakthroughs.</li>
+<li>
+<strong>Coverage bias.</strong> OpenAlex coverage has expanded rapidly, meaning recent years have more records. Growth rates may reflect database growth rather than intellectual emergence <span class="citation">(<a href="references.html#ref-priem2022">Priem et al. 2022</a>)</span>.</li>
+<li>
+<strong>Language of emergence.</strong> English-language terms dominate; emerging topics in non-English literatures may be invisible until translated or adopted by English-language publications.</li>
+<li>
+<strong>Not predictive.</strong> Burst detection identifies past patterns. It does not predict which topics will continue growing. Many bursts are transient <span class="citation">(<a href="references.html#ref-kleinberg2003">Kleinberg 2003</a>)</span>.</li>
+<li>
+<strong>Strategic gaming.</strong> If emergence metrics are used for funding decisions, researchers may strategically choose “hot” keywords, creating feedback loops <span class="citation">(<a href="references.html#ref-hicks2015">Hicks et al. 2015</a>)</span>.</li>
+</ul>
+</div>
+<div id="emerging-pitfalls" class="section level2" number="26.8">
+<h2>
+<span class="header-section-number">26.8</span> Common pitfalls<a class="anchor" aria-label="anchor" href="#emerging-pitfalls"><i class="fas fa-link"></i></a>
+</h2>
+</div>
+<div id="common-pitfalls-24" class="section level2 callout callout-stop" number="26.9">
+<h2>
+<span class="header-section-number">26.9</span> Common pitfalls<a class="anchor" aria-label="anchor" href="#common-pitfalls-24"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Confusing absolute growth with relative emergence.</strong> A field that publishes 10,000 papers/year growing by 5% adds 500 papers. A niche area growing from 10 to 30 papers shows 200% growth. The niche area is “emerging” but the large field is adding more absolute volume.</li>
+<li>
+<strong>Not controlling for corpus growth.</strong> If the overall number of publications in the corpus grows, all keywords will grow. Use relative frequency (keyword count / total documents) rather than absolute counts.</li>
+<li>
+<strong>Overreacting to single-year spikes.</strong> One conference proceedings volume or special issue can create a one-year spike. Require multi-year sustained growth before declaring emergence.</li>
+<li>
+<strong>Ignoring synonyms.</strong> “Deep learning” and “neural networks” may both refer to the same emerging trend. Merge synonyms before analysis.</li>
+</ul>
+</div>
+<div id="emerging-exercises" class="section level2" number="26.10">
+<h2>
+<span class="header-section-number">26.10</span> Exercises<a class="anchor" aria-label="anchor" href="#emerging-exercises"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Relative burst detection.</strong> Modify the burst detection to use relative frequency (keyword proportion) instead of absolute counts. Do the same terms still burst?</p></li>
+<li><p><strong>Emergence by journal.</strong> Compare the most frequent emerging keywords in two different journals. Do they share emerging topics or focus on different frontiers?</p></li>
+<li><p><strong>Novelty scoring.</strong> For each document, compute its cosine distance to the centroid of all prior-year documents (using TF-IDF vectors). Plot novelty scores over time. Are recent papers becoming more or less novel?</p></li>
+<li><p><strong>Validation.</strong> Select 5 terms identified as “emerging” by burst detection. Search for qualitative evidence (review articles, conference themes) confirming their emergence. What is the false positive rate?</p></li>
+</ol>
+</div>
+<div id="solutions-24" class="section level2 callout callout-ok" number="26.11">
+<h2>
+<span class="header-section-number">26.11</span> Solutions<a class="anchor" aria-label="anchor" href="#solutions-24"><i class="fas fa-link"></i></a>
+</h2>
+<p>Solutions are provided in <a href="what-is-scientometrics.html#solutions">2.11</a>.</p>
+</div>
+<div id="emerging-reading" class="section level2" number="26.12">
+<h2>
+<span class="header-section-number">26.12</span> Further reading<a class="anchor" aria-label="anchor" href="#emerging-reading"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<span class="citation">Kleinberg (<a href="references.html#ref-kleinberg2003">2003</a>)</span> — Bursty patterns in temporal data: the foundational burst detection algorithm.</li>
+<li>
+<span class="citation">Solla Price (<a href="references.html#ref-price1963">1963</a>)</span> — Early observations on the growth of scientific literature and research fronts.</li>
+<li>
+<span class="citation">Priem et al. (<a href="references.html#ref-priem2022">2022</a>)</span> — OpenAlex temporal coverage patterns relevant to emergence detection.</li>
+<li>
+<span class="citation">Callon et al. (<a href="references.html#ref-callon1983">1983</a>)</span> — Co-word dynamics; an early approach to tracking topical evolution.</li>
+</ul>
+</div>
+<div id="emerging-sessioninfo" class="section level2" number="26.13">
+<h2>
+<span class="header-section-number">26.13</span> Session info<a class="anchor" aria-label="anchor" href="#emerging-sessioninfo"><i class="fas fa-link"></i></a>
+</h2>
+<div class="sourceCode" id="cb400"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; R version 4.4.1 (2024-06-14)
+#&gt; Platform: x86_64-pc-linux-gnu
+#&gt; Running under: Ubuntu 24.04.4 LTS
+#&gt; 
+#&gt; Matrix products: default
+#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+#&gt; 
+#&gt; locale:
+#&gt;  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8        LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8   
+#&gt;  [6] LC_MESSAGES=C.UTF-8    LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C           LC_TELEPHONE=C        
+#&gt; [11] LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+#&gt; 
+#&gt; time zone: UTC
+#&gt; tzcode source: system (glibc)
+#&gt; 
+#&gt; attached base packages:
+#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     
+#&gt; 
+#&gt; other attached packages:
+#&gt;  [1] uwot_0.2.4                Matrix_1.7-0              word2vec_0.4.1            stm_1.3.8                
+#&gt;  [5] topicmodels_0.2-17        quanteda.textstats_0.97.2 visNetwork_2.1.4          ggraph_2.2.2             
+#&gt;  [9] tidygraph_1.3.1           igraph_2.3.1              quanteda_4.4              pdftools_3.8.0           
+#&gt; [13] arrow_24.0.0              bibliometrix_5.3.0        RefManageR_1.4.0          bib2df_1.1.2.0           
+#&gt; [17] rcrossref_1.2.1           gt_1.3.0                  tidytext_0.4.3            glue_1.8.1               
+#&gt; [21] openalexR_3.0.1           lubridate_1.9.5           forcats_1.0.1             stringr_1.6.0            
+#&gt; [25] dplyr_1.2.1               purrr_1.2.2               readr_2.2.0               tidyr_1.3.2              
+#&gt; [29] tibble_3.3.1              ggplot2_4.0.3             tidyverse_2.0.0          
+#&gt; 
+#&gt; loaded via a namespace (and not attached):
+#&gt;   [1] bibtex_0.5.2           RColorBrewer_1.1-3     rstudioapi_0.18.0      jsonlite_2.0.0         magrittr_2.0.5        
+#&gt;   [6] modeltools_0.2-24      farver_2.1.2           rmarkdown_2.31         fs_2.1.0               vctrs_0.7.3           
+#&gt;  [11] memoise_2.0.1          askpass_1.2.1          base64enc_0.1-6        htmltools_0.5.9        contentanalysis_1.0.0 
+#&gt;  [16] curl_7.1.0             janeaustenr_1.0.0      cellranger_1.1.0       sass_0.4.10            bslib_0.10.0          
+#&gt;  [21] htmlwidgets_1.6.4      tokenizers_0.3.0       plyr_1.8.9             httr2_1.2.2            plotly_4.12.0         
+#&gt;  [26] cachem_1.1.0           dimensionsR_0.0.3      mime_0.13              lifecycle_1.0.5        pkgconfig_2.0.3       
+#&gt;  [31] R6_2.6.1               fastmap_1.2.0          shiny_1.13.0           digest_0.6.39          patchwork_1.3.2       
+#&gt;  [36] shinycssloaders_1.1.0  rprojroot_2.1.1        RSpectra_0.16-2        SnowballC_0.7.1        labeling_0.4.3        
+#&gt;  [41] urltools_1.7.3.1       timechange_0.4.0       polyclip_1.10-7        httr_1.4.8             compiler_4.4.1        
+#&gt;  [46] here_1.0.2             bit64_4.8.0            withr_3.0.2            S7_0.2.2               backports_1.5.1       
+#&gt;  [51] viridis_0.6.5          ggforce_0.5.0          MASS_7.3-60.2          rappdirs_0.3.4         bibliometrixData_0.3.0
+#&gt;  [56] tools_4.4.1            otel_0.2.0             stopwords_2.3          zip_2.3.3              httpuv_1.6.17         
+#&gt;  [61] rentrez_1.2.4          promises_1.5.0         grid_4.4.1             stringdist_0.9.17      reshape2_1.4.5        
+#&gt;  [66] generics_0.1.4         gtable_0.3.6           tzdb_0.5.0             rscopus_0.9.0          ca_0.71.1             
+#&gt;  [71] data.table_1.18.4      hms_1.1.4              xml2_1.5.2             utf8_1.2.6             ggrepel_0.9.8         
+#&gt;  [76] pillar_1.11.1          nsyllable_1.0.1        vroom_1.7.1            later_1.4.8            tweenr_2.0.3          
+#&gt;  [81] brand.yml_0.1.0        lattice_0.22-6         FNN_1.1.4.1            bit_4.6.0              tidyselect_1.2.1      
+#&gt;  [86] tm_0.7-18              miniUI_0.1.2           downlit_0.4.5          knitr_1.51             gridExtra_2.3         
+#&gt;  [91] NLP_0.3-2              bookdown_0.46          stats4_4.4.1           crul_1.6.0             xfun_0.57             
+#&gt;  [96] graphlayouts_1.2.3     matrixStats_1.5.0      DT_0.34.0              humaniformat_0.6.0     stringi_1.8.7         
+#&gt; [101] lazyeval_0.2.3         qpdf_1.4.1             yaml_2.3.12            evaluate_1.0.5         codetools_0.2-20      
+#&gt; [106] httpcode_0.3.0         cli_3.6.6              xtable_1.8-8           jquerylib_0.1.4        dichromat_2.0-0.1     
+#&gt; [111] Rcpp_1.1.1-1.1         readxl_1.4.5           triebeard_0.4.1        XML_3.99-0.23          parallel_4.4.1        
+#&gt; [116] assertthat_0.2.1       pubmedR_1.0.2          slam_0.1-55            viridisLite_0.4.3      scales_1.4.0          
+#&gt; [121] crayon_1.5.3           openxlsx_4.2.8.1       rlang_1.2.0            fastmatch_1.1-8</code></pre>
+
+</div>
+</div>
+
+
+
+<div class="chapter-nav">
+<div class="prev"><a href="embeddings-for-scientometrics.html"><span class="header-section-number">25</span> Embeddings for Scientometrics</a></div>
+<div class="next"><a href="altmetrics.html"><span class="header-section-number">27</span> Altmetrics</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#detecting-emerging-topics"><span class="header-section-number">26</span> Detecting Emerging Topics</a></li>
+<li><a class="nav-link" href="#emerging-objectives"><span class="header-section-number">26.1</span> Learning objectives</a></li>
+<li><a class="nav-link" href="#emerging-setup"><span class="header-section-number">26.2</span> Setup</a></li>
+<li><a class="nav-link" href="#emerging-background"><span class="header-section-number">26.3</span> Conceptual background</a></li>
+<li>
+<a class="nav-link" href="#emerging-example"><span class="header-section-number">26.4</span> Worked example</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#preparing-temporal-keyword-data"><span class="header-section-number">26.4.1</span> Preparing temporal keyword data</a></li>
+<li><a class="nav-link" href="#growth-rate-detection"><span class="header-section-number">26.4.2</span> Growth rate detection</a></li>
+<li><a class="nav-link" href="#simple-burst-detection"><span class="header-section-number">26.4.3</span> Simple burst detection</a></li>
+<li><a class="nav-link" href="#visualising-keyword-trajectories"><span class="header-section-number">26.4.4</span> Visualising keyword trajectories</a></li>
+<li><a class="nav-link" href="#rolling-window-topic-tracking"><span class="header-section-number">26.4.5</span> Rolling-window topic tracking</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#emerging-diagnostics"><span class="header-section-number">26.5</span> Diagnostics and interpretation</a></li>
+<li><a class="nav-link" href="#emerging-limitations"><span class="header-section-number">26.6</span> Limitations and responsible use</a></li>
+<li><a class="nav-link" href="#limitations-and-responsible-use-24"><span class="header-section-number">26.7</span> Limitations and responsible use</a></li>
+<li><a class="nav-link" href="#emerging-pitfalls"><span class="header-section-number">26.8</span> Common pitfalls</a></li>
+<li><a class="nav-link" href="#common-pitfalls-24"><span class="header-section-number">26.9</span> Common pitfalls</a></li>
+<li><a class="nav-link" href="#emerging-exercises"><span class="header-section-number">26.10</span> Exercises</a></li>
+<li><a class="nav-link" href="#solutions-24"><span class="header-section-number">26.11</span> Solutions</a></li>
+<li><a class="nav-link" href="#emerging-reading"><span class="header-section-number">26.12</span> Further reading</a></li>
+<li><a class="nav-link" href="#emerging-sessioninfo"><span class="header-section-number">26.13</span> Session info</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/scientometrics-in-r/blob/main/chapters/25-detecting-emerging-topics.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/scientometrics-in-r/edit/main/chapters/25-detecting-emerging-topics.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+</div>
+<!-- Dark/light mode toggle -->
+<div class="sticky-item">
+  <button type="button" id="mode-switch" class="btn-circle-mode" aria-label="Toggle dark mode">
+    <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+  </button>
+</div>
+
+<script>
+  (function () {
+    var stored = localStorage.getItem('themeMode');
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var initial = stored || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', initial);
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var btn = document.getElementById('mode-switch');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('themeMode', next);
+      });
+    });
+  })();
+</script><!-- Per-chapter PDF download button --><script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!file || file === ".pdf") return;
+    var btn = document.createElement("a");
+    btn.href = "pdf-chapters/" + file;
+    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+    btn.style = "float:right;margin-top:0.5em;";
+    btn.textContent = "⬇ Download this chapter (PDF)";
+    var header = document.querySelector("main h1, .page-inner h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      header.appendChild(btn);
+    }
+  });
+</script><!-- Footer attribution --><div class="bookdown-attribution">
+  This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
+</div>
+  
+
+  
+
+</div>
+ <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

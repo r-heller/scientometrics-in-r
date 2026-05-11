@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 38 Building a Bibliometric Shiny App | Scientometrics in R</title>
+<meta name="author" content="R. Heller">
+<meta name="description" content="38.1 Learning objectives After completing this chapter, you will be able to: Design a Shiny app architecture for bibliometric analysis Implement reactive data fetching from OpenAlex Build...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 38 Building a Bibliometric Shiny App | Scientometrics in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/scientometrics-in-r/building-a-bibliometric-shiny-app.html">
+<meta property="og:image" content="https://r-heller.github.io/scientometrics-in-r/images/cover.png">
+<meta property="og:description" content="38.1 Learning objectives After completing this chapter, you will be able to: Design a Shiny app architecture for bibliometric analysis Implement reactive data fetching from OpenAlex Build...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 38 Building a Bibliometric Shiny App | Scientometrics in R">
+<meta name="twitter:description" content="38.1 Learning objectives After completing this chapter, you will be able to: Design a Shiny app architecture for bibliometric analysis Implement reactive data fetching from OpenAlex Build...">
+<meta name="twitter:image" content="https://r-heller.github.io/scientometrics-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><link href="libs/vis-9.1.0/vis-network.min.css" rel="stylesheet">
+<script src="libs/vis-9.1.0/vis-network.min.js"></script><script src="libs/visNetwork-binding-2.1.4/visNetwork.js"></script><link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="libs/plotly-binding-4.12.0/plotly.js"></script><script src="libs/typedarray-0.1/typedarray.min.js"></script><link href="libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="libs/crosstalk-1.2.2/js/crosstalk.min.js"></script><link href="libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="libs/plotly-main-2.25.2/plotly-latest.min.js"></script><link href="libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+<script src="libs/datatables-binding-0.34.0/datatables.js"></script><link href="libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet">
+<script src="libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script><link href="libs/nouislider-7.0.10/jquery.nouislider.min.css" rel="stylesheet">
+<script src="libs/nouislider-7.0.10/jquery.nouislider.min.js"></script><link href="libs/selectize-0.12.0/selectize.bootstrap3.css" rel="stylesheet">
+<script src="libs/selectize-0.12.0/selectize.min.js"></script><link href="libs/dt-plugin-searchhighlight-1.13.6/source.css" rel="stylesheet">
+<script src="libs/dt-plugin-searchhighlight-1.13.6/jquery.highlight.js"></script><script src="libs/dt-plugin-searchhighlight-1.13.6/source.min.js"></script><!-- Fonts (Hugo Coder set) --><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Local Font Awesome 6 (woff2 in style/webfonts/) --><link rel="stylesheet" href="style/font-awesome.min.css">
+<!-- Mermaid (for diagram chunks in chapter 0) --><script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+<link rel="stylesheet" href="style/font-awesome.min.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Bibliometrics, Network Science, and Research Evaluation">Scientometrics in R</a>:
+        <small class="text-muted">Bibliometrics, Network Science, and Research Evaluation</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Welcome!</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="find-your-method.html"><span class="header-section-number">1</span> Find Your Method</a></li>
+<li class="book-part">Foundations</li>
+<li><a class="" href="what-is-scientometrics.html"><span class="header-section-number">2</span> What Is Scientometrics?</a></li>
+<li><a class="" href="theoretical-underpinnings.html"><span class="header-section-number">3</span> Theoretical Underpinnings</a></li>
+<li><a class="" href="ethics-and-responsible-metrics.html"><span class="header-section-number">4</span> Ethics and Responsible Metrics</a></li>
+<li><a class="" href="data-sources-compared.html"><span class="header-section-number">5</span> Data Sources Compared</a></li>
+<li class="book-part">Data Acquisition in R</li>
+<li><a class="" href="apis-and-packages.html"><span class="header-section-number">6</span> APIs and Packages</a></li>
+<li><a class="" href="parsing-native-exports.html"><span class="header-section-number">7</span> Parsing Native Exports</a></li>
+<li><a class="" href="building-reproducible-corpora.html"><span class="header-section-number">8</span> Building Reproducible Corpora</a></li>
+<li><a class="" href="working-with-full-text.html"><span class="header-section-number">9</span> Working with Full Text</a></li>
+<li class="book-part">Core Bibliometric Analysis</li>
+<li><a class="" href="descriptive-bibliometrics.html"><span class="header-section-number">10</span> Descriptive Bibliometrics</a></li>
+<li><a class="" href="productivity-and-impact-indicators.html"><span class="header-section-number">11</span> Productivity and Impact Indicators</a></li>
+<li><a class="" href="journal-metrics.html"><span class="header-section-number">12</span> Journal Metrics</a></li>
+<li><a class="" href="author-level-analysis-and-disambiguation.html"><span class="header-section-number">13</span> Author-Level Analysis and Disambiguation</a></li>
+<li><a class="" href="institutional-and-country-analysis.html"><span class="header-section-number">14</span> Institutional and Country Analysis</a></li>
+<li><a class="" href="temporal-analysis-and-citation-aging.html"><span class="header-section-number">15</span> Temporal Analysis and Citation Aging</a></li>
+<li class="book-part">Network &amp; Mapping Methods</li>
+<li><a class="" href="co-authorship-networks.html"><span class="header-section-number">16</span> Co-authorship Networks</a></li>
+<li><a class="" href="co-citation-and-bibliographic-coupling.html"><span class="header-section-number">17</span> Co-citation and Bibliographic Coupling</a></li>
+<li><a class="" href="co-word-and-keyword-co-occurrence.html"><span class="header-section-number">18</span> Co-word and Keyword Co-occurrence</a></li>
+<li><a class="" href="community-detection-and-backbone-extraction.html"><span class="header-section-number">19</span> Community Detection and Backbone Extraction</a></li>
+<li><a class="" href="science-mapping-and-overlay-maps.html"><span class="header-section-number">20</span> Science Mapping and Overlay Maps</a></li>
+<li><a class="" href="network-visualization-and-interoperability.html"><span class="header-section-number">21</span> Network Visualization and Interoperability</a></li>
+<li class="book-part">Text &amp; Topic Analysis</li>
+<li><a class="" href="text-mining-bibliographic-corpora.html"><span class="header-section-number">22</span> Text Mining Bibliographic Corpora</a></li>
+<li><a class="" href="topic-modeling.html"><span class="header-section-number">23</span> Topic Modeling</a></li>
+<li><a class="" href="keyword-extraction.html"><span class="header-section-number">24</span> Keyword Extraction</a></li>
+<li><a class="" href="embeddings-for-scientometrics.html"><span class="header-section-number">25</span> Embeddings for Scientometrics</a></li>
+<li><a class="" href="detecting-emerging-topics.html"><span class="header-section-number">26</span> Detecting Emerging Topics</a></li>
+<li class="book-part">Advanced Topics</li>
+<li><a class="" href="altmetrics.html"><span class="header-section-number">27</span> Altmetrics</a></li>
+<li><a class="" href="open-science-indicators.html"><span class="header-section-number">28</span> Open Science Indicators</a></li>
+<li><a class="" href="gender-and-equity-analysis.html"><span class="header-section-number">29</span> Gender and Equity Analysis</a></li>
+<li><a class="" href="retraction-analysis.html"><span class="header-section-number">30</span> Retraction Analysis</a></li>
+<li><a class="" href="funding-analysis-and-grant-to-publication-linkage.html"><span class="header-section-number">31</span> Funding Analysis and Grant-to-Publication Linkage</a></li>
+<li><a class="" href="patentpaper-linkages.html"><span class="header-section-number">32</span> Patent–Paper Linkages</a></li>
+<li><a class="" href="causal-inference-in-scientometrics.html"><span class="header-section-number">33</span> Causal Inference in Scientometrics</a></li>
+<li><a class="" href="reproducibility-rrids-and-badges.html"><span class="header-section-number">34</span> Reproducibility, RRIDs, and Badges</a></li>
+<li class="book-part">Production &amp; Reporting</li>
+<li><a class="" href="reproducible-pipelines.html"><span class="header-section-number">35</span> Reproducible Pipelines</a></li>
+<li><a class="" href="interactive-dashboards.html"><span class="header-section-number">36</span> Interactive Dashboards</a></li>
+<li><a class="" href="parameterized-quarto-reports.html"><span class="header-section-number">37</span> Parameterized Quarto Reports</a></li>
+<li><a class="active" href="building-a-bibliometric-shiny-app.html"><span class="header-section-number">38</span> Building a Bibliometric Shiny App</a></li>
+<li class="book-part">Case Studies</li>
+<li><a class="" href="case-study-1-crispr-field-review-20102024.html"><span class="header-section-number">39</span> Case Study 1: CRISPR Field Review (2010–2024)</a></li>
+<li><a class="" href="case-study-2-institutional-benchmarking.html"><span class="header-section-number">40</span> Case Study 2: Institutional Benchmarking</a></li>
+<li><a class="" href="case-study-3-journal-portfolio-analysis.html"><span class="header-section-number">41</span> Case Study 3: Journal Portfolio Analysis</a></li>
+<li><a class="" href="case-study-4-gender-gap-in-scientific-publishing.html"><span class="header-section-number">42</span> Case Study 4: Gender Gap in Scientific Publishing</a></li>
+<li><a class="" href="case-study-5-detecting-emerging-topics.html"><span class="header-section-number">43</span> Case Study 5: Detecting Emerging Topics</a></li>
+<li class="book-part">Appendix</li>
+<li><a class="" href="r-setup-renv-and-docker.html"><span class="header-section-number">A</span> R Setup, renv, and Docker</a></li>
+<li><a class="" href="sql-primer-for-the-openalex-snapshot.html"><span class="header-section-number">B</span> SQL Primer for the OpenAlex Snapshot</a></li>
+<li><a class="" href="indicator-crosswalk-across-databases.html"><span class="header-section-number">C</span> Indicator Crosswalk Across Databases</a></li>
+<li><a class="" href="cheatsheets-and-quick-reference.html"><span class="header-section-number">D</span> Cheatsheets and Quick Reference</a></li>
+<li><a class="" href="exercise-solutions.html"><span class="header-section-number">E</span> Exercise Solutions</a></li>
+<li><a class="" href="solutions.html"><span class="header-section-number">F</span> Exercise Solutions</a></li>
+<li><a class="" href="glossary.html">Glossary</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/scientometrics-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="building-a-bibliometric-shiny-app" class="section level1" number="38">
+<h1>
+<span class="header-section-number">38</span> Building a Bibliometric Shiny App<a class="anchor" aria-label="anchor" href="#building-a-bibliometric-shiny-app"><i class="fas fa-link"></i></a>
+</h1>
+<div id="shiny-objectives" class="section level2" number="38.1">
+<h2>
+<span class="header-section-number">38.1</span> Learning objectives<a class="anchor" aria-label="anchor" href="#shiny-objectives"><i class="fas fa-link"></i></a>
+</h2>
+<p>After completing this chapter, you will be able to:</p>
+<ul>
+<li>Design a Shiny app architecture for bibliometric analysis</li>
+<li>Implement reactive data fetching from OpenAlex</li>
+<li>Build interactive UI components: dropdowns, sliders, and tabbed panels</li>
+<li>Create server-side logic for citation analysis and network visualisation</li>
+<li>Deploy a Shiny app to shinyapps.io or a self-hosted server</li>
+</ul>
+</div>
+<div id="shiny-setup" class="section level2" number="38.2">
+<h2>
+<span class="header-section-number">38.2</span> Setup<a class="anchor" aria-label="anchor" href="#shiny-setup"><i class="fas fa-link"></i></a>
+</h2>
+<div class="sourceCode" id="cb520"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://shiny.posit.co/">shiny</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/openalexR">openalexR</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://glue.tidyverse.org/">glue</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">20260509</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"sci_palette.R"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="shiny-background" class="section level2" number="38.3">
+<h2>
+<span class="header-section-number">38.3</span> Conceptual background<a class="anchor" aria-label="anchor" href="#shiny-background"><i class="fas fa-link"></i></a>
+</h2>
+<p>Shiny transforms R scripts into web applications. Users interact through widgets (dropdowns, sliders, buttons) and see results update in real time. For bibliometrics, Shiny apps serve two audiences: researchers who want to explore data without writing code, and decision-makers who need accessible analytics dashboards.</p>
+<p>A Shiny app has two components: the <strong>UI</strong> (user interface, defining layout and inputs) and the <strong>server</strong> (the R logic that reacts to user input and generates output). <strong>Reactive programming</strong> connects inputs to outputs: when a user changes a dropdown, only the computations that depend on that input are re-executed.</p>
+<p>For bibliometric apps, the typical architecture involves:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Input panel</strong>: Select a journal, institution, or search query; choose date range and sample size.</li>
+<li>
+<strong>Data fetching</strong>: Reactively query OpenAlex based on user selections.</li>
+<li>
+<strong>Analysis tabs</strong>: Trend charts, citation distributions, author rankings, and optionally network visualisation.</li>
+<li>
+<strong>Export</strong>: Download buttons for data (CSV) and figures (PNG).</li>
+</ol>
+<p><strong><code><a href="https://rdrr.io/pkg/bibliometrix/man/biblioshiny.html">biblioshiny()</a></code></strong> from the <code>bibliometrix</code> package <span class="citation">(<a href="references.html#ref-aria2017">Aria and Cuccurullo 2017</a>)</span> provides a ready-made Shiny interface for many standard analyses. Building a custom app gives full control over the analysis pipeline and user experience.</p>
+<p>Deployment options include shinyapps.io (hosted by Posit, free tier available), Posit Connect (enterprise), and self-hosted via Shiny Server (open source).</p>
+</div>
+<div id="shiny-example" class="section level2" number="38.4">
+<h2>
+<span class="header-section-number">38.4</span> Worked example<a class="anchor" aria-label="anchor" href="#shiny-example"><i class="fas fa-link"></i></a>
+</h2>
+<div id="app-structure" class="section level3" number="38.4.1">
+<h3>
+<span class="header-section-number">38.4.1</span> App structure<a class="anchor" aria-label="anchor" href="#app-structure"><i class="fas fa-link"></i></a>
+</h3>
+<p>We demonstrate the key components of a bibliometric Shiny app. The code below shows the UI and server logic separately for clarity.</p>
+</div>
+<div id="ui-definition" class="section level3" number="38.4.2">
+<h3>
+<span class="header-section-number">38.4.2</span> UI definition<a class="anchor" aria-label="anchor" href="#ui-definition"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb521"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ui</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/fluidPage.html">fluidPage</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/titlePanel.html">titlePanel</a></span><span class="op">(</span><span class="st">"Bibliometric Explorer"</span><span class="op">)</span>,</span>
+<span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/sidebarLayout.html">sidebarLayout</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/sidebarLayout.html">sidebarPanel</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/textInput.html">textInput</a></span><span class="op">(</span><span class="st">"journal_id"</span>, <span class="st">"OpenAlex Source ID:"</span>,</span>
+<span>                value <span class="op">=</span> <span class="st">"S148561398"</span><span class="op">)</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/sliderInput.html">sliderInput</a></span><span class="op">(</span><span class="st">"year_range"</span>, <span class="st">"Publication Years:"</span>,</span>
+<span>                  min <span class="op">=</span> <span class="fl">2015</span>, max <span class="op">=</span> <span class="fl">2023</span>, value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2020</span>, <span class="fl">2023</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/numericInput.html">numericInput</a></span><span class="op">(</span><span class="st">"sample_size"</span>, <span class="st">"Sample Size:"</span>, value <span class="op">=</span> <span class="fl">200</span>,</span>
+<span>                   min <span class="op">=</span> <span class="fl">50</span>, max <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/actionButton.html">actionButton</a></span><span class="op">(</span><span class="st">"fetch"</span>, <span class="st">"Fetch Data"</span>, class <span class="op">=</span> <span class="st">"btn-primary"</span><span class="op">)</span>,</span>
+<span>      <span class="fu"><a href="https://rstudio.github.io/htmltools/reference/builder.html">hr</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/downloadButton.html">downloadButton</a></span><span class="op">(</span><span class="st">"download_csv"</span>, <span class="st">"Download CSV"</span><span class="op">)</span></span>
+<span>    <span class="op">)</span>,</span>
+<span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/sidebarLayout.html">mainPanel</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/tabsetPanel.html">tabsetPanel</a></span><span class="op">(</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/tabPanel.html">tabPanel</a></span><span class="op">(</span><span class="st">"Trends"</span>,</span>
+<span>                 <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/plotOutput.html">plotOutput</a></span><span class="op">(</span><span class="st">"trend_plot"</span><span class="op">)</span>,</span>
+<span>                 <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/renderTable.html">tableOutput</a></span><span class="op">(</span><span class="st">"summary_table"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>        <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/tabPanel.html">tabPanel</a></span><span class="op">(</span><span class="st">"Citations"</span>,</span>
+<span>                 <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/plotOutput.html">plotOutput</a></span><span class="op">(</span><span class="st">"cite_dist"</span><span class="op">)</span>,</span>
+<span>                 <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/plotOutput.html">plotOutput</a></span><span class="op">(</span><span class="st">"cite_boxplot"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>        <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/tabPanel.html">tabPanel</a></span><span class="op">(</span><span class="st">"Data"</span>,</span>
+<span>                 <span class="fu">DT</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/DT/man/dataTableOutput.html">dataTableOutput</a></span><span class="op">(</span><span class="st">"data_table"</span><span class="op">)</span><span class="op">)</span></span>
+<span>      <span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="server-logic" class="section level3" number="38.4.3">
+<h3>
+<span class="header-section-number">38.4.3</span> Server logic<a class="anchor" aria-label="anchor" href="#server-logic"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb522"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">server</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">input</span>, <span class="va">output</span>, <span class="va">session</span><span class="op">)</span> <span class="op">{</span></span>
+<span></span>
+<span>  <span class="va">works_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/observeEvent.html">eventReactive</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">fetch</span>, <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/withProgress.html">withProgress</a></span><span class="op">(</span>message <span class="op">=</span> <span class="st">"Fetching from OpenAlex..."</span>, <span class="op">{</span></span>
+<span>      <span class="fu"><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html">oa_fetch</a></span><span class="op">(</span></span>
+<span>        entity <span class="op">=</span> <span class="st">"works"</span>,</span>
+<span>        primary_location.source.id <span class="op">=</span> <span class="va">input</span><span class="op">$</span><span class="va">journal_id</span>,</span>
+<span>        from_publication_date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">year_range</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="st">"-01-01"</span><span class="op">)</span>,</span>
+<span>        to_publication_date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">year_range</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="st">"-12-31"</span><span class="op">)</span>,</span>
+<span>        type <span class="op">=</span> <span class="st">"article"</span>,</span>
+<span>        options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sample <span class="op">=</span> <span class="va">input</span><span class="op">$</span><span class="va">sample_size</span>, seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span>
+<span>      <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/transmute.html">transmute</a></span><span class="op">(</span></span>
+<span>          <span class="va">id</span>, title <span class="op">=</span> <span class="va">display_name</span>,</span>
+<span>          year <span class="op">=</span> <span class="fu"><a href="https://lubridate.tidyverse.org/reference/year.html">year</a></span><span class="op">(</span><span class="va">publication_date</span><span class="op">)</span>,</span>
+<span>          <span class="va">cited_by_count</span>, <span class="va">oa_status</span></span>
+<span>        <span class="op">)</span></span>
+<span>    <span class="op">}</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">output</span><span class="op">$</span><span class="va">trend_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/renderPlot.html">renderPlot</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/req.html">req</a></span><span class="op">(</span><span class="fu">works_data</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu">works_data</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">count</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span>, y <span class="op">=</span> <span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_col</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="fu">palette_sci</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Year"</span>, y <span class="op">=</span> <span class="st">"Publications"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      <span class="fu">theme_sci</span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">output</span><span class="op">$</span><span class="va">cite_dist</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/renderPlot.html">renderPlot</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/req.html">req</a></span><span class="op">(</span><span class="fu">works_data</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu">works_data</span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">cited_by_count</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html">geom_histogram</a></span><span class="op">(</span>binwidth <span class="op">=</span> <span class="fl">5</span>, fill <span class="op">=</span> <span class="fu">palette_sci</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, colour <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Citations"</span>, y <span class="op">=</span> <span class="st">"Count"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      <span class="fu">theme_sci</span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">output</span><span class="op">$</span><span class="va">cite_boxplot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/renderPlot.html">renderPlot</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/req.html">req</a></span><span class="op">(</span><span class="fu">works_data</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu">works_data</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">oa_status</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">oa_status</span>, y <span class="op">=</span> <span class="va">cited_by_count</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html">geom_boxplot</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="fu">palette_sci</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_log10</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"OA Status"</span>, y <span class="op">=</span> <span class="st">"Citations (log)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      <span class="fu">theme_sci</span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">output</span><span class="op">$</span><span class="va">summary_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/renderTable.html">renderTable</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/req.html">req</a></span><span class="op">(</span><span class="fu">works_data</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu">works_data</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span></span>
+<span>        Articles <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        `Mean Citations` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">cited_by_count</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>        `Median Citations` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">cited_by_count</span><span class="op">)</span>,</span>
+<span>        `OA Rate` <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/percent_format.html">percent</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">oa_status</span> <span class="op">!=</span> <span class="st">"closed"</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span>      <span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">output</span><span class="op">$</span><span class="va">data_table</span> <span class="op">&lt;-</span> <span class="fu">DT</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/DT/man/dataTableOutput.html">renderDataTable</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/req.html">req</a></span><span class="op">(</span><span class="fu">works_data</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu">works_data</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">title</span>, <span class="va">year</span>, <span class="va">cited_by_count</span>, <span class="va">oa_status</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">cited_by_count</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">output</span><span class="op">$</span><span class="va">download_csv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/downloadHandler.html">downloadHandler</a></span><span class="op">(</span></span>
+<span>    filename <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"biblio_data_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.Date</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">".csv"</span><span class="op">)</span>,</span>
+<span>    content <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">file</span><span class="op">)</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/write_delim.html">write_csv</a></span><span class="op">(</span><span class="fu">works_data</span><span class="op">(</span><span class="op">)</span>, <span class="va">file</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="running-the-app" class="section level3" number="38.4.4">
+<h3>
+<span class="header-section-number">38.4.4</span> Running the app<a class="anchor" aria-label="anchor" href="#running-the-app"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb523"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/shiny/man/shinyApp.html">shinyApp</a></span><span class="op">(</span>ui <span class="op">=</span> <span class="va">ui</span>, server <span class="op">=</span> <span class="va">server</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="biblioshiny-as-an-alternative" class="section level3" number="38.4.5">
+<h3>
+<span class="header-section-number">38.4.5</span> biblioshiny as an alternative<a class="anchor" aria-label="anchor" href="#biblioshiny-as-an-alternative"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb524"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># bibliometrix provides a ready-made Shiny interface:</span></span>
+<span><span class="co"># library(bibliometrix)</span></span>
+<span><span class="co"># biblioshiny()</span></span></code></pre></div>
+</div>
+</div>
+<div id="shiny-diagnostics" class="section level2" number="38.5">
+<h2>
+<span class="header-section-number">38.5</span> Diagnostics and interpretation<a class="anchor" aria-label="anchor" href="#shiny-diagnostics"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Responsiveness</strong>: API calls can take several seconds. Use <code><a href="https://rdrr.io/pkg/shiny/man/withProgress.html">withProgress()</a></code> to show loading indicators.</li>
+<li>
+<strong>Error handling</strong>: Wrap API calls in <code><a href="https://rdrr.io/r/base/conditions.html">tryCatch()</a></code> to display user-friendly error messages instead of stack traces.</li>
+<li>
+<strong>Memory</strong>: Each user session loads data into R memory. For apps with many concurrent users, pre-aggregate data or use database backends.</li>
+<li>
+<strong>Testing</strong>: Use <code>shinytest2</code> to automate testing of Shiny apps.</li>
+</ul>
+</div>
+<div id="shiny-limitations" class="section level2" number="38.6">
+<h2>
+<span class="header-section-number">38.6</span> Limitations and responsible use<a class="anchor" aria-label="anchor" href="#shiny-limitations"><i class="fas fa-link"></i></a>
+</h2>
+</div>
+<div id="limitations-and-responsible-use-36" class="section level2 callout callout-warn" number="38.7">
+<h2>
+<span class="header-section-number">38.7</span> Limitations and responsible use<a class="anchor" aria-label="anchor" href="#limitations-and-responsible-use-36"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Shiny apps are not analyses.</strong> They enable exploration but do not substitute for rigorous, documented analytical pipelines. Use Shiny for discovery, not for producing final results.</li>
+<li>
+<strong>API rate limits.</strong> Live OpenAlex queries from a Shiny app can hit rate limits if many users fetch data simultaneously. Use caching or pre-fetched data for production apps.</li>
+<li>
+<strong>Maintenance.</strong> Shiny apps require ongoing maintenance: API changes, package updates, and server costs. Plan for long-term sustainability before deploying.</li>
+<li>
+<strong>Interpretive guardrails.</strong> Non-technical users may misinterpret metrics. Build in tooltips, descriptions, and warnings — especially around citation-based indicators <span class="citation">(<a href="references.html#ref-hicks2015">Hicks et al. 2015</a>; <a href="references.html#ref-dora2012">American Society for Cell Biology 2012</a>)</span>.</li>
+</ul>
+</div>
+<div id="shiny-pitfalls" class="section level2" number="38.8">
+<h2>
+<span class="header-section-number">38.8</span> Common pitfalls<a class="anchor" aria-label="anchor" href="#shiny-pitfalls"><i class="fas fa-link"></i></a>
+</h2>
+</div>
+<div id="common-pitfalls-36" class="section level2 callout callout-stop" number="38.9">
+<h2>
+<span class="header-section-number">38.9</span> Common pitfalls<a class="anchor" aria-label="anchor" href="#common-pitfalls-36"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Fetching data on every input change.</strong> Use <code><a href="https://rdrr.io/pkg/shiny/man/observeEvent.html">eventReactive()</a></code> with an action button instead of <code><a href="https://rdrr.io/pkg/shiny/man/reactive.html">reactive()</a></code> to prevent re-fetching on every slider adjustment.</li>
+<li>
+<strong>Not validating inputs.</strong> Check that the journal ID exists and the date range is valid before making API calls.</li>
+<li>
+<strong>Monolithic server functions.</strong> Break the server logic into modules for maintainability as the app grows.</li>
+<li>
+<strong>Deploying without testing.</strong> Test with realistic data volumes before deploying. An app that works with 100 records may fail with 10,000.</li>
+</ul>
+</div>
+<div id="shiny-exercises" class="section level2" number="38.10">
+<h2>
+<span class="header-section-number">38.10</span> Exercises<a class="anchor" aria-label="anchor" href="#shiny-exercises"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Add network tab.</strong> Extend the app with a tab that builds and displays a co-authorship network using <code>visNetwork</code>.</p></li>
+<li><p><strong>Caching.</strong> Implement server-side caching so that repeated queries with the same parameters return instantly.</p></li>
+<li><p><strong>Deployment.</strong> Deploy the app to shinyapps.io. Test with different journal IDs and date ranges.</p></li>
+<li><p><strong>biblioshiny comparison.</strong> Run <code><a href="https://rdrr.io/pkg/bibliometrix/man/biblioshiny.html">biblioshiny()</a></code> and compare its features with your custom app. What does biblioshiny offer that your app does not?</p></li>
+</ol>
+</div>
+<div id="solutions-36" class="section level2 callout callout-ok" number="38.11">
+<h2>
+<span class="header-section-number">38.11</span> Solutions<a class="anchor" aria-label="anchor" href="#solutions-36"><i class="fas fa-link"></i></a>
+</h2>
+<p>Solutions are provided in <a href="what-is-scientometrics.html#solutions">2.11</a>.</p>
+</div>
+<div id="shiny-reading" class="section level2" number="38.12">
+<h2>
+<span class="header-section-number">38.12</span> Further reading<a class="anchor" aria-label="anchor" href="#shiny-reading"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<span class="citation">Aria and Cuccurullo (<a href="references.html#ref-aria2017">2017</a>)</span> — <code>bibliometrix</code> and <code><a href="https://rdrr.io/pkg/bibliometrix/man/biblioshiny.html">biblioshiny()</a></code> for turnkey bibliometric exploration.</li>
+<li>
+<span class="citation">Priem et al. (<a href="references.html#ref-priem2022">2022</a>)</span> — OpenAlex API for reactive data fetching.</li>
+<li>
+<span class="citation">Hicks et al. (<a href="references.html#ref-hicks2015">2015</a>)</span> — The Leiden Manifesto: designing interfaces that prevent metric misuse.</li>
+<li>
+<span class="citation">American Society for Cell Biology (<a href="references.html#ref-dora2012">2012</a>)</span> — DORA: responsible assessment in interactive tools.</li>
+</ul>
+</div>
+<div id="shiny-sessioninfo" class="section level2" number="38.13">
+<h2>
+<span class="header-section-number">38.13</span> Session info<a class="anchor" aria-label="anchor" href="#shiny-sessioninfo"><i class="fas fa-link"></i></a>
+</h2>
+<div class="sourceCode" id="cb525"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; R version 4.4.1 (2024-06-14)
+#&gt; Platform: x86_64-pc-linux-gnu
+#&gt; Running under: Ubuntu 24.04.4 LTS
+#&gt; 
+#&gt; Matrix products: default
+#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+#&gt; 
+#&gt; locale:
+#&gt;  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8        LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8   
+#&gt;  [6] LC_MESSAGES=C.UTF-8    LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C           LC_TELEPHONE=C        
+#&gt; [11] LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+#&gt; 
+#&gt; time zone: UTC
+#&gt; tzcode source: system (glibc)
+#&gt; 
+#&gt; attached base packages:
+#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     
+#&gt; 
+#&gt; other attached packages:
+#&gt;  [1] shiny_1.13.0              DT_0.34.0                 plotly_4.12.0             uwot_0.2.4               
+#&gt;  [5] Matrix_1.7-0              word2vec_0.4.1            stm_1.3.8                 topicmodels_0.2-17       
+#&gt;  [9] quanteda.textstats_0.97.2 visNetwork_2.1.4          ggraph_2.2.2              tidygraph_1.3.1          
+#&gt; [13] igraph_2.3.1              quanteda_4.4              pdftools_3.8.0            arrow_24.0.0             
+#&gt; [17] bibliometrix_5.3.0        RefManageR_1.4.0          bib2df_1.1.2.0            rcrossref_1.2.1          
+#&gt; [21] gt_1.3.0                  tidytext_0.4.3            glue_1.8.1                openalexR_3.0.1          
+#&gt; [25] lubridate_1.9.5           forcats_1.0.1             stringr_1.6.0             dplyr_1.2.1              
+#&gt; [29] purrr_1.2.2               readr_2.2.0               tidyr_1.3.2               tibble_3.3.1             
+#&gt; [33] ggplot2_4.0.3             tidyverse_2.0.0          
+#&gt; 
+#&gt; loaded via a namespace (and not attached):
+#&gt;   [1] splines_4.4.1          later_1.4.8            urltools_1.7.3.1       cellranger_1.1.0       triebeard_0.4.1       
+#&gt;   [6] polyclip_1.10-7        XML_3.99-0.23          lifecycle_1.0.5        httr2_1.2.2            rprojroot_2.1.1       
+#&gt;  [11] NLP_0.3-2              lattice_0.22-6         brand.yml_0.1.0        vroom_1.7.1            MASS_7.3-60.2         
+#&gt;  [16] crosstalk_1.2.2        backports_1.5.1        SnowballC_0.7.1        magrittr_2.0.5         openxlsx_4.2.8.1      
+#&gt;  [21] sass_0.4.10            rmarkdown_2.31         jquerylib_0.1.4        yaml_2.3.12            httpuv_1.6.17         
+#&gt;  [26] otel_0.2.0             zip_2.3.3              askpass_1.2.1          RColorBrewer_1.1-3     downlit_0.4.5         
+#&gt;  [31] contentanalysis_1.0.0  tweenr_2.0.3           rappdirs_0.3.4         tm_0.7-18              ggrepel_0.9.8         
+#&gt;  [36] tokenizers_0.3.0       crul_1.6.0             rentrez_1.2.4          RSpectra_0.16-2        codetools_0.2-20      
+#&gt;  [41] xml2_1.5.2             ggforce_0.5.0          tidyselect_1.2.1       rscopus_0.9.0          httpcode_0.3.0        
+#&gt;  [46] farver_2.1.2           viridis_0.6.5          matrixStats_1.5.0      stats4_4.4.1           base64enc_0.1-6       
+#&gt;  [51] jsonlite_2.0.0         tools_4.4.1            stringdist_0.9.17      Rcpp_1.1.1-1.1         gridExtra_2.3         
+#&gt;  [56] xfun_0.57              here_1.0.2             mgcv_1.9-1             ca_0.71.1              withr_3.0.2           
+#&gt;  [61] fastmap_1.2.0          digest_0.6.39          timechange_0.4.0       R6_2.6.1               mime_0.13             
+#&gt;  [66] qpdf_1.4.1             dichromat_2.0-0.1      utf8_1.2.6             generics_0.1.4         data.table_1.18.4     
+#&gt;  [71] FNN_1.1.4.1            graphlayouts_1.2.3     stopwords_2.3          httr_1.4.8             htmlwidgets_1.6.4     
+#&gt;  [76] pkgconfig_2.0.3        gtable_0.3.6           modeltools_0.2-24      S7_0.2.2               janeaustenr_1.0.0     
+#&gt;  [81] htmltools_0.5.9        bookdown_0.46          scales_1.4.0           knitr_1.51             rstudioapi_0.18.0     
+#&gt;  [86] tzdb_0.5.0             reshape2_1.4.5         nlme_3.1-164           curl_7.1.0             cachem_1.1.0          
+#&gt;  [91] parallel_4.4.1         miniUI_0.1.2           shinycssloaders_1.1.0  pubmedR_1.0.2          pillar_1.11.1         
+#&gt;  [96] grid_4.4.1             vctrs_0.7.3            slam_0.1-55            promises_1.5.0         xtable_1.8-8          
+#&gt; [101] evaluate_1.0.5         cli_3.6.6              compiler_4.4.1         rlang_1.2.0            crayon_1.5.3          
+#&gt; [106] labeling_0.4.3         dimensionsR_0.0.3      plyr_1.8.9             fs_2.1.0               stringi_1.8.7         
+#&gt; [111] viridisLite_0.4.3      assertthat_0.2.1       lazyeval_0.2.3         bibliometrixData_0.3.0 hms_1.1.4             
+#&gt; [116] patchwork_1.3.2        bit64_4.8.0            humaniformat_0.6.0     broom_1.0.12           memoise_2.0.1         
+#&gt; [121] bslib_0.10.0           bibtex_0.5.2           fastmatch_1.1-8        bit_4.6.0              nsyllable_1.0.1       
+#&gt; [126] readxl_1.4.5</code></pre>
+
+</div>
+</div>
+
+
+
+<div class="chapter-nav">
+<div class="prev"><a href="parameterized-quarto-reports.html"><span class="header-section-number">37</span> Parameterized Quarto Reports</a></div>
+<div class="next"><a href="case-study-1-crispr-field-review-20102024.html"><span class="header-section-number">39</span> Case Study 1: CRISPR Field Review (2010–2024)</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#building-a-bibliometric-shiny-app"><span class="header-section-number">38</span> Building a Bibliometric Shiny App</a></li>
+<li><a class="nav-link" href="#shiny-objectives"><span class="header-section-number">38.1</span> Learning objectives</a></li>
+<li><a class="nav-link" href="#shiny-setup"><span class="header-section-number">38.2</span> Setup</a></li>
+<li><a class="nav-link" href="#shiny-background"><span class="header-section-number">38.3</span> Conceptual background</a></li>
+<li>
+<a class="nav-link" href="#shiny-example"><span class="header-section-number">38.4</span> Worked example</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#app-structure"><span class="header-section-number">38.4.1</span> App structure</a></li>
+<li><a class="nav-link" href="#ui-definition"><span class="header-section-number">38.4.2</span> UI definition</a></li>
+<li><a class="nav-link" href="#server-logic"><span class="header-section-number">38.4.3</span> Server logic</a></li>
+<li><a class="nav-link" href="#running-the-app"><span class="header-section-number">38.4.4</span> Running the app</a></li>
+<li><a class="nav-link" href="#biblioshiny-as-an-alternative"><span class="header-section-number">38.4.5</span> biblioshiny as an alternative</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#shiny-diagnostics"><span class="header-section-number">38.5</span> Diagnostics and interpretation</a></li>
+<li><a class="nav-link" href="#shiny-limitations"><span class="header-section-number">38.6</span> Limitations and responsible use</a></li>
+<li><a class="nav-link" href="#limitations-and-responsible-use-36"><span class="header-section-number">38.7</span> Limitations and responsible use</a></li>
+<li><a class="nav-link" href="#shiny-pitfalls"><span class="header-section-number">38.8</span> Common pitfalls</a></li>
+<li><a class="nav-link" href="#common-pitfalls-36"><span class="header-section-number">38.9</span> Common pitfalls</a></li>
+<li><a class="nav-link" href="#shiny-exercises"><span class="header-section-number">38.10</span> Exercises</a></li>
+<li><a class="nav-link" href="#solutions-36"><span class="header-section-number">38.11</span> Solutions</a></li>
+<li><a class="nav-link" href="#shiny-reading"><span class="header-section-number">38.12</span> Further reading</a></li>
+<li><a class="nav-link" href="#shiny-sessioninfo"><span class="header-section-number">38.13</span> Session info</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/scientometrics-in-r/blob/main/chapters/37-bibliometric-shiny-app.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/scientometrics-in-r/edit/main/chapters/37-bibliometric-shiny-app.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+</div>
+<!-- Dark/light mode toggle -->
+<div class="sticky-item">
+  <button type="button" id="mode-switch" class="btn-circle-mode" aria-label="Toggle dark mode">
+    <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+  </button>
+</div>
+
+<script>
+  (function () {
+    var stored = localStorage.getItem('themeMode');
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var initial = stored || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', initial);
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var btn = document.getElementById('mode-switch');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('themeMode', next);
+      });
+    });
+  })();
+</script><!-- Per-chapter PDF download button --><script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!file || file === ".pdf") return;
+    var btn = document.createElement("a");
+    btn.href = "pdf-chapters/" + file;
+    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+    btn.style = "float:right;margin-top:0.5em;";
+    btn.textContent = "⬇ Download this chapter (PDF)";
+    var header = document.querySelector("main h1, .page-inner h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      header.appendChild(btn);
+    }
+  });
+</script><!-- Footer attribution --><div class="bookdown-attribution">
+  This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
+</div>
+  
+
+  
+
+</div>
+ <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

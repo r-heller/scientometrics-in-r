@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 21 Network Visualization and Interoperability | Scientometrics in R</title>
+<meta name="author" content="R. Heller">
+<meta name="description" content="21.1 Learning objectives After completing this chapter, you will be able to: Choose appropriate layout algorithms for different network types Export igraph networks to Gephi (GraphML), VOSviewer,...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 21 Network Visualization and Interoperability | Scientometrics in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/scientometrics-in-r/network-visualization-and-interoperability.html">
+<meta property="og:image" content="https://r-heller.github.io/scientometrics-in-r/images/cover.png">
+<meta property="og:description" content="21.1 Learning objectives After completing this chapter, you will be able to: Choose appropriate layout algorithms for different network types Export igraph networks to Gephi (GraphML), VOSviewer,...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 21 Network Visualization and Interoperability | Scientometrics in R">
+<meta name="twitter:description" content="21.1 Learning objectives After completing this chapter, you will be able to: Choose appropriate layout algorithms for different network types Export igraph networks to Gephi (GraphML), VOSviewer,...">
+<meta name="twitter:image" content="https://r-heller.github.io/scientometrics-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><link href="libs/vis-9.1.0/vis-network.min.css" rel="stylesheet">
+<script src="libs/vis-9.1.0/vis-network.min.js"></script><script src="libs/visNetwork-binding-2.1.4/visNetwork.js"></script><link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="libs/plotly-binding-4.12.0/plotly.js"></script><script src="libs/typedarray-0.1/typedarray.min.js"></script><link href="libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="libs/crosstalk-1.2.2/js/crosstalk.min.js"></script><link href="libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="libs/plotly-main-2.25.2/plotly-latest.min.js"></script><link href="libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+<script src="libs/datatables-binding-0.34.0/datatables.js"></script><link href="libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet">
+<script src="libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script><link href="libs/nouislider-7.0.10/jquery.nouislider.min.css" rel="stylesheet">
+<script src="libs/nouislider-7.0.10/jquery.nouislider.min.js"></script><link href="libs/selectize-0.12.0/selectize.bootstrap3.css" rel="stylesheet">
+<script src="libs/selectize-0.12.0/selectize.min.js"></script><link href="libs/dt-plugin-searchhighlight-1.13.6/source.css" rel="stylesheet">
+<script src="libs/dt-plugin-searchhighlight-1.13.6/jquery.highlight.js"></script><script src="libs/dt-plugin-searchhighlight-1.13.6/source.min.js"></script><!-- Fonts (Hugo Coder set) --><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Local Font Awesome 6 (woff2 in style/webfonts/) --><link rel="stylesheet" href="style/font-awesome.min.css">
+<!-- Mermaid (for diagram chunks in chapter 0) --><script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+<link rel="stylesheet" href="style/font-awesome.min.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Bibliometrics, Network Science, and Research Evaluation">Scientometrics in R</a>:
+        <small class="text-muted">Bibliometrics, Network Science, and Research Evaluation</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Welcome!</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="find-your-method.html"><span class="header-section-number">1</span> Find Your Method</a></li>
+<li class="book-part">Foundations</li>
+<li><a class="" href="what-is-scientometrics.html"><span class="header-section-number">2</span> What Is Scientometrics?</a></li>
+<li><a class="" href="theoretical-underpinnings.html"><span class="header-section-number">3</span> Theoretical Underpinnings</a></li>
+<li><a class="" href="ethics-and-responsible-metrics.html"><span class="header-section-number">4</span> Ethics and Responsible Metrics</a></li>
+<li><a class="" href="data-sources-compared.html"><span class="header-section-number">5</span> Data Sources Compared</a></li>
+<li class="book-part">Data Acquisition in R</li>
+<li><a class="" href="apis-and-packages.html"><span class="header-section-number">6</span> APIs and Packages</a></li>
+<li><a class="" href="parsing-native-exports.html"><span class="header-section-number">7</span> Parsing Native Exports</a></li>
+<li><a class="" href="building-reproducible-corpora.html"><span class="header-section-number">8</span> Building Reproducible Corpora</a></li>
+<li><a class="" href="working-with-full-text.html"><span class="header-section-number">9</span> Working with Full Text</a></li>
+<li class="book-part">Core Bibliometric Analysis</li>
+<li><a class="" href="descriptive-bibliometrics.html"><span class="header-section-number">10</span> Descriptive Bibliometrics</a></li>
+<li><a class="" href="productivity-and-impact-indicators.html"><span class="header-section-number">11</span> Productivity and Impact Indicators</a></li>
+<li><a class="" href="journal-metrics.html"><span class="header-section-number">12</span> Journal Metrics</a></li>
+<li><a class="" href="author-level-analysis-and-disambiguation.html"><span class="header-section-number">13</span> Author-Level Analysis and Disambiguation</a></li>
+<li><a class="" href="institutional-and-country-analysis.html"><span class="header-section-number">14</span> Institutional and Country Analysis</a></li>
+<li><a class="" href="temporal-analysis-and-citation-aging.html"><span class="header-section-number">15</span> Temporal Analysis and Citation Aging</a></li>
+<li class="book-part">Network &amp; Mapping Methods</li>
+<li><a class="" href="co-authorship-networks.html"><span class="header-section-number">16</span> Co-authorship Networks</a></li>
+<li><a class="" href="co-citation-and-bibliographic-coupling.html"><span class="header-section-number">17</span> Co-citation and Bibliographic Coupling</a></li>
+<li><a class="" href="co-word-and-keyword-co-occurrence.html"><span class="header-section-number">18</span> Co-word and Keyword Co-occurrence</a></li>
+<li><a class="" href="community-detection-and-backbone-extraction.html"><span class="header-section-number">19</span> Community Detection and Backbone Extraction</a></li>
+<li><a class="" href="science-mapping-and-overlay-maps.html"><span class="header-section-number">20</span> Science Mapping and Overlay Maps</a></li>
+<li><a class="active" href="network-visualization-and-interoperability.html"><span class="header-section-number">21</span> Network Visualization and Interoperability</a></li>
+<li class="book-part">Text &amp; Topic Analysis</li>
+<li><a class="" href="text-mining-bibliographic-corpora.html"><span class="header-section-number">22</span> Text Mining Bibliographic Corpora</a></li>
+<li><a class="" href="topic-modeling.html"><span class="header-section-number">23</span> Topic Modeling</a></li>
+<li><a class="" href="keyword-extraction.html"><span class="header-section-number">24</span> Keyword Extraction</a></li>
+<li><a class="" href="embeddings-for-scientometrics.html"><span class="header-section-number">25</span> Embeddings for Scientometrics</a></li>
+<li><a class="" href="detecting-emerging-topics.html"><span class="header-section-number">26</span> Detecting Emerging Topics</a></li>
+<li class="book-part">Advanced Topics</li>
+<li><a class="" href="altmetrics.html"><span class="header-section-number">27</span> Altmetrics</a></li>
+<li><a class="" href="open-science-indicators.html"><span class="header-section-number">28</span> Open Science Indicators</a></li>
+<li><a class="" href="gender-and-equity-analysis.html"><span class="header-section-number">29</span> Gender and Equity Analysis</a></li>
+<li><a class="" href="retraction-analysis.html"><span class="header-section-number">30</span> Retraction Analysis</a></li>
+<li><a class="" href="funding-analysis-and-grant-to-publication-linkage.html"><span class="header-section-number">31</span> Funding Analysis and Grant-to-Publication Linkage</a></li>
+<li><a class="" href="patentpaper-linkages.html"><span class="header-section-number">32</span> Patent–Paper Linkages</a></li>
+<li><a class="" href="causal-inference-in-scientometrics.html"><span class="header-section-number">33</span> Causal Inference in Scientometrics</a></li>
+<li><a class="" href="reproducibility-rrids-and-badges.html"><span class="header-section-number">34</span> Reproducibility, RRIDs, and Badges</a></li>
+<li class="book-part">Production &amp; Reporting</li>
+<li><a class="" href="reproducible-pipelines.html"><span class="header-section-number">35</span> Reproducible Pipelines</a></li>
+<li><a class="" href="interactive-dashboards.html"><span class="header-section-number">36</span> Interactive Dashboards</a></li>
+<li><a class="" href="parameterized-quarto-reports.html"><span class="header-section-number">37</span> Parameterized Quarto Reports</a></li>
+<li><a class="" href="building-a-bibliometric-shiny-app.html"><span class="header-section-number">38</span> Building a Bibliometric Shiny App</a></li>
+<li class="book-part">Case Studies</li>
+<li><a class="" href="case-study-1-crispr-field-review-20102024.html"><span class="header-section-number">39</span> Case Study 1: CRISPR Field Review (2010–2024)</a></li>
+<li><a class="" href="case-study-2-institutional-benchmarking.html"><span class="header-section-number">40</span> Case Study 2: Institutional Benchmarking</a></li>
+<li><a class="" href="case-study-3-journal-portfolio-analysis.html"><span class="header-section-number">41</span> Case Study 3: Journal Portfolio Analysis</a></li>
+<li><a class="" href="case-study-4-gender-gap-in-scientific-publishing.html"><span class="header-section-number">42</span> Case Study 4: Gender Gap in Scientific Publishing</a></li>
+<li><a class="" href="case-study-5-detecting-emerging-topics.html"><span class="header-section-number">43</span> Case Study 5: Detecting Emerging Topics</a></li>
+<li class="book-part">Appendix</li>
+<li><a class="" href="r-setup-renv-and-docker.html"><span class="header-section-number">A</span> R Setup, renv, and Docker</a></li>
+<li><a class="" href="sql-primer-for-the-openalex-snapshot.html"><span class="header-section-number">B</span> SQL Primer for the OpenAlex Snapshot</a></li>
+<li><a class="" href="indicator-crosswalk-across-databases.html"><span class="header-section-number">C</span> Indicator Crosswalk Across Databases</a></li>
+<li><a class="" href="cheatsheets-and-quick-reference.html"><span class="header-section-number">D</span> Cheatsheets and Quick Reference</a></li>
+<li><a class="" href="exercise-solutions.html"><span class="header-section-number">E</span> Exercise Solutions</a></li>
+<li><a class="" href="solutions.html"><span class="header-section-number">F</span> Exercise Solutions</a></li>
+<li><a class="" href="glossary.html">Glossary</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/scientometrics-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="network-visualization-and-interoperability" class="section level1" number="21">
+<h1>
+<span class="header-section-number">21</span> Network Visualization and Interoperability<a class="anchor" aria-label="anchor" href="#network-visualization-and-interoperability"><i class="fas fa-link"></i></a>
+</h1>
+<div id="viz-objectives" class="section level2" number="21.1">
+<h2>
+<span class="header-section-number">21.1</span> Learning objectives<a class="anchor" aria-label="anchor" href="#viz-objectives"><i class="fas fa-link"></i></a>
+</h2>
+<p>After completing this chapter, you will be able to:</p>
+<ul>
+<li>Choose appropriate layout algorithms for different network types</li>
+<li>Export igraph networks to Gephi (GraphML), VOSviewer, and Pajek formats</li>
+<li>Create interactive network visualisations with <code>visNetwork</code>
+</li>
+<li>Apply colour and size encoding that communicates structure clearly</li>
+<li>Produce publication-quality static network figures with <code>ggraph</code>
+</li>
+</ul>
+</div>
+<div id="viz-setup" class="section level2" number="21.2">
+<h2>
+<span class="header-section-number">21.2</span> Setup<a class="anchor" aria-label="anchor" href="#viz-setup"><i class="fas fa-link"></i></a>
+</h2>
+<div class="sourceCode" id="cb306"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/openalexR">openalexR</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/">igraph</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidygraph.data-imaginist.com">tidygraph</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggraph.data-imaginist.com">ggraph</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://datastorm-open.github.io/visNetwork/">visNetwork</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://glue.tidyverse.org/">glue</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">20260509</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"api_helpers.R"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"utils.R"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"sci_palette.R"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="viz-background" class="section level2" number="21.3">
+<h2>
+<span class="header-section-number">21.3</span> Conceptual background<a class="anchor" aria-label="anchor" href="#viz-background"><i class="fas fa-link"></i></a>
+</h2>
+<p>Network visualisation is both an analytical tool and a communication device. A well-designed network figure can reveal structure — clusters, bridges, outliers — at a glance. A poorly designed one obscures these patterns in visual noise.</p>
+<p><strong>Layout algorithms</strong> determine node positions. Force-directed layouts (Fruchterman-Reingold, Kamada-Kawai) simulate physical forces: connected nodes attract, all nodes repel. They work well for small-to-medium networks (up to ~1,000 nodes) and produce aesthetically pleasing results. For larger networks, the DrL (Distributed Recursive Layout) or OpenOrd algorithms scale better. For trees or hierarchies, Reingold-Tilford or Sugiyama layouts are appropriate. The choice of algorithm depends on the network’s structure and the visual question being asked.</p>
+<p><strong>Visual encoding</strong> maps network properties to visual channels: node size (degree, centrality), node colour (community, attribute), edge width (weight), and edge colour or transparency. Effective encoding follows the principle of proportional ink: the visual weight of an element should correspond to its data importance. Avoid redundant encoding (mapping the same variable to both size and colour) and limit the number of distinct colours to what the reader can distinguish (typically 8–12 categories) <span class="citation">(<a href="references.html#ref-fortunato2010">Fortunato 2010</a>)</span>.</p>
+<p><strong>Interoperability</strong> is essential because no single tool excels at everything. R with igraph and ggraph is excellent for reproducible analysis and publication figures. Gephi <span class="citation">(<a href="references.html#ref-bastian2009">Bastian et al. 2009</a>)</span> provides a rich GUI for exploration and layout refinement. VOSviewer specialises in bibliometric network visualisation with built-in clustering. Pajek handles very large networks efficiently. A practical workflow often involves constructing and analysing the network in R, then exporting to a specialised tool for specific visualisation tasks.</p>
+<p><strong>Reproducibility</strong> requires that layouts are deterministic. Force-directed algorithms start from random positions, so <code><a href="https://rdrr.io/r/base/Random.html">set.seed()</a></code> before every layout computation. For cross-tool reproducibility, export node coordinates alongside the network data.</p>
+</div>
+<div id="viz-example" class="section level2" number="21.4">
+<h2>
+<span class="header-section-number">21.4</span> Worked example<a class="anchor" aria-label="anchor" href="#viz-example"><i class="fas fa-link"></i></a>
+</h2>
+<div id="building-a-sample-network" class="section level3" number="21.4.1">
+<h3>
+<span class="header-section-number">21.4.1</span> Building a sample network<a class="anchor" aria-label="anchor" href="#building-a-sample-network"><i class="fas fa-link"></i></a>
+</h3>
+<p>We reuse a co-authorship network from Scientometrics.</p>
+<div class="sourceCode" id="cb307"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">works</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html">oa_fetch</a></span><span class="op">(</span></span>
+<span>  entity <span class="op">=</span> <span class="st">"works"</span>,</span>
+<span>  primary_location.source.id <span class="op">=</span> <span class="st">"S148561398"</span>,</span>
+<span>  from_publication_date <span class="op">=</span> <span class="st">"2021-01-01"</span>,</span>
+<span>  to_publication_date <span class="op">=</span> <span class="st">"2023-12-31"</span>,</span>
+<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sample <span class="op">=</span> <span class="fl">200</span>, seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">author_data</span> <span class="op">&lt;-</span> <span class="va">works</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">authorships</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html">unnest</a></span><span class="op">(</span><span class="va">authorships</span>, names_sep <span class="op">=</span> <span class="st">"_"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span>work_id <span class="op">=</span> <span class="va">id</span>, author_id <span class="op">=</span> <span class="va">authorships_id</span>,</span>
+<span>         author_name <span class="op">=</span> <span class="va">authorships_display_name</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">author_id</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">edges</span> <span class="op">&lt;-</span> <span class="va">author_data</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">inner_join</a></span><span class="op">(</span><span class="va">author_data</span>, by <span class="op">=</span> <span class="st">"work_id"</span>, suffix <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"_1"</span>, <span class="st">"_2"</span><span class="op">)</span>,</span>
+<span>             relationship <span class="op">=</span> <span class="st">"many-to-many"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">author_id_1</span> <span class="op">&lt;</span> <span class="va">author_id_2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">count</a></span><span class="op">(</span><span class="va">author_id_1</span>, <span class="va">author_id_2</span>, name <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/graph_from_data_frame.html">graph_from_data_frame</a></span><span class="op">(</span></span>
+<span>  <span class="va">edges</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">author_id_1</span>, <span class="va">author_id_2</span>, <span class="va">weight</span><span class="op">)</span>,</span>
+<span>  directed <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://r.igraph.org/reference/simplify.html">simplify</a></span><span class="op">(</span>edge.attr.comb <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>weight <span class="op">=</span> <span class="st">"sum"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/components.html">components</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span></span>
+<span><span class="va">giant</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/subgraph.html">induced_subgraph</a></span><span class="op">(</span><span class="va">g</span>, <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">comp</span><span class="op">$</span><span class="va">membership</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/which.min.html">which.max</a></span><span class="op">(</span><span class="va">comp</span><span class="op">$</span><span class="va">csize</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">comm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/cluster_leiden.html">cluster_leiden</a></span><span class="op">(</span><span class="va">giant</span>, resolution_parameter <span class="op">=</span> <span class="fl">1.0</span>,</span>
+<span>                       objective_function <span class="op">=</span> <span class="st">"modularity"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">community</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/communities.html">membership</a></span><span class="op">(</span><span class="va">comm</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">degree</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/degree.html">degree</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">author_lookup</span> <span class="op">&lt;-</span> <span class="va">author_data</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html">distinct</a></span><span class="op">(</span><span class="va">author_id</span>, <span class="va">author_name</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">label</span> <span class="op">&lt;-</span> <span class="va">author_lookup</span><span class="op">$</span><span class="va">author_name</span><span class="op">[</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/match.html">match</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>, <span class="va">author_lookup</span><span class="op">$</span><span class="va">author_id</span><span class="op">)</span></span>
+<span><span class="op">]</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Network: {vcount(giant)} nodes, {ecount(giant)} edges\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Network: 45 nodes, 382 edges</code></pre>
+</div>
+<div id="comparing-layout-algorithms" class="section level3" number="21.4.2">
+<h3>
+<span class="header-section-number">21.4.2</span> Comparing layout algorithms<a class="anchor" aria-label="anchor" href="#comparing-layout-algorithms"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb309"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tidygraph.data-imaginist.com/reference/tbl_graph.html">as_tbl_graph</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>community <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="va">community</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">layouts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"fr"</span>, <span class="st">"kk"</span>, <span class="st">"stress"</span>, <span class="st">"drl"</span><span class="op">)</span></span>
+<span><span class="va">layout_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Fruchterman-Reingold"</span>, <span class="st">"Kamada-Kawai"</span>, <span class="st">"Stress"</span>, <span class="st">"DrL"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html">map2</a></span><span class="op">(</span><span class="va">layouts</span>, <span class="va">layout_names</span>, <span class="kw">function</span><span class="op">(</span><span class="va">algo</span>, <span class="va">name</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/ggraph.html">ggraph</a></span><span class="op">(</span><span class="va">tg</span>, layout <span class="op">=</span> <span class="va">algo</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/geom_edge_link.html">geom_edge_link</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">0.1</span>, colour <span class="op">=</span> <span class="st">"grey60"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/geom_node_point.html">geom_node_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="va">community</span>, size <span class="op">=</span> <span class="va">degree</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_size.html">scale_size_continuous</a></span><span class="op">(</span>range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">4</span><span class="op">)</span>, guide <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu">palette_sci</span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/n_distinct.html">n_distinct</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">community</span><span class="op">)</span></span>
+<span>    <span class="op">)</span>, guide <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="va">name</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_void</a></span><span class="op">(</span>base_family <span class="op">=</span> <span class="st">"sans"</span>, base_size <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">patchwork</span><span class="fu">::</span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html">wrap_plots</a></span><span class="op">(</span><span class="va">plots</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:20-fig-viz-layouts"></span>
+<img src="scientometrics-in-r_files/figure-html/20-fig-viz-layouts-1.png" alt="A 2x2 panel showing the same co-authorship network plotted with Fruchterman-Reingold, Kamada-Kawai, stress, and DRL layouts. Node colours indicate communities." width="90%"><p class="caption">
+Figure 21.1: The same network rendered with four different layout algorithms.
+</p>
+</div>
+</div>
+<div id="exporting-to-graphml-gephi" class="section level3" number="21.4.3">
+<h3>
+<span class="header-section-number">21.4.3</span> Exporting to GraphML (Gephi)<a class="anchor" aria-label="anchor" href="#exporting-to-graphml-gephi"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb310"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">out_dir</span> <span class="op">&lt;-</span> <span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span></span>
+<span><span class="va">graphml_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">out_dir</span>, <span class="st">"coauth_network.graphml"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://r.igraph.org/reference/write_graph.html">write_graph</a></span><span class="op">(</span><span class="va">giant</span>, <span class="va">graphml_path</span>, format <span class="op">=</span> <span class="st">"graphml"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Exported GraphML: {graphml_path}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Exported GraphML: /home/runner/work/scientometrics-in-r/scientometrics-in-r/data/coauth_network.graphml</code></pre>
+<div class="sourceCode" id="cb312"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"File size: {round(file.size(graphml_path) / 1024, 1)} KB\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; File size: 42 KB</code></pre>
+</div>
+<div id="exporting-to-pajek-format" class="section level3" number="21.4.4">
+<h3>
+<span class="header-section-number">21.4.4</span> Exporting to Pajek format<a class="anchor" aria-label="anchor" href="#exporting-to-pajek-format"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb314"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pajek_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">out_dir</span>, <span class="st">"coauth_network.net"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://r.igraph.org/reference/write_graph.html">write_graph</a></span><span class="op">(</span><span class="va">giant</span>, <span class="va">pajek_path</span>, format <span class="op">=</span> <span class="st">"pajek"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Exported Pajek: {pajek_path}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Exported Pajek: /home/runner/work/scientometrics-in-r/scientometrics-in-r/data/coauth_network.net</code></pre>
+</div>
+<div id="exporting-to-vosviewer-format" class="section level3" number="21.4.5">
+<h3>
+<span class="header-section-number">21.4.5</span> Exporting to VOSviewer format<a class="anchor" aria-label="anchor" href="#exporting-to-vosviewer-format"><i class="fas fa-link"></i></a>
+</h3>
+<p>VOSviewer reads tab-separated map and network files.</p>
+<div class="sourceCode" id="cb316"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/layout_with_fr.html">layout_with_fr</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">vos_map</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/gorder.html">vcount</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  label <span class="op">=</span> <span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">label</span>,</span>
+<span>  x <span class="op">=</span> <span class="va">coords</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>,</span>
+<span>  y <span class="op">=</span> <span class="va">coords</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span>,</span>
+<span>  cluster <span class="op">=</span> <span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">community</span>,</span>
+<span>  weight <span class="op">=</span> <span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">degree</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">vos_network</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/graph_from_data_frame.html">as_data_frame</a></span><span class="op">(</span><span class="va">giant</span>, what <span class="op">=</span> <span class="st">"edges"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
+<span>    from_idx <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/match.html">match</a></span><span class="op">(</span><span class="va">from</span>, <span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">name</span><span class="op">)</span>,</span>
+<span>    to_idx <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/match.html">match</a></span><span class="op">(</span><span class="va">to</span>, <span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">name</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">from_idx</span>, <span class="va">to_idx</span>, <span class="va">weight</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">map_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">out_dir</span>, <span class="st">"vosviewer_map.txt"</span><span class="op">)</span></span>
+<span><span class="va">net_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">out_dir</span>, <span class="st">"vosviewer_network.txt"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://readr.tidyverse.org/reference/write_delim.html">write_tsv</a></span><span class="op">(</span><span class="va">vos_map</span>, <span class="va">map_path</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://readr.tidyverse.org/reference/write_delim.html">write_tsv</a></span><span class="op">(</span><span class="va">vos_network</span>, <span class="va">net_path</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"VOSviewer map: {map_path}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; VOSviewer map: /home/runner/work/scientometrics-in-r/scientometrics-in-r/data/vosviewer_map.txt</code></pre>
+<div class="sourceCode" id="cb318"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"VOSviewer network: {net_path}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; VOSviewer network: /home/runner/work/scientometrics-in-r/scientometrics-in-r/data/vosviewer_network.txt</code></pre>
+</div>
+<div id="interactive-visualisation-with-visnetwork" class="section level3" number="21.4.6">
+<h3>
+<span class="header-section-number">21.4.6</span> Interactive visualisation with visNetwork<a class="anchor" aria-label="anchor" href="#interactive-visualisation-with-visnetwork"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb320"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># HTML widget — only rendered for HTML output (PDF/EPUB skip this chunk).</span></span>
+<span><span class="va">vis_nodes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  id <span class="op">=</span> <span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>,</span>
+<span>  label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">degree</span> <span class="op">&gt;</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html">quantile</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">degree</span>, <span class="fl">0.9</span><span class="op">)</span>,</span>
+<span>                 <span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">label</span>, <span class="st">""</span><span class="op">)</span>,</span>
+<span>  title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">label</span>, <span class="st">"&lt;br&gt;Degree: "</span>, <span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">degree</span>,</span>
+<span>                 <span class="st">"&lt;br&gt;Community: "</span>, <span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">community</span><span class="op">)</span>,</span>
+<span>  group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">community</span><span class="op">)</span>,</span>
+<span>  value <span class="op">=</span> <span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">degree</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">vis_edges</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/graph_from_data_frame.html">as_data_frame</a></span><span class="op">(</span><span class="va">giant</span>, what <span class="op">=</span> <span class="st">"edges"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">from</span>, <span class="va">to</span>, weight <span class="op">=</span> <span class="va">weight</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/visNetwork/man/visNetwork.html">visNetwork</a></span><span class="op">(</span><span class="va">vis_nodes</span>, <span class="va">vis_edges</span>, width <span class="op">=</span> <span class="st">"100%"</span>, height <span class="op">=</span> <span class="st">"500px"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/visNetwork/man/visOptions.html">visOptions</a></span><span class="op">(</span>highlightNearest <span class="op">=</span> <span class="cn">TRUE</span>, nodesIdSelection <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/visNetwork/man/visPhysics.html">visPhysics</a></span><span class="op">(</span>stabilization <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/visNetwork/man/visLayout.html">visLayout</a></span><span class="op">(</span>randomSeed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:20-fig-viz-interactive"></span>
+<div id="htmlwidget-e63b7fc723c18ef9293a" style="width:100%;height:500px;" class="visNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e63b7fc723c18ef9293a">{"x":{"nodes":{"id":["https://openalex.org/A5000625068","https://openalex.org/A5000731718","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024577048","https://openalex.org/A5024996172","https://openalex.org/A5025309602","https://openalex.org/A5027014035","https://openalex.org/A5027124439","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5031368885","https://openalex.org/A5033632230","https://openalex.org/A5034444164","https://openalex.org/A5034823602","https://openalex.org/A5038807524","https://openalex.org/A5045231943","https://openalex.org/A5045484758","https://openalex.org/A5049559168","https://openalex.org/A5050215170","https://openalex.org/A5051954808","https://openalex.org/A5054110683","https://openalex.org/A5059741860","https://openalex.org/A5064266755","https://openalex.org/A5065022263","https://openalex.org/A5066125828","https://openalex.org/A5068542997","https://openalex.org/A5077977144","https://openalex.org/A5087878724","https://openalex.org/A5090229795","https://openalex.org/A5091199062","https://openalex.org/A5103223898","https://openalex.org/A5060375410","https://openalex.org/A5079208483","https://openalex.org/A5079602209","https://openalex.org/A5079666120","https://openalex.org/A5072449568","https://openalex.org/A5101261492"],"label":["","","","","","","","","Rodrigo Costas","","","Loet Leydesdorff","","","","Ludo Waltman","","","","","","Mike Thelwall","","","","","","","","","","","","Vincent Larivière","","","","","","","","","","",""],"title":["Isidro F. Aguillo<br>Degree: 26<br>Community: 1","Xiaozan Lyu<br>Degree: 1<br>Community: 1","Zaida Chinchilla‐Rodríguez<br>Degree: 26<br>Community: 1","Ciriaco Andrea D’Angelo<br>Degree: 26<br>Community: 1","Juan Miguel Campanario<br>Degree: 26<br>Community: 1","Giovanni Abramo<br>Degree: 26<br>Community: 1","Ben R. Martin<br>Degree: 26<br>Community: 1","Peter van den Besselaar<br>Degree: 26<br>Community: 1","Rodrigo Costas<br>Degree: 28<br>Community: 1","Hamid R. Jamali<br>Degree: 26<br>Community: 1","Simone Di Leo<br>Degree: 3<br>Community: 2","Loet Leydesdorff<br>Degree: 28<br>Community: 2","Monica Scannapieco<br>Degree: 2<br>Community: 2","Cristina I. Font-Julián<br>Degree: 1<br>Community: 3","Suzan Verberne<br>Degree: 3<br>Community: 4","Ludo Waltman<br>Degree: 29<br>Community: 4","Cassidy R. Sugimoto<br>Degree: 26<br>Community: 1","Ismael Ràfols<br>Degree: 26<br>Community: 1","Kevin W. Boyack<br>Degree: 26<br>Community: 1","Philipp Mayr<br>Degree: 26<br>Community: 1","Torben Schubert<br>Degree: 26<br>Community: 1","Mike Thelwall<br>Degree: 28<br>Community: 5","Matthew S. Bickley<br>Degree: 2<br>Community: 5","Adolfo Alonso‐Arroyo<br>Degree: 3<br>Community: 3","Nicolás Robinson‐García<br>Degree: 26<br>Community: 1","Shiji Chen<br>Degree: 3<br>Community: 6","Ferrán Catalá-López<br>Degree: 3<br>Community: 3","Isabella Peters<br>Degree: 26<br>Community: 1","Thed N. van Leeuwen<br>Degree: 26<br>Community: 1","Marc Luwel<br>Degree: 26<br>Community: 1","Fei Shu<br>Degree: 4<br>Community: 6","Juan Pablo Bascur<br>Degree: 3<br>Community: 4","Quentin L. Burrell<br>Degree: 26<br>Community: 1","Vincent Larivière<br>Degree: 30<br>Community: 6","Enrique Orduña‐Malea<br>Degree: 5<br>Community: 3","Henry Small<br>Degree: 26<br>Community: 1","Anne‐Wil Harzing<br>Degree: 26<br>Community: 1","Dag W. Aksnes<br>Degree: 26<br>Community: 1","Katherine W. McCain<br>Degree: 26<br>Community: 1","Cinzia Daraio<br>Degree: 3<br>Community: 2","Nees Jan van Eck<br>Degree: 3<br>Community: 4","Kayvan Kousha<br>Degree: 2<br>Community: 5","José-Antonio Ontalba-Ruipérez<br>Degree: 3<br>Community: 3","Yanhui Song<br>Degree: 3<br>Community: 6","Meijia Yang<br>Degree: 2<br>Community: 6"],"group":["1","1","1","1","1","1","1","1","1","1","2","2","2","3","4","4","1","1","1","1","1","5","5","3","1","6","3","1","1","1","6","4","1","6","3","1","1","1","1","2","4","5","3","6","6"],"value":[26,1,26,26,26,26,26,26,28,26,3,28,2,1,3,29,26,26,26,26,26,28,2,3,26,3,3,26,26,26,4,3,26,30,5,26,26,26,26,3,3,2,3,3,2]},"edges":{"from":["https://openalex.org/A5000625068","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5000625068","https://openalex.org/A5000731718","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024577048","https://openalex.org/A5024577048","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027124439","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5031368885","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5031368885","https://openalex.org/A5033632230","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5031368885","https://openalex.org/A5033632230","https://openalex.org/A5034444164","https://openalex.org/A5034823602","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5031368885","https://openalex.org/A5033632230","https://openalex.org/A5034444164","https://openalex.org/A5034823602","https://openalex.org/A5045231943","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5031368885","https://openalex.org/A5033632230","https://openalex.org/A5034444164","https://openalex.org/A5034823602","https://openalex.org/A5045484758","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5031368885","https://openalex.org/A5033632230","https://openalex.org/A5034444164","https://openalex.org/A5034823602","https://openalex.org/A5045484758","https://openalex.org/A5051954808","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5031368885","https://openalex.org/A5033632230","https://openalex.org/A5034444164","https://openalex.org/A5034823602","https://openalex.org/A5045484758","https://openalex.org/A5051954808","https://openalex.org/A5054110683","https://openalex.org/A5049559168","https://openalex.org/A5027124439","https://openalex.org/A5027467000","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5031368885","https://openalex.org/A5033632230","https://openalex.org/A5034444164","https://openalex.org/A5034823602","https://openalex.org/A5045484758","https://openalex.org/A5051954808","https://openalex.org/A5054110683","https://openalex.org/A5059741860","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5031368885","https://openalex.org/A5033632230","https://openalex.org/A5034444164","https://openalex.org/A5034823602","https://openalex.org/A5045484758","https://openalex.org/A5049559168","https://openalex.org/A5051954808","https://openalex.org/A5054110683","https://openalex.org/A5059741860","https://openalex.org/A5064266755","https://openalex.org/A5066125828","https://openalex.org/A5021971461","https://openalex.org/A5027014035","https://openalex.org/A5045231943","https://openalex.org/A5050215170","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5031368885","https://openalex.org/A5033632230","https://openalex.org/A5034444164","https://openalex.org/A5034823602","https://openalex.org/A5045484758","https://openalex.org/A5051954808","https://openalex.org/A5054110683","https://openalex.org/A5059741860","https://openalex.org/A5066125828","https://openalex.org/A5068542997","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5031368885","https://openalex.org/A5033632230","https://openalex.org/A5034444164","https://openalex.org/A5034823602","https://openalex.org/A5045484758","https://openalex.org/A5051954808","https://openalex.org/A5054110683","https://openalex.org/A5059741860","https://openalex.org/A5066125828","https://openalex.org/A5068542997","https://openalex.org/A5087878724","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5031368885","https://openalex.org/A5033632230","https://openalex.org/A5034444164","https://openalex.org/A5034823602","https://openalex.org/A5045484758","https://openalex.org/A5051954808","https://openalex.org/A5054110683","https://openalex.org/A5059741860","https://openalex.org/A5066125828","https://openalex.org/A5068542997","https://openalex.org/A5087878724","https://openalex.org/A5090229795","https://openalex.org/A5000625068","https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5031368885","https://openalex.org/A5033632230","https://openalex.org/A5034444164","https://openalex.org/A5034823602","https://openalex.org/A5045484758","https://openalex.org/A5051954808","https://openalex.org/A5054110683","https://openalex.org/A5059741860","https://openalex.org/A5066125828","https://openalex.org/A5068542997","https://openalex.org/A5087878724","https://openalex.org/A5090229795","https://openalex.org/A5091199062","https://openalex.org/A5024577048","https://openalex.org/A5024996172","https://openalex.org/A5025309602","https://openalex.org/A5027124439","https://openalex.org/A5027467000","https://openalex.org/A5065022263","https://openalex.org/A5034823602","https://openalex.org/A5038807524","https://openalex.org/A5045231943","https://openalex.org/A5050215170","https://openalex.org/A5077977144","https://openalex.org/A5049559168","https://openalex.org/A5064266755","https://openalex.org/A5068542997","https://openalex.org/A5064266755","https://openalex.org/A5068542997"],"to":["https://openalex.org/A5003945685","https://openalex.org/A5010349889","https://openalex.org/A5010349889","https://openalex.org/A5014107018","https://openalex.org/A5014107018","https://openalex.org/A5014107018","https://openalex.org/A5014545237","https://openalex.org/A5014545237","https://openalex.org/A5014545237","https://openalex.org/A5014545237","https://openalex.org/A5016189421","https://openalex.org/A5016189421","https://openalex.org/A5016189421","https://openalex.org/A5016189421","https://openalex.org/A5016189421","https://openalex.org/A5020581918","https://openalex.org/A5020581918","https://openalex.org/A5020581918","https://openalex.org/A5020581918","https://openalex.org/A5020581918","https://openalex.org/A5020581918","https://openalex.org/A5021971461","https://openalex.org/A5021971461","https://openalex.org/A5021971461","https://openalex.org/A5021971461","https://openalex.org/A5021971461","https://openalex.org/A5021971461","https://openalex.org/A5021971461","https://openalex.org/A5021971461","https://openalex.org/A5023462838","https://openalex.org/A5023462838","https://openalex.org/A5023462838","https://openalex.org/A5023462838","https://openalex.org/A5023462838","https://openalex.org/A5023462838","https://openalex.org/A5023462838","https://openalex.org/A5023462838","https://openalex.org/A5024996172","https://openalex.org/A5024996172","https://openalex.org/A5024996172","https://openalex.org/A5024996172","https://openalex.org/A5024996172","https://openalex.org/A5024996172","https://openalex.org/A5024996172","https://openalex.org/A5024996172","https://openalex.org/A5024996172","https://openalex.org/A5024996172","https://openalex.org/A5025309602","https://openalex.org/A5027467000","https://openalex.org/A5027467000","https://openalex.org/A5027467000","https://openalex.org/A5027467000","https://openalex.org/A5027467000","https://openalex.org/A5027467000","https://openalex.org/A5027467000","https://openalex.org/A5027467000","https://openalex.org/A5027467000","https://openalex.org/A5027467000","https://openalex.org/A5027467000","https://openalex.org/A5029483412","https://openalex.org/A5029483412","https://openalex.org/A5029483412","https://openalex.org/A5029483412","https://openalex.org/A5029483412","https://openalex.org/A5029483412","https://openalex.org/A5029483412","https://openalex.org/A5029483412","https://openalex.org/A5029483412","https://openalex.org/A5029483412","https://openalex.org/A5029483412","https://openalex.org/A5030682192","https://openalex.org/A5030682192","https://openalex.org/A5030682192","https://openalex.org/A5030682192","https://openalex.org/A5030682192","https://openalex.org/A5030682192","https://openalex.org/A5030682192","https://openalex.org/A5030682192","https://openalex.org/A5030682192","https://openalex.org/A5030682192","https://openalex.org/A5030682192","https://openalex.org/A5030682192","https://openalex.org/A5031368885","https://openalex.org/A5031368885","https://openalex.org/A5031368885","https://openalex.org/A5031368885","https://openalex.org/A5031368885","https://openalex.org/A5031368885","https://openalex.org/A5031368885","https://openalex.org/A5031368885","https://openalex.org/A5031368885","https://openalex.org/A5031368885","https://openalex.org/A5031368885","https://openalex.org/A5031368885","https://openalex.org/A5031368885","https://openalex.org/A5033632230","https://openalex.org/A5033632230","https://openalex.org/A5033632230","https://openalex.org/A5033632230","https://openalex.org/A5033632230","https://openalex.org/A5033632230","https://openalex.org/A5033632230","https://openalex.org/A5033632230","https://openalex.org/A5033632230","https://openalex.org/A5033632230","https://openalex.org/A5033632230","https://openalex.org/A5033632230","https://openalex.org/A5033632230","https://openalex.org/A5033632230","https://openalex.org/A5034444164","https://openalex.org/A5034444164","https://openalex.org/A5034444164","https://openalex.org/A5034444164","https://openalex.org/A5034444164","https://openalex.org/A5034444164","https://openalex.org/A5034444164","https://openalex.org/A5034444164","https://openalex.org/A5034444164","https://openalex.org/A5034444164","https://openalex.org/A5034444164","https://openalex.org/A5034444164","https://openalex.org/A5034444164","https://openalex.org/A5034444164","https://openalex.org/A5034444164","https://openalex.org/A5034823602","https://openalex.org/A5034823602","https://openalex.org/A5034823602","https://openalex.org/A5034823602","https://openalex.org/A5034823602","https://openalex.org/A5034823602","https://openalex.org/A5034823602","https://openalex.org/A5034823602","https://openalex.org/A5034823602","https://openalex.org/A5034823602","https://openalex.org/A5034823602","https://openalex.org/A5034823602","https://openalex.org/A5034823602","https://openalex.org/A5034823602","https://openalex.org/A5034823602","https://openalex.org/A5034823602","https://openalex.org/A5038807524","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5045484758","https://openalex.org/A5050215170","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5051954808","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5054110683","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5059741860","https://openalex.org/A5064266755","https://openalex.org/A5065022263","https://openalex.org/A5065022263","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5066125828","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5068542997","https://openalex.org/A5077977144","https://openalex.org/A5077977144","https://openalex.org/A5077977144","https://openalex.org/A5077977144","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5087878724","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5090229795","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5091199062","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5103223898","https://openalex.org/A5060375410","https://openalex.org/A5060375410","https://openalex.org/A5060375410","https://openalex.org/A5079208483","https://openalex.org/A5079208483","https://openalex.org/A5079208483","https://openalex.org/A5079602209","https://openalex.org/A5079602209","https://openalex.org/A5079666120","https://openalex.org/A5079666120","https://openalex.org/A5079666120","https://openalex.org/A5072449568","https://openalex.org/A5072449568","https://openalex.org/A5072449568","https://openalex.org/A5101261492","https://openalex.org/A5101261492"],"weight":[1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,2,2,1,1,1,1,1,1,1,1]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false},"physics":{"stabilization":false},"layout":{"randomSeed":42}},"groups":["1","2","3","4","5","6"],"width":"100%","height":"500px","idselection":{"enabled":true,"style":"width: 150px; height: 26px","useLabels":true,"main":"Select by id"},"byselection":{"enabled":false,"style":"width: 150px; height: 26px","multiple":false,"hideColor":"rgba(200,200,200,0.5)","highlight":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)","highlight":{"enabled":true,"hoverNearest":false,"degree":1,"algorithm":"all","hideColor":"rgba(200,200,200,0.5)","labelOnly":true},"collapse":{"enabled":false,"fit":false,"resetHighlight":true,"clusterOptions":null,"keepCoord":true,"labelSuffix":"(cluster)"}},"evals":[],"jsHooks":[]}</script><p class="caption">
+Figure 21.2: Interactive co-authorship network (zoom, pan, and hover for details).
+</p>
+</div>
+</div>
+<div id="publication-quality-figure" class="section level3" number="21.4.7">
+<h3>
+<span class="header-section-number">21.4.7</span> Publication-quality figure<a class="anchor" aria-label="anchor" href="#publication-quality-figure"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb321"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggraph.data-imaginist.com/reference/ggraph.html">ggraph</a></span><span class="op">(</span><span class="va">tg</span>, layout <span class="op">=</span> <span class="st">"fr"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/geom_edge_link.html">geom_edge_link</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">0.08</span>, colour <span class="op">=</span> <span class="st">"grey60"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/geom_node_point.html">geom_node_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>size <span class="op">=</span> <span class="va">degree</span>, colour <span class="op">=</span> <span class="va">community</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/geom_node_text.html">geom_node_text</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">degree</span> <span class="op">&gt;</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html">quantile</a></span><span class="op">(</span><span class="va">degree</span>, <span class="fl">0.95</span><span class="op">)</span>, <span class="va">label</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    repel <span class="op">=</span> <span class="cn">TRUE</span>, size <span class="op">=</span> <span class="fl">2.5</span>, max.overlaps <span class="op">=</span> <span class="fl">15</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_size.html">scale_size_continuous</a></span><span class="op">(</span>range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">6</span><span class="op">)</span>, guide <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu">palette_sci</span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/n_distinct.html">n_distinct</a></span><span class="op">(</span><span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">community</span><span class="op">)</span></span>
+<span>  <span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="st">"Community"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_void</a></span><span class="op">(</span>base_family <span class="op">=</span> <span class="st">"sans"</span>, base_size <span class="op">=</span> <span class="fl">11</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:20-fig-viz-publication"></span>
+<img src="scientometrics-in-r_files/figure-html/20-fig-viz-publication-1.png" alt="A clean, publication-quality network visualisation with minimal visual clutter. High-degree nodes are labelled with author names. Community colours are distinct and colour-blind friendly." width="90%"><p class="caption">
+Figure 21.3: Publication-ready co-authorship network with labelled high-degree nodes.
+</p>
+</div>
+</div>
+</div>
+<div id="viz-diagnostics" class="section level2" number="21.5">
+<h2>
+<span class="header-section-number">21.5</span> Diagnostics and interpretation<a class="anchor" aria-label="anchor" href="#viz-diagnostics"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Layout quality</strong>: A good layout separates communities visually, minimises edge crossings, and distributes nodes evenly. If communities overlap heavily, try a different algorithm or increase the number of layout iterations.</li>
+<li>
+<strong>Readability</strong>: If the network is too dense to read, reduce the number of nodes (filter by degree), increase edge transparency, or remove edges below a weight threshold.</li>
+<li>
+<strong>Colour distinguishability</strong>: Test figures in greyscale and with colour-blindness simulators. Viridis-based palettes (used by <code>palette_sci()</code>) are designed for this.</li>
+<li>
+<strong>Export verification</strong>: After exporting, open the file in the target tool (Gephi, VOSviewer) to verify that node attributes, edge weights, and labels transferred correctly.</li>
+</ul>
+</div>
+<div id="viz-limitations" class="section level2" number="21.6">
+<h2>
+<span class="header-section-number">21.6</span> Limitations and responsible use<a class="anchor" aria-label="anchor" href="#viz-limitations"><i class="fas fa-link"></i></a>
+</h2>
+</div>
+<div id="limitations-and-responsible-use-19" class="section level2 callout callout-warn" number="21.7">
+<h2>
+<span class="header-section-number">21.7</span> Limitations and responsible use<a class="anchor" aria-label="anchor" href="#limitations-and-responsible-use-19"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Visualisation is not analysis.</strong> A network figure is a communication tool. The visual impression can mislead if the layout, filtering, or colour encoding obscures structure. Always report the quantitative metrics alongside figures.</li>
+<li>
+<strong>Layout is not geography.</strong> Absolute positions in a force-directed layout are meaningless; only relative distances carry information. Never compare positions across different layouts or runs without the same seed.</li>
+<li>
+<strong>Large networks are unreadable.</strong> Beyond ~500 nodes, static network plots become unintelligible. Use interactive visualisation, backbone extraction (<a href="community-detection-and-backbone-extraction.html#backbone-example">19.4</a>), or subnetwork extraction for large data.</li>
+<li>
+<strong>Export formats lose information.</strong> GraphML preserves most attributes; Pajek format is more limited. Always verify exports and document what was lost <span class="citation">(<a href="references.html#ref-hicks2015">Hicks et al. 2015</a>)</span>.</li>
+</ul>
+</div>
+<div id="viz-pitfalls" class="section level2" number="21.8">
+<h2>
+<span class="header-section-number">21.8</span> Common pitfalls<a class="anchor" aria-label="anchor" href="#viz-pitfalls"><i class="fas fa-link"></i></a>
+</h2>
+</div>
+<div id="common-pitfalls-19" class="section level2 callout callout-stop" number="21.9">
+<h2>
+<span class="header-section-number">21.9</span> Common pitfalls<a class="anchor" aria-label="anchor" href="#common-pitfalls-19"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Forgetting <code><a href="https://rdrr.io/r/base/Random.html">set.seed()</a></code>.</strong> Without a fixed seed, force-directed layouts change every render, making figures irreproducible across HTML and PDF.</li>
+<li>
+<strong>Encoding too many variables.</strong> Mapping degree to size, community to colour, <em>and</em> betweenness to transparency creates visual overload. Choose two visual channels at most.</li>
+<li>
+<strong>Using default igraph plots.</strong> Base R <code><a href="https://r.igraph.org/reference/plot.igraph.html">plot.igraph()</a></code> produces low-quality figures. Use <code>ggraph</code> for publication and <code>visNetwork</code> for interactive exploration.</li>
+<li>
+<strong>Exporting without coordinates.</strong> If you export a network to Gephi without coordinates, Gephi will recompute the layout, producing a different figure than your R output.</li>
+</ul>
+</div>
+<div id="viz-exercises" class="section level2" number="21.10">
+<h2>
+<span class="header-section-number">21.10</span> Exercises<a class="anchor" aria-label="anchor" href="#viz-exercises"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Layout comparison.</strong> Apply five different layout algorithms to the same network. Which layout best reveals the community structure? Time each layout and report the trade-off between quality and speed.</p></li>
+<li><p><strong>Interactive filtering.</strong> Create a <code>visNetwork</code> visualisation where users can filter by community membership. Add a dropdown selector for community.</p></li>
+<li><p><strong>Gephi round-trip.</strong> Export the network to GraphML, import into Gephi, apply a Force Atlas 2 layout, export as PDF. Compare the Gephi figure with the ggraph version.</p></li>
+<li><p><strong>Colour-blind check.</strong> Render the network figure with 3, 5, and 10 communities. At what point do the viridis colours become hard to distinguish? Test with a colour-blindness simulator.</p></li>
+</ol>
+</div>
+<div id="solutions-19" class="section level2 callout callout-ok" number="21.11">
+<h2>
+<span class="header-section-number">21.11</span> Solutions<a class="anchor" aria-label="anchor" href="#solutions-19"><i class="fas fa-link"></i></a>
+</h2>
+<p>Solutions are provided in <a href="what-is-scientometrics.html#solutions">2.11</a>.</p>
+</div>
+<div id="viz-reading" class="section level2" number="21.12">
+<h2>
+<span class="header-section-number">21.12</span> Further reading<a class="anchor" aria-label="anchor" href="#viz-reading"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<span class="citation">Bastian et al. (<a href="references.html#ref-bastian2009">2009</a>)</span> — Gephi: an open-source platform for network visualisation and exploration.</li>
+<li>
+<span class="citation">Fortunato (<a href="references.html#ref-fortunato2010">2010</a>)</span> — Community detection methods with extensive visualisation examples.</li>
+<li>
+<span class="citation">Waltman et al. (<a href="references.html#ref-waltman2012">2010</a>)</span> — VOSviewer’s approach to bibliometric network visualisation.</li>
+<li>
+<span class="citation">Aria and Cuccurullo (<a href="references.html#ref-aria2017">2017</a>)</span> — <code>bibliometrix</code> includes network visualisation via <code><a href="https://rdrr.io/pkg/bibliometrix/man/biblioshiny.html">biblioshiny()</a></code>.</li>
+</ul>
+</div>
+<div id="viz-sessioninfo" class="section level2" number="21.13">
+<h2>
+<span class="header-section-number">21.13</span> Session info<a class="anchor" aria-label="anchor" href="#viz-sessioninfo"><i class="fas fa-link"></i></a>
+</h2>
+<div class="sourceCode" id="cb322"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; R version 4.4.1 (2024-06-14)
+#&gt; Platform: x86_64-pc-linux-gnu
+#&gt; Running under: Ubuntu 24.04.4 LTS
+#&gt; 
+#&gt; Matrix products: default
+#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+#&gt; 
+#&gt; locale:
+#&gt;  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8        LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8   
+#&gt;  [6] LC_MESSAGES=C.UTF-8    LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C           LC_TELEPHONE=C        
+#&gt; [11] LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+#&gt; 
+#&gt; time zone: UTC
+#&gt; tzcode source: system (glibc)
+#&gt; 
+#&gt; attached base packages:
+#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     
+#&gt; 
+#&gt; other attached packages:
+#&gt;  [1] visNetwork_2.1.4   ggraph_2.2.2       tidygraph_1.3.1    igraph_2.3.1       quanteda_4.4       pdftools_3.8.0    
+#&gt;  [7] arrow_24.0.0       bibliometrix_5.3.0 RefManageR_1.4.0   bib2df_1.1.2.0     rcrossref_1.2.1    gt_1.3.0          
+#&gt; [13] tidytext_0.4.3     glue_1.8.1         openalexR_3.0.1    lubridate_1.9.5    forcats_1.0.1      stringr_1.6.0     
+#&gt; [19] dplyr_1.2.1        purrr_1.2.2        readr_2.2.0        tidyr_1.3.2        tibble_3.3.1       ggplot2_4.0.3     
+#&gt; [25] tidyverse_2.0.0   
+#&gt; 
+#&gt; loaded via a namespace (and not attached):
+#&gt;   [1] bibtex_0.5.2           RColorBrewer_1.1-3     rstudioapi_0.18.0      jsonlite_2.0.0         magrittr_2.0.5        
+#&gt;   [6] farver_2.1.2           rmarkdown_2.31         fs_2.1.0               vctrs_0.7.3            memoise_2.0.1         
+#&gt;  [11] askpass_1.2.1          base64enc_0.1-6        htmltools_0.5.9        contentanalysis_1.0.0  curl_7.1.0            
+#&gt;  [16] janeaustenr_1.0.0      cellranger_1.1.0       sass_0.4.10            bslib_0.10.0           htmlwidgets_1.6.4     
+#&gt;  [21] tokenizers_0.3.0       plyr_1.8.9             httr2_1.2.2            plotly_4.12.0          cachem_1.1.0          
+#&gt;  [26] dimensionsR_0.0.3      mime_0.13              lifecycle_1.0.5        pkgconfig_2.0.3        Matrix_1.7-0          
+#&gt;  [31] R6_2.6.1               fastmap_1.2.0          shiny_1.13.0           digest_0.6.39          patchwork_1.3.2       
+#&gt;  [36] shinycssloaders_1.1.0  rprojroot_2.1.1        SnowballC_0.7.1        labeling_0.4.3         urltools_1.7.3.1      
+#&gt;  [41] timechange_0.4.0       polyclip_1.10-7        httr_1.4.8             compiler_4.4.1         here_1.0.2            
+#&gt;  [46] bit64_4.8.0            withr_3.0.2            S7_0.2.2               backports_1.5.1        viridis_0.6.5         
+#&gt;  [51] ggforce_0.5.0          MASS_7.3-60.2          rappdirs_0.3.4         bibliometrixData_0.3.0 tools_4.4.1           
+#&gt;  [56] otel_0.2.0             stopwords_2.3          zip_2.3.3              httpuv_1.6.17          rentrez_1.2.4         
+#&gt;  [61] promises_1.5.0         grid_4.4.1             stringdist_0.9.17      generics_0.1.4         gtable_0.3.6          
+#&gt;  [66] tzdb_0.5.0             rscopus_0.9.0          ca_0.71.1              data.table_1.18.4      hms_1.1.4             
+#&gt;  [71] xml2_1.5.2             utf8_1.2.6             ggrepel_0.9.8          pillar_1.11.1          vroom_1.7.1           
+#&gt;  [76] later_1.4.8            tweenr_2.0.3           brand.yml_0.1.0        lattice_0.22-6         bit_4.6.0             
+#&gt;  [81] tidyselect_1.2.1       miniUI_0.1.2           downlit_0.4.5          knitr_1.51             gridExtra_2.3         
+#&gt;  [86] bookdown_0.46          crul_1.6.0             xfun_0.57              graphlayouts_1.2.3     DT_0.34.0             
+#&gt;  [91] humaniformat_0.6.0     stringi_1.8.7          lazyeval_0.2.3         qpdf_1.4.1             yaml_2.3.12           
+#&gt;  [96] evaluate_1.0.5         codetools_0.2-20       httpcode_0.3.0         cli_3.6.6              xtable_1.8-8          
+#&gt; [101] jquerylib_0.1.4        dichromat_2.0-0.1      Rcpp_1.1.1-1.1         readxl_1.4.5           triebeard_0.4.1       
+#&gt; [106] XML_3.99-0.23          parallel_4.4.1         assertthat_0.2.1       pubmedR_1.0.2          viridisLite_0.4.3     
+#&gt; [111] scales_1.4.0           crayon_1.5.3           openxlsx_4.2.8.1       rlang_1.2.0            fastmatch_1.1-8</code></pre>
+
+</div>
+</div>
+
+
+
+<div class="chapter-nav">
+<div class="prev"><a href="science-mapping-and-overlay-maps.html"><span class="header-section-number">20</span> Science Mapping and Overlay Maps</a></div>
+<div class="next"><a href="text-mining-bibliographic-corpora.html"><span class="header-section-number">22</span> Text Mining Bibliographic Corpora</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#network-visualization-and-interoperability"><span class="header-section-number">21</span> Network Visualization and Interoperability</a></li>
+<li><a class="nav-link" href="#viz-objectives"><span class="header-section-number">21.1</span> Learning objectives</a></li>
+<li><a class="nav-link" href="#viz-setup"><span class="header-section-number">21.2</span> Setup</a></li>
+<li><a class="nav-link" href="#viz-background"><span class="header-section-number">21.3</span> Conceptual background</a></li>
+<li>
+<a class="nav-link" href="#viz-example"><span class="header-section-number">21.4</span> Worked example</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#building-a-sample-network"><span class="header-section-number">21.4.1</span> Building a sample network</a></li>
+<li><a class="nav-link" href="#comparing-layout-algorithms"><span class="header-section-number">21.4.2</span> Comparing layout algorithms</a></li>
+<li><a class="nav-link" href="#exporting-to-graphml-gephi"><span class="header-section-number">21.4.3</span> Exporting to GraphML (Gephi)</a></li>
+<li><a class="nav-link" href="#exporting-to-pajek-format"><span class="header-section-number">21.4.4</span> Exporting to Pajek format</a></li>
+<li><a class="nav-link" href="#exporting-to-vosviewer-format"><span class="header-section-number">21.4.5</span> Exporting to VOSviewer format</a></li>
+<li><a class="nav-link" href="#interactive-visualisation-with-visnetwork"><span class="header-section-number">21.4.6</span> Interactive visualisation with visNetwork</a></li>
+<li><a class="nav-link" href="#publication-quality-figure"><span class="header-section-number">21.4.7</span> Publication-quality figure</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#viz-diagnostics"><span class="header-section-number">21.5</span> Diagnostics and interpretation</a></li>
+<li><a class="nav-link" href="#viz-limitations"><span class="header-section-number">21.6</span> Limitations and responsible use</a></li>
+<li><a class="nav-link" href="#limitations-and-responsible-use-19"><span class="header-section-number">21.7</span> Limitations and responsible use</a></li>
+<li><a class="nav-link" href="#viz-pitfalls"><span class="header-section-number">21.8</span> Common pitfalls</a></li>
+<li><a class="nav-link" href="#common-pitfalls-19"><span class="header-section-number">21.9</span> Common pitfalls</a></li>
+<li><a class="nav-link" href="#viz-exercises"><span class="header-section-number">21.10</span> Exercises</a></li>
+<li><a class="nav-link" href="#solutions-19"><span class="header-section-number">21.11</span> Solutions</a></li>
+<li><a class="nav-link" href="#viz-reading"><span class="header-section-number">21.12</span> Further reading</a></li>
+<li><a class="nav-link" href="#viz-sessioninfo"><span class="header-section-number">21.13</span> Session info</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/scientometrics-in-r/blob/main/chapters/20-visualization-interop.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/scientometrics-in-r/edit/main/chapters/20-visualization-interop.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+</div>
+<!-- Dark/light mode toggle -->
+<div class="sticky-item">
+  <button type="button" id="mode-switch" class="btn-circle-mode" aria-label="Toggle dark mode">
+    <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+  </button>
+</div>
+
+<script>
+  (function () {
+    var stored = localStorage.getItem('themeMode');
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var initial = stored || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', initial);
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var btn = document.getElementById('mode-switch');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('themeMode', next);
+      });
+    });
+  })();
+</script><!-- Per-chapter PDF download button --><script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!file || file === ".pdf") return;
+    var btn = document.createElement("a");
+    btn.href = "pdf-chapters/" + file;
+    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+    btn.style = "float:right;margin-top:0.5em;";
+    btn.textContent = "⬇ Download this chapter (PDF)";
+    var header = document.querySelector("main h1, .page-inner h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      header.appendChild(btn);
+    }
+  });
+</script><!-- Footer attribution --><div class="bookdown-attribution">
+  This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
+</div>
+  
+
+  
+
+</div>
+ <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

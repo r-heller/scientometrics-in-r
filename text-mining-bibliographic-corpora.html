@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 22 Text Mining Bibliographic Corpora | Scientometrics in R</title>
+<meta name="author" content="R. Heller">
+<meta name="description" content="22.1 Learning objectives After completing this chapter, you will be able to: Build a text corpus from OpenAlex titles and abstracts Apply standard preprocessing steps: tokenisation, stopword...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 22 Text Mining Bibliographic Corpora | Scientometrics in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/scientometrics-in-r/text-mining-bibliographic-corpora.html">
+<meta property="og:image" content="https://r-heller.github.io/scientometrics-in-r/images/cover.png">
+<meta property="og:description" content="22.1 Learning objectives After completing this chapter, you will be able to: Build a text corpus from OpenAlex titles and abstracts Apply standard preprocessing steps: tokenisation, stopword...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 22 Text Mining Bibliographic Corpora | Scientometrics in R">
+<meta name="twitter:description" content="22.1 Learning objectives After completing this chapter, you will be able to: Build a text corpus from OpenAlex titles and abstracts Apply standard preprocessing steps: tokenisation, stopword...">
+<meta name="twitter:image" content="https://r-heller.github.io/scientometrics-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><link href="libs/vis-9.1.0/vis-network.min.css" rel="stylesheet">
+<script src="libs/vis-9.1.0/vis-network.min.js"></script><script src="libs/visNetwork-binding-2.1.4/visNetwork.js"></script><link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="libs/plotly-binding-4.12.0/plotly.js"></script><script src="libs/typedarray-0.1/typedarray.min.js"></script><link href="libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="libs/crosstalk-1.2.2/js/crosstalk.min.js"></script><link href="libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="libs/plotly-main-2.25.2/plotly-latest.min.js"></script><link href="libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+<script src="libs/datatables-binding-0.34.0/datatables.js"></script><link href="libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet">
+<script src="libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script><link href="libs/nouislider-7.0.10/jquery.nouislider.min.css" rel="stylesheet">
+<script src="libs/nouislider-7.0.10/jquery.nouislider.min.js"></script><link href="libs/selectize-0.12.0/selectize.bootstrap3.css" rel="stylesheet">
+<script src="libs/selectize-0.12.0/selectize.min.js"></script><link href="libs/dt-plugin-searchhighlight-1.13.6/source.css" rel="stylesheet">
+<script src="libs/dt-plugin-searchhighlight-1.13.6/jquery.highlight.js"></script><script src="libs/dt-plugin-searchhighlight-1.13.6/source.min.js"></script><!-- Fonts (Hugo Coder set) --><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Local Font Awesome 6 (woff2 in style/webfonts/) --><link rel="stylesheet" href="style/font-awesome.min.css">
+<!-- Mermaid (for diagram chunks in chapter 0) --><script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+<link rel="stylesheet" href="style/font-awesome.min.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Bibliometrics, Network Science, and Research Evaluation">Scientometrics in R</a>:
+        <small class="text-muted">Bibliometrics, Network Science, and Research Evaluation</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Welcome!</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="find-your-method.html"><span class="header-section-number">1</span> Find Your Method</a></li>
+<li class="book-part">Foundations</li>
+<li><a class="" href="what-is-scientometrics.html"><span class="header-section-number">2</span> What Is Scientometrics?</a></li>
+<li><a class="" href="theoretical-underpinnings.html"><span class="header-section-number">3</span> Theoretical Underpinnings</a></li>
+<li><a class="" href="ethics-and-responsible-metrics.html"><span class="header-section-number">4</span> Ethics and Responsible Metrics</a></li>
+<li><a class="" href="data-sources-compared.html"><span class="header-section-number">5</span> Data Sources Compared</a></li>
+<li class="book-part">Data Acquisition in R</li>
+<li><a class="" href="apis-and-packages.html"><span class="header-section-number">6</span> APIs and Packages</a></li>
+<li><a class="" href="parsing-native-exports.html"><span class="header-section-number">7</span> Parsing Native Exports</a></li>
+<li><a class="" href="building-reproducible-corpora.html"><span class="header-section-number">8</span> Building Reproducible Corpora</a></li>
+<li><a class="" href="working-with-full-text.html"><span class="header-section-number">9</span> Working with Full Text</a></li>
+<li class="book-part">Core Bibliometric Analysis</li>
+<li><a class="" href="descriptive-bibliometrics.html"><span class="header-section-number">10</span> Descriptive Bibliometrics</a></li>
+<li><a class="" href="productivity-and-impact-indicators.html"><span class="header-section-number">11</span> Productivity and Impact Indicators</a></li>
+<li><a class="" href="journal-metrics.html"><span class="header-section-number">12</span> Journal Metrics</a></li>
+<li><a class="" href="author-level-analysis-and-disambiguation.html"><span class="header-section-number">13</span> Author-Level Analysis and Disambiguation</a></li>
+<li><a class="" href="institutional-and-country-analysis.html"><span class="header-section-number">14</span> Institutional and Country Analysis</a></li>
+<li><a class="" href="temporal-analysis-and-citation-aging.html"><span class="header-section-number">15</span> Temporal Analysis and Citation Aging</a></li>
+<li class="book-part">Network &amp; Mapping Methods</li>
+<li><a class="" href="co-authorship-networks.html"><span class="header-section-number">16</span> Co-authorship Networks</a></li>
+<li><a class="" href="co-citation-and-bibliographic-coupling.html"><span class="header-section-number">17</span> Co-citation and Bibliographic Coupling</a></li>
+<li><a class="" href="co-word-and-keyword-co-occurrence.html"><span class="header-section-number">18</span> Co-word and Keyword Co-occurrence</a></li>
+<li><a class="" href="community-detection-and-backbone-extraction.html"><span class="header-section-number">19</span> Community Detection and Backbone Extraction</a></li>
+<li><a class="" href="science-mapping-and-overlay-maps.html"><span class="header-section-number">20</span> Science Mapping and Overlay Maps</a></li>
+<li><a class="" href="network-visualization-and-interoperability.html"><span class="header-section-number">21</span> Network Visualization and Interoperability</a></li>
+<li class="book-part">Text &amp; Topic Analysis</li>
+<li><a class="active" href="text-mining-bibliographic-corpora.html"><span class="header-section-number">22</span> Text Mining Bibliographic Corpora</a></li>
+<li><a class="" href="topic-modeling.html"><span class="header-section-number">23</span> Topic Modeling</a></li>
+<li><a class="" href="keyword-extraction.html"><span class="header-section-number">24</span> Keyword Extraction</a></li>
+<li><a class="" href="embeddings-for-scientometrics.html"><span class="header-section-number">25</span> Embeddings for Scientometrics</a></li>
+<li><a class="" href="detecting-emerging-topics.html"><span class="header-section-number">26</span> Detecting Emerging Topics</a></li>
+<li class="book-part">Advanced Topics</li>
+<li><a class="" href="altmetrics.html"><span class="header-section-number">27</span> Altmetrics</a></li>
+<li><a class="" href="open-science-indicators.html"><span class="header-section-number">28</span> Open Science Indicators</a></li>
+<li><a class="" href="gender-and-equity-analysis.html"><span class="header-section-number">29</span> Gender and Equity Analysis</a></li>
+<li><a class="" href="retraction-analysis.html"><span class="header-section-number">30</span> Retraction Analysis</a></li>
+<li><a class="" href="funding-analysis-and-grant-to-publication-linkage.html"><span class="header-section-number">31</span> Funding Analysis and Grant-to-Publication Linkage</a></li>
+<li><a class="" href="patentpaper-linkages.html"><span class="header-section-number">32</span> Patent–Paper Linkages</a></li>
+<li><a class="" href="causal-inference-in-scientometrics.html"><span class="header-section-number">33</span> Causal Inference in Scientometrics</a></li>
+<li><a class="" href="reproducibility-rrids-and-badges.html"><span class="header-section-number">34</span> Reproducibility, RRIDs, and Badges</a></li>
+<li class="book-part">Production &amp; Reporting</li>
+<li><a class="" href="reproducible-pipelines.html"><span class="header-section-number">35</span> Reproducible Pipelines</a></li>
+<li><a class="" href="interactive-dashboards.html"><span class="header-section-number">36</span> Interactive Dashboards</a></li>
+<li><a class="" href="parameterized-quarto-reports.html"><span class="header-section-number">37</span> Parameterized Quarto Reports</a></li>
+<li><a class="" href="building-a-bibliometric-shiny-app.html"><span class="header-section-number">38</span> Building a Bibliometric Shiny App</a></li>
+<li class="book-part">Case Studies</li>
+<li><a class="" href="case-study-1-crispr-field-review-20102024.html"><span class="header-section-number">39</span> Case Study 1: CRISPR Field Review (2010–2024)</a></li>
+<li><a class="" href="case-study-2-institutional-benchmarking.html"><span class="header-section-number">40</span> Case Study 2: Institutional Benchmarking</a></li>
+<li><a class="" href="case-study-3-journal-portfolio-analysis.html"><span class="header-section-number">41</span> Case Study 3: Journal Portfolio Analysis</a></li>
+<li><a class="" href="case-study-4-gender-gap-in-scientific-publishing.html"><span class="header-section-number">42</span> Case Study 4: Gender Gap in Scientific Publishing</a></li>
+<li><a class="" href="case-study-5-detecting-emerging-topics.html"><span class="header-section-number">43</span> Case Study 5: Detecting Emerging Topics</a></li>
+<li class="book-part">Appendix</li>
+<li><a class="" href="r-setup-renv-and-docker.html"><span class="header-section-number">A</span> R Setup, renv, and Docker</a></li>
+<li><a class="" href="sql-primer-for-the-openalex-snapshot.html"><span class="header-section-number">B</span> SQL Primer for the OpenAlex Snapshot</a></li>
+<li><a class="" href="indicator-crosswalk-across-databases.html"><span class="header-section-number">C</span> Indicator Crosswalk Across Databases</a></li>
+<li><a class="" href="cheatsheets-and-quick-reference.html"><span class="header-section-number">D</span> Cheatsheets and Quick Reference</a></li>
+<li><a class="" href="exercise-solutions.html"><span class="header-section-number">E</span> Exercise Solutions</a></li>
+<li><a class="" href="solutions.html"><span class="header-section-number">F</span> Exercise Solutions</a></li>
+<li><a class="" href="glossary.html">Glossary</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/scientometrics-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="text-mining-bibliographic-corpora" class="section level1" number="22">
+<h1>
+<span class="header-section-number">22</span> Text Mining Bibliographic Corpora<a class="anchor" aria-label="anchor" href="#text-mining-bibliographic-corpora"><i class="fas fa-link"></i></a>
+</h1>
+<div id="textmine-objectives" class="section level2" number="22.1">
+<h2>
+<span class="header-section-number">22.1</span> Learning objectives<a class="anchor" aria-label="anchor" href="#textmine-objectives"><i class="fas fa-link"></i></a>
+</h2>
+<p>After completing this chapter, you will be able to:</p>
+<ul>
+<li>Build a text corpus from OpenAlex titles and abstracts</li>
+<li>Apply standard preprocessing steps: tokenisation, stopword removal, stemming</li>
+<li>Construct a document-term matrix (DTM) and a document-feature matrix (DFM)</li>
+<li>Compute TF-IDF weights to identify distinctive terms</li>
+<li>Visualise term frequency patterns across time or groups</li>
+</ul>
+</div>
+<div id="textmine-setup" class="section level2" number="22.2">
+<h2>
+<span class="header-section-number">22.2</span> Setup<a class="anchor" aria-label="anchor" href="#textmine-setup"><i class="fas fa-link"></i></a>
+</h2>
+<div class="sourceCode" id="cb324"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/openalexR">openalexR</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://quanteda.io">quanteda</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://quanteda.io">quanteda.textstats</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://glue.tidyverse.org/">glue</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://gt.rstudio.com">gt</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">20260509</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"api_helpers.R"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"utils.R"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"sci_palette.R"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="textmine-background" class="section level2" number="22.3">
+<h2>
+<span class="header-section-number">22.3</span> Conceptual background<a class="anchor" aria-label="anchor" href="#textmine-background"><i class="fas fa-link"></i></a>
+</h2>
+<p>Bibliometric metadata — titles, abstracts, and keywords — constitutes a rich but noisy text corpus. Text mining transforms this unstructured data into structured representations suitable for statistical analysis. The pipeline typically follows three stages: preprocessing, representation, and analysis.</p>
+<p><strong>Preprocessing</strong> converts raw text into a standardised form. Tokenisation splits text into individual words or n-grams. Lowercasing removes case variation. Stopword removal eliminates high-frequency function words (“the”, “of”, “and”) that carry little topical information. Stemming or lemmatisation reduces words to their root forms (“computing”, “computed”, “computation” → “comput” or “compute”). Each step involves trade-offs: aggressive stemming can merge distinct concepts, while minimal preprocessing retains noise.</p>
+<p>The <strong>document-term matrix</strong> (DTM) or <strong>document-feature matrix</strong> (DFM) is the fundamental representation. Rows are documents; columns are terms; cells contain counts or weights. Raw term frequencies overweight common words. <strong>TF-IDF</strong> (term frequency–inverse document frequency) addresses this by upweighting terms that are frequent in a document but rare across the corpus, highlighting words that distinguish one document from others.</p>
+<p><code>quanteda</code> <span class="citation">(<a href="references.html#ref-aria2017">Aria and Cuccurullo 2017</a>)</span> provides a fast, well-designed toolkit for text analysis in R. Its <code>corpus → tokens → dfm</code> pipeline integrates naturally with the tidyverse. For very large corpora, <code>quanteda</code> uses sparse matrix representations that scale to millions of documents.</p>
+<p>Text mining complements network-based methods (<a href="co-word-and-keyword-co-occurrence.html#coword-background">18.3</a>). Co-word networks reveal term associations; text mining provides the frequency distributions, temporal trends, and discriminative features that characterise a field’s vocabulary.</p>
+</div>
+<div id="textmine-example" class="section level2" number="22.4">
+<h2>
+<span class="header-section-number">22.4</span> Worked example<a class="anchor" aria-label="anchor" href="#textmine-example"><i class="fas fa-link"></i></a>
+</h2>
+<div id="building-a-text-corpus" class="section level3" number="22.4.1">
+<h3>
+<span class="header-section-number">22.4.1</span> Building a text corpus<a class="anchor" aria-label="anchor" href="#building-a-text-corpus"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb325"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">works</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html">oa_fetch</a></span><span class="op">(</span></span>
+<span>  entity <span class="op">=</span> <span class="st">"works"</span>,</span>
+<span>  primary_location.source.id <span class="op">=</span> <span class="st">"S148561398"</span>,</span>
+<span>  from_publication_date <span class="op">=</span> <span class="st">"2019-01-01"</span>,</span>
+<span>  to_publication_date <span class="op">=</span> <span class="st">"2023-12-31"</span>,</span>
+<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sample <span class="op">=</span> <span class="fl">500</span>, seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">text_df</span> <span class="op">&lt;-</span> <span class="va">works</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">abstract</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nchar.html">nchar</a></span><span class="op">(</span><span class="va">abstract</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">50</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/transmute.html">transmute</a></span><span class="op">(</span></span>
+<span>    doc_id <span class="op">=</span> <span class="va">id</span>,</span>
+<span>    text <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">display_name</span>, <span class="va">abstract</span>, sep <span class="op">=</span> <span class="st">". "</span><span class="op">)</span>,</span>
+<span>    year <span class="op">=</span> <span class="fu"><a href="https://lubridate.tidyverse.org/reference/year.html">year</a></span><span class="op">(</span><span class="va">publication_date</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Documents with abstracts: {nrow(text_df)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Documents with abstracts: 134</code></pre>
+<div class="sourceCode" id="cb327"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">corp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/corpus.html">corpus</a></span><span class="op">(</span><span class="va">text_df</span>, docid_field <span class="op">=</span> <span class="st">"doc_id"</span>, text_field <span class="op">=</span> <span class="st">"text"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://quanteda.io/reference/docvars.html">docvars</a></span><span class="op">(</span><span class="va">corp</span>, <span class="st">"year"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">text_df</span><span class="op">$</span><span class="va">year</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Corpus size: {ndoc(corp)} documents\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Corpus size: 134 documents</code></pre>
+<div class="sourceCode" id="cb329"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Total tokens: {sum(ntoken(corp))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Total tokens: 32034</code></pre>
+</div>
+<div id="tokenisation-and-preprocessing" class="section level3" number="22.4.2">
+<h3>
+<span class="header-section-number">22.4.2</span> Tokenisation and preprocessing<a class="anchor" aria-label="anchor" href="#tokenisation-and-preprocessing"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb331"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">toks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/tokens.html">tokens</a></span><span class="op">(</span><span class="va">corp</span>,</span>
+<span>               remove_punct <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>               remove_numbers <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>               remove_symbols <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://quanteda.io/reference/tokens_tolower.html">tokens_tolower</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://quanteda.io/reference/tokens_select.html">tokens_remove</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/stopwords/man/stopwords.html">stopwords</a></span><span class="op">(</span><span class="st">"en"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://quanteda.io/reference/tokens_select.html">tokens_remove</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"also"</span>, <span class="st">"however"</span>, <span class="st">"using"</span>, <span class="st">"based"</span>, <span class="st">"study"</span>,</span>
+<span>                   <span class="st">"paper"</span>, <span class="st">"results"</span>, <span class="st">"research"</span>, <span class="st">"analysis"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://quanteda.io/reference/tokens_wordstem.html">tokens_wordstem</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Tokens after preprocessing: {sum(ntoken(toks))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Tokens after preprocessing: 16065</code></pre>
+</div>
+<div id="document-feature-matrix" class="section level3" number="22.4.3">
+<h3>
+<span class="header-section-number">22.4.3</span> Document-feature matrix<a class="anchor" aria-label="anchor" href="#document-feature-matrix"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb333"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dfmat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/dfm.html">dfm</a></span><span class="op">(</span><span class="va">toks</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://quanteda.io/reference/dfm_trim.html">dfm_trim</a></span><span class="op">(</span>min_termfreq <span class="op">=</span> <span class="fl">5</span>, min_docfreq <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"DFM dimensions: {nrow(dfmat)} docs x {ncol(dfmat)} features\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; DFM dimensions: 134 docs x 678 features</code></pre>
+<div class="sourceCode" id="cb335"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Sparsity: {scales::percent(sparsity(dfmat))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Sparsity: 91%</code></pre>
+<div class="sourceCode" id="cb337"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">top_terms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/topfeatures.html">topfeatures</a></span><span class="op">(</span><span class="va">dfmat</span>, <span class="fl">20</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/enframe.html">enframe</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"term"</span>, value <span class="op">=</span> <span class="st">"frequency"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>term <span class="op">=</span> <span class="fu"><a href="https://forcats.tidyverse.org/reference/fct_reorder.html">fct_reorder</a></span><span class="op">(</span><span class="va">term</span>, <span class="va">frequency</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">top_terms</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">frequency</span>, y <span class="op">=</span> <span class="va">term</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_col</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="fu">palette_sci</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Frequency"</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_sci</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:21-fig-textmine-topfeatures"></span>
+<img src="scientometrics-in-r_files/figure-html/21-fig-textmine-topfeatures-1.png" alt="Horizontal bar chart showing the 20 most frequent terms after preprocessing, with term frequency on the x-axis." width="90%"><p class="caption">
+Figure 22.1: Top 20 most frequent terms in the Scientometrics corpus.
+</p>
+</div>
+</div>
+<div id="tf-idf-weighting" class="section level3" number="22.4.4">
+<h3>
+<span class="header-section-number">22.4.4</span> TF-IDF weighting<a class="anchor" aria-label="anchor" href="#tf-idf-weighting"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb338"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dfmat_tfidf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/dfm_tfidf.html">dfm_tfidf</a></span><span class="op">(</span><span class="va">dfmat</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tfidf_by_year</span> <span class="op">&lt;-</span> <span class="va">text_df</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_data.html">group_keys</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html">pull</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map_dfr</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">yr</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">docs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/docvars.html">docvars</a></span><span class="op">(</span><span class="va">dfmat_tfidf</span>, <span class="st">"year"</span><span class="op">)</span> <span class="op">==</span> <span class="va">yr</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">docs</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">5</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">top</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/topfeatures.html">topfeatures</a></span><span class="op">(</span><span class="va">dfmat_tfidf</span><span class="op">[</span><span class="va">docs</span>, <span class="op">]</span>, <span class="fl">10</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>year <span class="op">=</span> <span class="va">yr</span>, term <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">top</span><span class="op">)</span>, tfidf <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html">unname</a></span><span class="op">(</span><span class="va">top</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tfidf_by_year</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_max</a></span><span class="op">(</span><span class="va">tfidf</span>, n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/fmt_number.html">fmt_number</a></span><span class="op">(</span>columns <span class="op">=</span> <span class="va">tfidf</span>, decimals <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<div id="wuolgkrdww" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#wuolgkrdww table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#wuolgkrdww thead, #wuolgkrdww tbody, #wuolgkrdww tfoot, #wuolgkrdww tr, #wuolgkrdww td, #wuolgkrdww th {
+  border-style: none;
+}
+
+#wuolgkrdww p {
+  margin: 0;
+  padding: 0;
+}
+
+#wuolgkrdww .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#wuolgkrdww .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#wuolgkrdww .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#wuolgkrdww .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#wuolgkrdww .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#wuolgkrdww .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#wuolgkrdww .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#wuolgkrdww .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#wuolgkrdww .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#wuolgkrdww .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#wuolgkrdww .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#wuolgkrdww .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#wuolgkrdww .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#wuolgkrdww .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#wuolgkrdww .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wuolgkrdww .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#wuolgkrdww .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#wuolgkrdww .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#wuolgkrdww .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wuolgkrdww .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#wuolgkrdww .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wuolgkrdww .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#wuolgkrdww .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wuolgkrdww .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#wuolgkrdww .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wuolgkrdww .gt_left {
+  text-align: left;
+}
+
+#wuolgkrdww .gt_center {
+  text-align: center;
+}
+
+#wuolgkrdww .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#wuolgkrdww .gt_font_normal {
+  font-weight: normal;
+}
+
+#wuolgkrdww .gt_font_bold {
+  font-weight: bold;
+}
+
+#wuolgkrdww .gt_font_italic {
+  font-style: italic;
+}
+
+#wuolgkrdww .gt_super {
+  font-size: 65%;
+}
+
+#wuolgkrdww .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#wuolgkrdww .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#wuolgkrdww .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#wuolgkrdww .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#wuolgkrdww .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#wuolgkrdww .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#wuolgkrdww .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#wuolgkrdww .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#wuolgkrdww div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<div class="inline-table"><table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead><tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="term">term</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="tfidf">tfidf</th>
+    </tr></thead>
+<tbody class="gt_table_body">
+<tr class="gt_group_heading_row">
+<th colspan="2" class="gt_group_heading" scope="colgroup" id="2019">2019</th>
+    </tr>
+<tr class="gt_row_group_first">
+<td headers="2019  term" class="gt_row gt_left">usag</td>
+<td headers="2019  tfidf" class="gt_row gt_right">14.8</td>
+</tr>
+<tr>
+<td headers="2019  term" class="gt_row gt_left">clinic</td>
+<td headers="2019  tfidf" class="gt_row gt_right">14.1</td>
+</tr>
+<tr>
+<td headers="2019  term" class="gt_row gt_left">collabor</td>
+<td headers="2019  tfidf" class="gt_row gt_right">13.3</td>
+</tr>
+<tr>
+<td headers="2019  term" class="gt_row gt_left">faculti</td>
+<td headers="2019  tfidf" class="gt_row gt_right">12.1</td>
+</tr>
+<tr>
+<td headers="2019  term" class="gt_row gt_left">citat</td>
+<td headers="2019  tfidf" class="gt_row gt_right">11.7</td>
+</tr>
+<tr class="gt_group_heading_row">
+<th colspan="2" class="gt_group_heading" scope="colgroup" id="2020">2020</th>
+    </tr>
+<tr class="gt_row_group_first">
+<td headers="2020  term" class="gt_row gt_left">journal</td>
+<td headers="2020  tfidf" class="gt_row gt_right">30.6</td>
+</tr>
+<tr>
+<td headers="2020  term" class="gt_row gt_left">review</td>
+<td headers="2020  tfidf" class="gt_row gt_right">21.2</td>
+</tr>
+<tr>
+<td headers="2020  term" class="gt_row gt_left">public</td>
+<td headers="2020  tfidf" class="gt_row gt_right">20.6</td>
+</tr>
+<tr>
+<td headers="2020  term" class="gt_row gt_left">open</td>
+<td headers="2020  tfidf" class="gt_row gt_right">18.2</td>
+</tr>
+<tr>
+<td headers="2020  term" class="gt_row gt_left">local</td>
+<td headers="2020  tfidf" class="gt_row gt_right">17.5</td>
+</tr>
+<tr class="gt_group_heading_row">
+<th colspan="2" class="gt_group_heading" scope="colgroup" id="2021">2021</th>
+    </tr>
+<tr class="gt_row_group_first">
+<td headers="2021  term" class="gt_row gt_left">journal</td>
+<td headers="2021  tfidf" class="gt_row gt_right">25.2</td>
+</tr>
+<tr>
+<td headers="2021  term" class="gt_row gt_left">covid-19</td>
+<td headers="2021  tfidf" class="gt_row gt_right">24.3</td>
+</tr>
+<tr>
+<td headers="2021  term" class="gt_row gt_left">predatori</td>
+<td headers="2021  tfidf" class="gt_row gt_right">21.4</td>
+</tr>
+<tr>
+<td headers="2021  term" class="gt_row gt_left">peer</td>
+<td headers="2021  tfidf" class="gt_row gt_right">19.6</td>
+</tr>
+<tr>
+<td headers="2021  term" class="gt_row gt_left">review</td>
+<td headers="2021  tfidf" class="gt_row gt_right">18.8</td>
+</tr>
+<tr class="gt_group_heading_row">
+<th colspan="2" class="gt_group_heading" scope="colgroup" id="2022">2022</th>
+    </tr>
+<tr class="gt_row_group_first">
+<td headers="2022  term" class="gt_row gt_left">topic</td>
+<td headers="2022  tfidf" class="gt_row gt_right">27.1</td>
+</tr>
+<tr>
+<td headers="2022  term" class="gt_row gt_left">univers</td>
+<td headers="2022  tfidf" class="gt_row gt_right">25.5</td>
+</tr>
+<tr>
+<td headers="2022  term" class="gt_row gt_left">tweet</td>
+<td headers="2022  tfidf" class="gt_row gt_right">24.4</td>
+</tr>
+<tr>
+<td headers="2022  term" class="gt_row gt_left">citat</td>
+<td headers="2022  tfidf" class="gt_row gt_right">23.1</td>
+</tr>
+<tr>
+<td headers="2022  term" class="gt_row gt_left">link</td>
+<td headers="2022  tfidf" class="gt_row gt_right">22.3</td>
+</tr>
+<tr class="gt_group_heading_row">
+<th colspan="2" class="gt_group_heading" scope="colgroup" id="2023">2023</th>
+    </tr>
+<tr class="gt_row_group_first">
+<td headers="2023  term" class="gt_row gt_left">collabor</td>
+<td headers="2023  tfidf" class="gt_row gt_right">28.2</td>
+</tr>
+<tr>
+<td headers="2023  term" class="gt_row gt_left">articl</td>
+<td headers="2023  tfidf" class="gt_row gt_right">21.8</td>
+</tr>
+<tr>
+<td headers="2023  term" class="gt_row gt_left">countri</td>
+<td headers="2023  tfidf" class="gt_row gt_right">21.6</td>
+</tr>
+<tr>
+<td headers="2023  term" class="gt_row gt_left">journal</td>
+<td headers="2023  tfidf" class="gt_row gt_right">21.2</td>
+</tr>
+<tr>
+<td headers="2023  term" class="gt_row gt_left">guidelin</td>
+<td headers="2023  tfidf" class="gt_row gt_right">19.8</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div id="term-frequency-over-time" class="section level3" number="22.4.5">
+<h3>
+<span class="header-section-number">22.4.5</span> Term frequency over time<a class="anchor" aria-label="anchor" href="#term-frequency-over-time"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb339"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">target_terms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bibliometr"</span>, <span class="st">"open"</span>, <span class="st">"network"</span>, <span class="st">"impact"</span>, <span class="st">"collabor"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">freq_by_year</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map_dfr</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">text_df</span><span class="op">$</span><span class="va">year</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">yr</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">docs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/docvars.html">docvars</a></span><span class="op">(</span><span class="va">dfmat</span>, <span class="st">"year"</span><span class="op">)</span> <span class="op">==</span> <span class="va">yr</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">docs</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">5</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">freq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">colSums</a></span><span class="op">(</span><span class="va">dfmat</span><span class="op">[</span><span class="va">docs</span>, <span class="op">]</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">dfmat</span><span class="op">[</span><span class="va">docs</span>, <span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>    year <span class="op">=</span> <span class="va">yr</span>,</span>
+<span>    term <span class="op">=</span> <span class="va">target_terms</span>,</span>
+<span>    rel_freq <span class="op">=</span> <span class="va">freq</span><span class="op">[</span><span class="va">target_terms</span><span class="op">]</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">freq_by_year</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span>, y <span class="op">=</span> <span class="va">rel_freq</span>, colour <span class="op">=</span> <span class="va">term</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu">palette_sci</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">target_terms</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/percent_format.html">percent_format</a></span><span class="op">(</span>accuracy <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Year"</span>, y <span class="op">=</span> <span class="st">"Relative frequency"</span>, colour <span class="op">=</span> <span class="st">"Term"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_sci</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:21-fig-textmine-temporal"></span>
+<img src="scientometrics-in-r_files/figure-html/21-fig-textmine-temporal-1.png" alt="Line chart showing how the relative frequency of key terms changes across publication years, revealing shifts in research vocabulary." width="90%"><p class="caption">
+Figure 22.2: Relative frequency of selected terms over time.
+</p>
+</div>
+</div>
+</div>
+<div id="textmine-diagnostics" class="section level2" number="22.5">
+<h2>
+<span class="header-section-number">22.5</span> Diagnostics and interpretation<a class="anchor" aria-label="anchor" href="#textmine-diagnostics"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Vocabulary size vs. documents</strong>: A typical DFM has far more features than documents. Trim aggressively (minimum document frequency of 3–5) to reduce noise and computation.</li>
+<li>
+<strong>Sparsity</strong>: Bibliometric DFMs are typically 95–99% sparse. This is normal. Sparse matrix representations keep memory usage manageable.</li>
+<li>
+<strong>Preprocessing sensitivity</strong>: Results change with preprocessing choices. Always report stopword list, stemming method, and trimming thresholds.</li>
+<li>
+<strong>Abstract availability</strong>: Not all OpenAlex records have abstracts. Report the coverage rate and consider whether missing abstracts introduce bias (e.g., older papers, certain publishers).</li>
+</ul>
+</div>
+<div id="textmine-limitations" class="section level2" number="22.6">
+<h2>
+<span class="header-section-number">22.6</span> Limitations and responsible use<a class="anchor" aria-label="anchor" href="#textmine-limitations"><i class="fas fa-link"></i></a>
+</h2>
+</div>
+<div id="limitations-and-responsible-use-20" class="section level2 callout callout-warn" number="22.7">
+<h2>
+<span class="header-section-number">22.7</span> Limitations and responsible use<a class="anchor" aria-label="anchor" href="#limitations-and-responsible-use-20"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Abstracts are summaries.</strong> They capture the main claims but miss nuance, methodology details, and negative results. Full-text analysis (<a href="working-with-full-text.html#fulltext-background">9.3</a>) provides richer data but is harder to obtain.</li>
+<li>
+<strong>Language bias.</strong> Text mining tools work best for English. Non-English abstracts may be poorly tokenised, incorrectly stemmed, or excluded entirely. This biases results toward Anglophone research <span class="citation">(<a href="references.html#ref-visser2021">Visser et al. 2021</a>)</span>.</li>
+<li>
+<strong>Stemming conflates concepts.</strong> “Stem” and “stemming” are merged, but so are “cell” (biology) and “cell” (spreadsheet). Lemmatisation is more precise but slower.</li>
+<li>
+<strong>Bag-of-words ignores context.</strong> TF-IDF and frequency-based methods treat documents as unordered collections of words. Phrase meaning (“machine learning” vs. “learning machine”) is lost unless you use n-grams or embeddings (<a href="embeddings-for-scientometrics.html#embed-background">25.3</a>).</li>
+</ul>
+</div>
+<div id="textmine-pitfalls" class="section level2" number="22.8">
+<h2>
+<span class="header-section-number">22.8</span> Common pitfalls<a class="anchor" aria-label="anchor" href="#textmine-pitfalls"><i class="fas fa-link"></i></a>
+</h2>
+</div>
+<div id="common-pitfalls-20" class="section level2 callout callout-stop" number="22.9">
+<h2>
+<span class="header-section-number">22.9</span> Common pitfalls<a class="anchor" aria-label="anchor" href="#common-pitfalls-20"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Not removing domain-specific stop words.</strong> Generic stopword lists miss terms like “study”, “results”, “paper” that dominate academic text without conveying topical information.</li>
+<li>
+<strong>Applying TF-IDF before trimming.</strong> Rare terms get extreme TF-IDF scores. Trim the DFM first, then apply TF-IDF.</li>
+<li>
+<strong>Comparing raw frequencies across groups of different sizes.</strong> A year with 200 papers will have higher raw counts than a year with 50. Always normalise to relative frequency.</li>
+<li>
+<strong>Stemming titles but not abstracts (or vice versa).</strong> Apply identical preprocessing to all text fields.</li>
+</ul>
+</div>
+<div id="textmine-exercises" class="section level2" number="22.10">
+<h2>
+<span class="header-section-number">22.10</span> Exercises<a class="anchor" aria-label="anchor" href="#textmine-exercises"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Bigram analysis.</strong> Build a DFM using bigrams (two-word sequences) instead of unigrams. What meaningful phrases emerge that single words miss?</p></li>
+<li><p><strong>Lexical diversity.</strong> Compute the type-token ratio (TTR) for each publication year. Is the vocabulary growing more diverse or more standardised over time?</p></li>
+<li><p><strong>Keyness analysis.</strong> Use <code><a href="https://quanteda.io/reference/textstat_keyness.html">quanteda.textstats::textstat_keyness()</a></code> to identify terms that distinguish one year from all others. What terms characterise 2023 specifically?</p></li>
+<li><p><strong>Preprocessing sensitivity.</strong> Run the same analysis with and without stemming. How do the top terms differ? Which version is more interpretable?</p></li>
+</ol>
+</div>
+<div id="solutions-20" class="section level2 callout callout-ok" number="22.11">
+<h2>
+<span class="header-section-number">22.11</span> Solutions<a class="anchor" aria-label="anchor" href="#solutions-20"><i class="fas fa-link"></i></a>
+</h2>
+<p>Solutions are provided in <a href="what-is-scientometrics.html#solutions">2.11</a>.</p>
+</div>
+<div id="textmine-reading" class="section level2" number="22.12">
+<h2>
+<span class="header-section-number">22.12</span> Further reading<a class="anchor" aria-label="anchor" href="#textmine-reading"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<span class="citation">Silge and Robinson (<a href="references.html#ref-silge2017">2017</a>)</span> — <em>Text Mining with R</em>; comprehensive guide to tidy text analysis.</li>
+<li>
+<span class="citation">Aria and Cuccurullo (<a href="references.html#ref-aria2017">2017</a>)</span> — <code>bibliometrix</code> text-mining features for bibliometric data.</li>
+<li>
+<span class="citation">Priem et al. (<a href="references.html#ref-priem2022">2022</a>)</span> — OpenAlex abstract availability and coverage.</li>
+</ul>
+</div>
+<div id="textmine-sessioninfo" class="section level2" number="22.13">
+<h2>
+<span class="header-section-number">22.13</span> Session info<a class="anchor" aria-label="anchor" href="#textmine-sessioninfo"><i class="fas fa-link"></i></a>
+</h2>
+<div class="sourceCode" id="cb340"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; R version 4.4.1 (2024-06-14)
+#&gt; Platform: x86_64-pc-linux-gnu
+#&gt; Running under: Ubuntu 24.04.4 LTS
+#&gt; 
+#&gt; Matrix products: default
+#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+#&gt; 
+#&gt; locale:
+#&gt;  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8        LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8   
+#&gt;  [6] LC_MESSAGES=C.UTF-8    LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C           LC_TELEPHONE=C        
+#&gt; [11] LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+#&gt; 
+#&gt; time zone: UTC
+#&gt; tzcode source: system (glibc)
+#&gt; 
+#&gt; attached base packages:
+#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     
+#&gt; 
+#&gt; other attached packages:
+#&gt;  [1] quanteda.textstats_0.97.2 visNetwork_2.1.4          ggraph_2.2.2              tidygraph_1.3.1          
+#&gt;  [5] igraph_2.3.1              quanteda_4.4              pdftools_3.8.0            arrow_24.0.0             
+#&gt;  [9] bibliometrix_5.3.0        RefManageR_1.4.0          bib2df_1.1.2.0            rcrossref_1.2.1          
+#&gt; [13] gt_1.3.0                  tidytext_0.4.3            glue_1.8.1                openalexR_3.0.1          
+#&gt; [17] lubridate_1.9.5           forcats_1.0.1             stringr_1.6.0             dplyr_1.2.1              
+#&gt; [21] purrr_1.2.2               readr_2.2.0               tidyr_1.3.2               tibble_3.3.1             
+#&gt; [25] ggplot2_4.0.3             tidyverse_2.0.0          
+#&gt; 
+#&gt; loaded via a namespace (and not attached):
+#&gt;   [1] bibtex_0.5.2           RColorBrewer_1.1-3     rstudioapi_0.18.0      jsonlite_2.0.0         magrittr_2.0.5        
+#&gt;   [6] farver_2.1.2           rmarkdown_2.31         fs_2.1.0               vctrs_0.7.3            memoise_2.0.1         
+#&gt;  [11] askpass_1.2.1          base64enc_0.1-6        htmltools_0.5.9        contentanalysis_1.0.0  curl_7.1.0            
+#&gt;  [16] janeaustenr_1.0.0      cellranger_1.1.0       sass_0.4.10            bslib_0.10.0           htmlwidgets_1.6.4     
+#&gt;  [21] tokenizers_0.3.0       plyr_1.8.9             httr2_1.2.2            plotly_4.12.0          cachem_1.1.0          
+#&gt;  [26] dimensionsR_0.0.3      mime_0.13              lifecycle_1.0.5        pkgconfig_2.0.3        Matrix_1.7-0          
+#&gt;  [31] R6_2.6.1               fastmap_1.2.0          shiny_1.13.0           digest_0.6.39          patchwork_1.3.2       
+#&gt;  [36] shinycssloaders_1.1.0  rprojroot_2.1.1        SnowballC_0.7.1        labeling_0.4.3         urltools_1.7.3.1      
+#&gt;  [41] timechange_0.4.0       polyclip_1.10-7        httr_1.4.8             compiler_4.4.1         here_1.0.2            
+#&gt;  [46] bit64_4.8.0            withr_3.0.2            S7_0.2.2               backports_1.5.1        viridis_0.6.5         
+#&gt;  [51] ggforce_0.5.0          MASS_7.3-60.2          rappdirs_0.3.4         bibliometrixData_0.3.0 tools_4.4.1           
+#&gt;  [56] otel_0.2.0             stopwords_2.3          zip_2.3.3              httpuv_1.6.17          rentrez_1.2.4         
+#&gt;  [61] promises_1.5.0         grid_4.4.1             stringdist_0.9.17      generics_0.1.4         gtable_0.3.6          
+#&gt;  [66] tzdb_0.5.0             rscopus_0.9.0          ca_0.71.1              data.table_1.18.4      hms_1.1.4             
+#&gt;  [71] xml2_1.5.2             utf8_1.2.6             ggrepel_0.9.8          pillar_1.11.1          nsyllable_1.0.1       
+#&gt;  [76] vroom_1.7.1            later_1.4.8            tweenr_2.0.3           brand.yml_0.1.0        lattice_0.22-6        
+#&gt;  [81] bit_4.6.0              tidyselect_1.2.1       miniUI_0.1.2           downlit_0.4.5          knitr_1.51            
+#&gt;  [86] gridExtra_2.3          bookdown_0.46          crul_1.6.0             xfun_0.57              graphlayouts_1.2.3    
+#&gt;  [91] DT_0.34.0              humaniformat_0.6.0     stringi_1.8.7          lazyeval_0.2.3         qpdf_1.4.1            
+#&gt;  [96] yaml_2.3.12            evaluate_1.0.5         codetools_0.2-20       httpcode_0.3.0         cli_3.6.6             
+#&gt; [101] xtable_1.8-8           jquerylib_0.1.4        dichromat_2.0-0.1      Rcpp_1.1.1-1.1         readxl_1.4.5          
+#&gt; [106] triebeard_0.4.1        XML_3.99-0.23          parallel_4.4.1         assertthat_0.2.1       pubmedR_1.0.2         
+#&gt; [111] viridisLite_0.4.3      scales_1.4.0           crayon_1.5.3           openxlsx_4.2.8.1       rlang_1.2.0           
+#&gt; [116] fastmatch_1.1-8</code></pre>
+
+</div>
+</div>
+<!-- Dark/light mode toggle -->
+<div class="sticky-item">
+  <button type="button" id="mode-switch" class="btn-circle-mode" aria-label="Toggle dark mode">
+    <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+  </button>
+</div>
+
+<script>
+  (function () {
+    var stored = localStorage.getItem('themeMode');
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var initial = stored || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', initial);
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var btn = document.getElementById('mode-switch');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('themeMode', next);
+      });
+    });
+  })();
+</script><!-- Per-chapter PDF download button --><script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!file || file === ".pdf") return;
+    var btn = document.createElement("a");
+    btn.href = "pdf-chapters/" + file;
+    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+    btn.style = "float:right;margin-top:0.5em;";
+    btn.textContent = "⬇ Download this chapter (PDF)";
+    var header = document.querySelector("main h1, .page-inner h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      header.appendChild(btn);
+    }
+  });
+</script><!-- Footer attribution --><div class="bookdown-attribution">
+  This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
+</div>
+  <div class="chapter-nav">
+<div class="prev"><a href="network-visualization-and-interoperability.html"><span class="header-section-number">21</span> Network Visualization and Interoperability</a></div>
+<div class="next"><a href="topic-modeling.html"><span class="header-section-number">23</span> Topic Modeling</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#text-mining-bibliographic-corpora"><span class="header-section-number">22</span> Text Mining Bibliographic Corpora</a></li>
+<li><a class="nav-link" href="#textmine-objectives"><span class="header-section-number">22.1</span> Learning objectives</a></li>
+<li><a class="nav-link" href="#textmine-setup"><span class="header-section-number">22.2</span> Setup</a></li>
+<li><a class="nav-link" href="#textmine-background"><span class="header-section-number">22.3</span> Conceptual background</a></li>
+<li>
+<a class="nav-link" href="#textmine-example"><span class="header-section-number">22.4</span> Worked example</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#building-a-text-corpus"><span class="header-section-number">22.4.1</span> Building a text corpus</a></li>
+<li><a class="nav-link" href="#tokenisation-and-preprocessing"><span class="header-section-number">22.4.2</span> Tokenisation and preprocessing</a></li>
+<li><a class="nav-link" href="#document-feature-matrix"><span class="header-section-number">22.4.3</span> Document-feature matrix</a></li>
+<li><a class="nav-link" href="#tf-idf-weighting"><span class="header-section-number">22.4.4</span> TF-IDF weighting</a></li>
+<li><a class="nav-link" href="#term-frequency-over-time"><span class="header-section-number">22.4.5</span> Term frequency over time</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#textmine-diagnostics"><span class="header-section-number">22.5</span> Diagnostics and interpretation</a></li>
+<li><a class="nav-link" href="#textmine-limitations"><span class="header-section-number">22.6</span> Limitations and responsible use</a></li>
+<li><a class="nav-link" href="#limitations-and-responsible-use-20"><span class="header-section-number">22.7</span> Limitations and responsible use</a></li>
+<li><a class="nav-link" href="#textmine-pitfalls"><span class="header-section-number">22.8</span> Common pitfalls</a></li>
+<li><a class="nav-link" href="#common-pitfalls-20"><span class="header-section-number">22.9</span> Common pitfalls</a></li>
+<li><a class="nav-link" href="#textmine-exercises"><span class="header-section-number">22.10</span> Exercises</a></li>
+<li><a class="nav-link" href="#solutions-20"><span class="header-section-number">22.11</span> Solutions</a></li>
+<li><a class="nav-link" href="#textmine-reading"><span class="header-section-number">22.12</span> Further reading</a></li>
+<li><a class="nav-link" href="#textmine-sessioninfo"><span class="header-section-number">22.13</span> Session info</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/scientometrics-in-r/blob/main/chapters/21-text-mining-corpora.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/scientometrics-in-r/edit/main/chapters/21-text-mining-corpora.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>
