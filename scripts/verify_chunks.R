@@ -4,14 +4,14 @@
 
 library(stringr)
 
-qmd_files <- list.files(
+rmd_files <- list.files(
   c("chapters", "case-studies", "appendices"),
-  pattern = "\\.qmd$", full.names = TRUE, recursive = TRUE
+  pattern = "\\.Rmd$", full.names = TRUE, recursive = TRUE
 )
 
 issues <- character()
 
-for (f in qmd_files) {
+for (f in rmd_files) {
   lines <- readLines(f, warn = FALSE)
   # Allow a file-level opt-out for files that are entirely reference/solution
   # code, where every chunk is intentionally unevaluated.

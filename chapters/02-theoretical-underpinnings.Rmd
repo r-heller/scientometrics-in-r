@@ -1,0 +1,247 @@
+# Theoretical Underpinnings
+
+## Learning objectives {#theory-objectives}
+
+After completing this chapter, you will be able to:
+
+- State Lotka's, Bradford's, and Zipf's laws and explain the empirical patterns they describe
+- Test whether a corpus of publications approximately follows Lotka's inverse-square law
+- Construct a Bradford plot to identify core and peripheral journals in a field
+- Explain Price's law of exponential growth and the Matthew Effect in science
+- Recognise power-law-like distributions in bibliometric data
+
+## Setup {#theory-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(tidytext)
+library(glue)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#theory-background}
+
+Scientometrics rests on a small number of empirical regularities discovered across decades of studying scholarly communication:
+
+**Lotka's Law** [@lotka1926] observes that the number of authors producing *n* papers is approximately proportional to 1/*n*². A few prolific authors generate a large share of output, while most researchers publish only one or two papers.
+
+**Bradford's Law** [@bradford1934] describes the scattering of articles across journals. For a given topic, a small core of journals contains roughly one-third of all relevant articles; a larger zone contains the next third; and a much larger periphery the final third. Each successive zone contains roughly the same number of articles but geometrically more journals.
+
+**Zipf's Law** states that the frequency of a word is inversely proportional to its rank. In scientific text, a handful of terms dominate while the vast majority appear rarely.
+
+**Price's Law** [@price1963] generalises these observations: the cumulative output of science grows exponentially, doubling roughly every 10–15 years. Price also noted that the square root of all contributors produce half of all contributions.
+
+The **Matthew Effect** [@merton1968] — named after the Gospel of Matthew ("to those who have, more shall be given") — describes cumulative advantage in science. Well-known researchers attract disproportionate credit and resources, amplifying initial differences in visibility. This mechanism helps explain the skewed distributions observed by Lotka and Price.
+
+## Worked example {#theory-example}
+
+We use a corpus of works from the journal *Scientometrics* to demonstrate each law.
+
+### Fetching the data
+
+```{r}
+#| label: fetch-theory-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S148561398",
+  from_publication_date = "2015-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 500, seed = 42)
+)
+```
+
+### Lotka's Law
+
+We unnest authors and count the number of papers per author in this sample.
+
+```{r}
+#| label: lotka-data
+author_prod <- works |>
+  select(id, authorships) |>
+  unnest(authorships, names_sep = "_") |>
+  count(authorships_display_name, name = "n_papers") |>
+  count(n_papers, name = "n_authors") |>
+  arrange(n_papers)
+
+author_prod
+```
+
+```{r}
+#| label: fig-theory-lotka
+#| fig-cap: "Author productivity distribution. The dashed line shows the inverse-square law predicted by Lotka."
+#| fig-alt: "Log-log scatter plot of the number of authors versus the number of papers they published, with a dashed reference line showing the inverse-square law."
+#| fig-width: 6
+#| fig-height: 4
+lotka_c <- author_prod$n_authors[1]
+
+author_prod |>
+  ggplot(aes(x = n_papers, y = n_authors)) +
+  geom_point(colour = palette_sci(1), size = 2) +
+  geom_line(
+    aes(y = lotka_c / n_papers^2),
+    linetype = "dashed", colour = "grey40"
+  ) +
+  scale_x_log10() +
+  scale_y_log10() +
+  labs(x = "Papers per author", y = "Number of authors") +
+  theme_sci()
+```
+
+The data approximate the inverse-square pattern, though real distributions often deviate from the exact exponent of 2.
+
+### Bradford's Law
+
+We count how many articles each journal source contributes (across a broader query).
+
+```{r}
+#| label: bradford-data
+#| cache: true
+broad_works <- oa_fetch(
+  entity = "works",
+  search = "bibliometrics",
+  from_publication_date = "2020-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 1000, seed = 42)
+)
+
+journal_counts <- broad_works |>
+  filter(!is.na(source_display_name)) |>
+  count(source_display_name, name = "articles", sort = TRUE) |>
+  mutate(
+    cum_articles = cumsum(articles),
+    rank = row_number()
+  )
+```
+
+```{r}
+#| label: fig-theory-bradford
+#| fig-cap: "Bradford plot: cumulative articles vs. log journal rank."
+#| fig-alt: "Line plot showing cumulative article count on the y-axis versus journal rank on a logarithmic x-axis. The characteristic S-shaped Bradford curve is visible, with a steep rise for core journals."
+#| fig-width: 6
+#| fig-height: 4
+journal_counts |>
+  ggplot(aes(x = rank, y = cum_articles)) +
+  geom_line(colour = palette_sci(1), linewidth = 1) +
+  scale_x_log10() +
+  labs(x = "Journal rank (log scale)", y = "Cumulative articles") +
+  theme_sci()
+```
+
+### Zipf's Law
+
+We extract title words and examine their frequency distribution.
+
+```{r}
+#| label: zipf-data
+word_freq <- works |>
+  select(display_name) |>
+  unnest_tokens(word, display_name, token = "words") |>
+  anti_join(tidytext::get_stopwords(), by = "word") |>
+  count(word, sort = TRUE) |>
+  mutate(rank = row_number())
+```
+
+```{r}
+#| label: fig-theory-zipf
+#| fig-cap: "Word frequency vs. rank for article titles, approximating Zipf's law."
+#| fig-alt: "Log-log scatter plot of word frequency versus rank, showing an approximately linear relationship consistent with Zipf's law."
+#| fig-width: 6
+#| fig-height: 4
+word_freq |>
+  head(200) |>
+  ggplot(aes(x = rank, y = n)) +
+  geom_point(colour = palette_sci(1), size = 1, alpha = 0.7) +
+  scale_x_log10() +
+  scale_y_log10() +
+  labs(x = "Rank", y = "Frequency") +
+  theme_sci()
+```
+
+### Price's growth law
+
+```{r}
+#| label: fig-theory-growth
+#| fig-cap: "Annual publication counts for sampled works, illustrating the growth of bibliometrics literature."
+#| fig-alt: "Bar chart showing increasing annual publication counts from 2015 to 2023."
+#| fig-width: 6
+#| fig-height: 3.5
+works |>
+  mutate(year = year(publication_date)) |>
+  count(year) |>
+  ggplot(aes(x = year, y = n)) +
+  geom_col(fill = palette_sci(1)) +
+  labs(x = "Year", y = "Works in sample") +
+  theme_sci()
+```
+
+## Diagnostics and interpretation {#theory-diagnostics}
+
+These laws are *empirical regularities*, not physical laws. They describe approximate patterns:
+
+- Lotka's exponent is often not exactly 2; values between 1.5 and 3.5 are common depending on the field and time window.
+- Bradford zones are sensitive to how you define the subject scope.
+- Zipf's law holds best for common words; the tail deviates.
+- Price's exponential growth eventually saturates — science cannot grow faster than the economy indefinitely.
+
+The value of these laws is not predictive precision but the insight that **skewed distributions are the norm, not the exception**, in scholarly communication.
+
+## Limitations and responsible use {#theory-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- These laws describe aggregate patterns, not individual behaviour. A researcher publishing one paper is not "less productive" in any evaluative sense — Lotka's law is a statistical observation, not a performance standard.
+- The Matthew Effect [@merton1968] is a mechanism that *amplifies inequality*. Recognising it should prompt caution about using cumulative metrics (like the h-index) that inherit and reinforce this bias.
+- Power-law fitting is notoriously difficult. Many distributions that "look" power-law on a log-log plot are better described by lognormal or stretched exponential models. Rigorous fitting requires maximum-likelihood methods and goodness-of-fit tests [@hicks2015].
+</div>
+
+## Common pitfalls {#theory-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Eyeballing log-log plots.** A straight line on a log-log plot does not prove a power law. Use formal statistical tests.
+- **Confusing description with prescription.** "Most authors publish few papers" does not mean they *should* publish more.
+- **Ignoring field differences.** The exponent of Lotka's law and the scattering pattern of Bradford's law vary substantially across disciplines.
+- **Assuming stationarity.** These patterns can shift over time as publication norms change (e.g., the rise of mega-journals).
+</div>
+
+## Exercises {#theory-exercises}
+
+1. **Lotka exponent.** Fit a linear model to the log-log author productivity data. What exponent do you estimate? How does it compare to Lotka's original value of 2?
+
+2. **Bradford zones.** Divide the journal list into three zones of roughly equal article counts. How many journals are in each zone? What is the ratio between successive zone sizes?
+
+3. **Your field's Zipf distribution.** Fetch 500 works in a field of your choice. Extract title words and plot the Zipf distribution. Are the most frequent terms what you would expect?
+
+4. **Matthew Effect simulation.** Write a simple simulation: start 100 authors with 1 paper each. At each time step, an author gains a new paper with probability proportional to their current count. After 50 steps, plot the distribution. Does it resemble Lotka's law?
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#theory-reading}
+
+- @lotka1926 — The original observation on author productivity distributions.
+- @bradford1934 — Journal scattering and the Bradford law.
+- @price1963 — Exponential growth of science and cumulative advantage.
+- @merton1968 — The Matthew Effect: how advantage accumulates in science.
+- @garfield1955 — Citation indexing, the empirical basis for much of scientometrics.
+- @waltman2016 — A modern review contextualising these classical laws within citation impact measurement.
+
+## Session info {#theory-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

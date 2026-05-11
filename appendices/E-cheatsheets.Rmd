@@ -1,0 +1,165 @@
+# Cheatsheets and Quick Reference
+
+<!-- verify_chunks: skip-file
+     Cheatsheet snippets are reference code, not evaluated at build time. -->
+
+## openalexR quick reference
+
+```{r}
+#| eval: false
+library(openalexR)
+
+# Fetch works by journal (source)
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S148561398",
+  from_publication_date = "2020-01-01",
+  to_publication_date = "2023-12-31",
+  type = "article"
+)
+
+# Fetch works by institution
+works <- oa_fetch(
+  entity = "works",
+  authorships.institutions.id = "I63966007",
+  from_publication_date = "2022-01-01",
+  type = "article"
+)
+
+# Fetch works by topic
+works <- oa_fetch(
+  entity = "works",
+  topics.id = "T10102",
+  from_publication_date = "2023-01-01"
+)
+
+# Fetch author profile
+author <- oa_fetch(entity = "authors", id = "A5023888391")
+
+# Fetch institution profile
+inst <- oa_fetch(entity = "institutions", id = "I63966007")
+
+# Sampling
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S148561398",
+  options = list(sample = 500, seed = 42)
+)
+```
+
+## quanteda pipeline
+
+```{r}
+#| eval: false
+library(quanteda)
+
+# Full text-analysis pipeline
+corp <- corpus(df, docid_field = "id", text_field = "text")
+toks <- tokens(corp, remove_punct = TRUE, remove_numbers = TRUE) |>
+  tokens_tolower() |>
+  tokens_remove(stopwords("en"))
+dfmat <- dfm(toks) |>
+  dfm_trim(min_termfreq = 5, min_docfreq = 3)
+
+# TF-IDF weighting
+dfmat_tfidf <- dfm_tfidf(dfmat)
+
+# Top features
+topfeatures(dfmat, 20)
+
+# Keyword-in-context
+kwic(toks, pattern = "open access", window = 5)
+```
+
+## igraph / tidygraph / ggraph
+
+```{r}
+#| eval: false
+library(igraph)
+library(tidygraph)
+library(ggraph)
+
+# Build graph from edge list
+g <- graph_from_data_frame(edges, directed = FALSE, vertices = nodes)
+
+# Tidygraph conversion
+tg <- as_tbl_graph(g) |>
+  activate(nodes) |>
+  mutate(
+    degree = centrality_degree(),
+    between = centrality_betweenness(),
+    community = group_leiden(resolution = 1.0)
+  )
+
+# ggraph visualisation
+ggraph(tg, layout = "fr") +
+  geom_edge_link(aes(alpha = weight), show.legend = FALSE) +
+  geom_node_point(aes(size = degree, colour = factor(community))) +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  theme_void()
+```
+
+## Common data wrangling patterns
+
+```{r}
+#| eval: false
+library(tidyverse)
+
+# Unnest OpenAlex authorships
+authors <- works |>
+  select(work_id = id, authorships) |>
+  unnest(authorships, names_sep = "_")
+
+# Unnest OpenAlex topics
+topics <- works |>
+  select(work_id = id, topics) |>
+  unnest(topics, names_sep = "_")
+
+# Compute h-index
+compute_h_index <- function(citations) {
+  citations <- sort(citations, decreasing = TRUE)
+  sum(citations >= seq_along(citations))
+}
+
+# Field normalisation
+works |>
+  group_by(field, year) |>
+  mutate(
+    field_mean = mean(cited_by_count),
+    mncs = cited_by_count / pmax(field_mean, 1)
+  )
+
+# Fractional counting
+works |>
+  unnest(authorships, names_sep = "_") |>
+  group_by(id) |>
+  mutate(frac = 1 / n()) |>
+  ungroup()
+```
+
+## Companion package functions
+
+The `scientometricsInR` package provides helper functions used throughout the book:
+
+| Function | Purpose | Example |
+|:---------|:--------|:--------|
+| `fetch_openalex(...)` | Cached, rate-limited OpenAlex queries | `fetch_openalex(entity = "works", ...)` |
+| `dedupe_by_doi(df)` | Remove duplicate records by DOI | `works |> dedupe_by_doi()` |
+| `compute_h_index(citations)` | Compute h-index from citation vector | `compute_h_index(c(10, 8, 5, 3, 1))` → 3 |
+| `field_normalize(cites, means)` | MNCS normalisation (vector) | `field_normalize(c(20, 5), c(10, 10))` → `c(2.0, 0.5)` |
+| `compute_mncs(df)` | MNCS for a grouped data frame | `df |> compute_mncs()` |
+| `build_coauth_graph(works)` | Co-authorship igraph from works | `build_coauth_graph(works)` |
+| `kleinberg_bursts(kw, dates)` | Keyword burst detection | `kleinberg_bursts(keywords, dates)` |
+| `palette_sci(n)` | Viridis colour palette | `palette_sci(4)` |
+| `theme_sci()` | Minimal ggplot2 theme | `+ theme_sci()` |
+
+## Useful keyboard shortcuts
+
+| Action | RStudio | VS Code |
+|:-------|:--------|:--------|
+| Run current line/selection | Ctrl+Enter | Ctrl+Enter |
+| Run current chunk | Ctrl+Shift+Enter | Ctrl+Shift+Enter |
+| Insert pipe `|>` | Ctrl+Shift+M | — |
+| Insert assignment `<-` | Alt+- | — |
+| Render document | Ctrl+Shift+K | — |
+| Go to file | Ctrl+. | Ctrl+P |

@@ -1,0 +1,202 @@
+# Parameterized Quarto Reports
+
+## Learning objectives {#paramreport-objectives}
+
+After completing this chapter, you will be able to:
+
+- Define parameters in a Quarto document's YAML header
+- Access parameters in R code chunks to drive data retrieval and analysis
+- Render parameterized reports from the command line and from scripts
+- Build a template for journal-level bibliometric profiles
+- Generate multiple reports in batch using purrr or shell loops
+
+## Setup {#paramreport-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#paramreport-background}
+
+Many bibliometric tasks are repetitive: generating the same analysis for 10 journals, 5 departments, or 20 funders. Writing separate scripts for each entity is error-prone and hard to maintain. **Parameterized reports** solve this by defining variables (parameters) that change the report's content without changing its structure.
+
+Quarto supports parameters via the `params` field in the YAML header. Parameters can be strings, numbers, or lists. Inside the document, `params$journal_id` (or `params$institution`) drives data fetching, filtering, and labelling. At render time, parameter values are passed via the command line or a rendering script.
+
+This approach scales naturally: a loop or `purrr::walk()` call renders dozens of reports with different parameters, producing a complete portfolio of bibliometric profiles with consistent methodology and formatting.
+
+Parameterized reports are especially valuable for institutional reporting (annual bibliometric profiles for each department), journal analytics (quarterly reports for a publisher's journal portfolio), and funding assessment (per-grant output summaries).
+
+## Worked example {#paramreport-example}
+
+### Defining parameters
+
+A parameterized Quarto document starts with parameters in the YAML header:
+
+```{r}
+#| label: yaml-example
+#| eval: false
+# Example YAML header (not executable R):
+#
+# ---
+# title: "Journal Bibliometric Profile"
+# params:
+#   journal_id: "S148561398"
+#   journal_name: "Scientometrics"
+#   start_year: 2020
+#   end_year: 2023
+# ---
+```
+
+### Using parameters in code
+
+```{r}
+#| label: use-params
+journal_id <- "S148561398"
+journal_name <- "Scientometrics"
+start_year <- 2020
+end_year <- 2023
+```
+
+```{r}
+#| label: fetch-param-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = journal_id,
+  from_publication_date = paste0(start_year, "-01-01"),
+  to_publication_date = paste0(end_year, "-12-31"),
+  type = "article",
+  options = list(sample = 300, seed = 42)
+)
+
+cat(glue("Journal: {journal_name}\n"))
+cat(glue("Period: {start_year}--{end_year}\n"))
+cat(glue("Articles retrieved: {nrow(works)}\n"))
+```
+
+### Automated summary statistics
+
+```{r}
+#| label: param-summary
+summary_stats <- works |>
+  summarise(
+    total_articles = n(),
+    mean_citations = round(mean(cited_by_count), 1),
+    median_citations = median(cited_by_count),
+    h_index = compute_h_index(cited_by_count),
+    oa_rate = round(mean(oa_status != "closed", na.rm = TRUE) * 100, 1)
+  ) |>
+  mutate(across(everything(), as.character)) |>
+  pivot_longer(everything(), names_to = "Metric", values_to = "Value")
+
+summary_stats |> gt()
+```
+
+### Parameterized figure
+
+```{r}
+#| label: fig-paramreport-trend
+#| fig-cap: "Annual publication count for the selected journal."
+#| fig-alt: "Bar chart showing the number of articles published per year in the journal specified by the report parameters."
+#| fig-width: 5
+#| fig-height: 3.5
+works |>
+  mutate(year = year(publication_date)) |>
+  count(year) |>
+  ggplot(aes(x = factor(year), y = n)) +
+  geom_col(fill = palette_sci(1)) +
+  labs(x = "Year", y = "Articles",
+       title = glue("{journal_name} — Annual Output")) +
+  theme_sci()
+```
+
+### Batch rendering
+
+```{r}
+#| label: batch-render
+#| eval: false
+# Render for multiple journals:
+journals <- tibble(
+  journal_id = c("S148561398", "S202381698", "S137773608"),
+  journal_name = c("Scientometrics", "PLOS ONE", "Nature")
+)
+
+walk2(journals$journal_id, journals$journal_name, function(jid, jname) {
+  quarto::quarto_render(
+    input = "journal_profile.qmd",
+    execute_params = list(
+      journal_id = jid,
+      journal_name = jname,
+      start_year = 2020,
+      end_year = 2023
+    ),
+    output_file = glue("reports/{jname}_profile.html")
+  )
+})
+```
+
+## Diagnostics and interpretation {#paramreport-diagnostics}
+
+- **Parameter validation**: Check that parameters produce valid API queries. Invalid journal IDs return empty results silently.
+- **Sample consistency**: When using `options = list(sample = N)`, the sample changes if the underlying corpus changes. Use `seed` for stability.
+- **Output naming**: Automated file naming should avoid special characters. Sanitise journal names before using them in file paths.
+- **Error handling**: Batch rendering should catch and log errors for individual reports without stopping the entire batch.
+
+## Limitations and responsible use {#paramreport-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- **Automated ≠ mindless.** Parameterized reports produce consistent output but still require human review. An automated report with a data error will produce the wrong results consistently across all entities.
+- **One template fits all?** Different entities may need different analyses. A template designed for a large journal may produce misleading results for a small one (e.g., sparse yearly bins).
+- **API costs.** Batch rendering for 100 journals makes 100 API calls. Respect rate limits and cache results.
+- **Report fatigue.** Generating too many reports can overwhelm decision-makers. Produce reports for entities that need them, not for every possible parameter value [@hicks2015].
+</div>
+
+## Common pitfalls {#paramreport-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Hardcoding values that should be parameters.** If you find yourself editing a date or ID in the script, it should be a parameter.
+- **Not testing with extreme parameters.** A journal with 5 papers per year needs different visualisations than one with 5,000. Test edge cases.
+- **Rendering without caching.** Each render re-executes all code. Use Quarto's `cache: true` or file-based caching to avoid redundant API calls.
+- **Forgetting output format compatibility.** Interactive widgets work in HTML but not PDF. Ensure your template degrades gracefully.
+</div>
+
+## Exercises {#paramreport-exercises}
+
+1. **Institutional template.** Create a parameterized Quarto document for institutional profiles. Parameters: institution ID, name, start year, end year. Include publication count, citation distribution, and top authors.
+
+2. **Batch rendering.** Render the journal profile template for 3 different journals. Compare the resulting reports side by side.
+
+3. **Conditional content.** Add conditional logic: if the sample has fewer than 50 papers, display a warning message instead of the citation distribution figure.
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#paramreport-reading}
+
+- @aria2017 --- `bibliometrix` reporting features.
+- @priem2022 --- OpenAlex API for programmatic data retrieval in reports.
+
+## Session info {#paramreport-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

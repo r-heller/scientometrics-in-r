@@ -1,0 +1,47 @@
+# How to use this book {-}
+
+## Reading paths
+
+The book is structured so that you can read it linearly — front to back —
+or jump straight to the chapter that answers your current question.
+If you do not yet know which method fits your problem, start with the
+*Find Your Method* navigator (Chapter \@ref(find-your-method)). It maps
+typical research questions ("evaluate a journal portfolio", "detect
+emerging topics", "study collaboration patterns") to the chapters and
+case studies that demonstrate the relevant techniques.
+
+## Code chunks
+
+Every analytical claim is paired with a runnable R chunk. Chunks are
+labelled (`label`), and figures use `fig.cap` / `fig.alt` so the book
+remains accessible. Chunks that need network access, paid credentials,
+or interactive widgets are marked `eval = FALSE` and document what is
+required to run them locally.
+
+## Callouts
+
+Three callout styles appear throughout:
+
+<div class="callout callout-info">A blue callout flags a clarification or aside.</div>
+
+<div class="callout callout-warn">An orange callout flags a limitation or responsible-use note — read these.</div>
+
+<div class="callout callout-stop">A red callout flags a common pitfall that has tripped up working scientometricians.</div>
+
+## Companion data
+
+Small sample datasets that the chapters fall back to (when a live API
+call is not appropriate) are bundled with the companion R package
+`scientometricsInR`. Larger illustrative corpora live under `data/` in
+the source repository.
+
+## Downloads
+
+The sidebar's *Download* menu gives you the whole book as a PDF or
+EPUB. Each chapter page also exposes a *Download this chapter (PDF)*
+button at the top right.
+
+## Citation
+
+If the book is useful to your research, please cite it — the suggested
+form lives in the Impressum, and a BibTeX block is in the README.

@@ -1,0 +1,165 @@
+# Case Study 2: Institutional Benchmarking
+
+## Objective
+
+Compare publication output, citation impact, and research profiles of five universities using size-independent and field-normalised indicators.
+
+## Setup
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Data acquisition
+
+```{r}
+#| label: define-institutions
+institutions <- tribble(
+  ~short_name,    ~oa_id,
+  "MIT",          "I63966007",
+  "Oxford",       "I40120149",
+  "ETH Zurich",   "I202697423",
+  "U São Paulo",  "I66491032",
+  "U Cape Town",  "I173603587"
+)
+```
+
+```{r}
+#| label: fetch-inst-data
+#| cache: true
+fetch_works <- function(inst_id) {
+  res <- tryCatch(
+    oa_fetch(
+      entity = "works",
+      authorships.institutions.id = inst_id,
+      from_publication_date = "2020-01-01",
+      to_publication_date = "2022-12-31",
+      type = "article",
+      options = list(sample = 300, seed = 42)
+    ),
+    error = function(e) NULL
+  )
+  if (is.null(res)) tibble() else res
+}
+
+inst_data <- institutions |>
+  mutate(works = map(oa_id, fetch_works)) |>
+  filter(map_int(works, nrow) > 0)
+```
+
+## Publication volume
+
+```{r}
+#| label: fig-cs02-volume
+#| fig-cap: "Sampled publication counts by institution."
+#| fig-alt: "Bar chart comparing sampled publication volumes for five universities."
+#| fig-width: 6
+#| fig-height: 3.5
+inst_data |>
+  mutate(n = map_int(works, nrow)) |>
+  ggplot(aes(x = n, y = reorder(short_name, n))) +
+  geom_col(fill = palette_sci(1)) +
+  labs(x = "Sampled articles", y = NULL) +
+  theme_sci()
+```
+
+## Citation impact
+
+```{r}
+#| label: cs02-impact
+impact <- inst_data |>
+  mutate(
+    mean_cites = map_dbl(works, \(w) mean(w$cited_by_count, na.rm = TRUE)),
+    median_cites = map_dbl(works, \(w) median(w$cited_by_count, na.rm = TRUE)),
+    h_index = map_int(works, \(w) compute_h_index(w$cited_by_count))
+  ) |>
+  select(short_name, mean_cites, median_cites, h_index) |>
+  arrange(desc(mean_cites))
+
+impact |>
+  gt() |>
+  fmt_number(columns = mean_cites, decimals = 1)
+```
+
+## Full vs. fractional counting
+
+```{r}
+#| label: cs02-counting
+counting <- inst_data |>
+  mutate(
+    full_count = map_int(works, nrow),
+    frac_count = map_dbl(works, function(w) {
+      w |>
+        select(id, authorships) |>
+        unnest(authorships, names_sep = "_") |>
+        unnest(authorships_affiliations, names_sep = "_") |>
+        group_by(id) |>
+        summarise(n_inst = n_distinct(authorships_affiliations_id),
+                  .groups = "drop") |>
+        mutate(frac = 1 / pmax(n_inst, 1)) |>
+        pull(frac) |>
+        sum()
+    })
+  ) |>
+  select(short_name, full_count, frac_count) |>
+  mutate(ratio = round(frac_count / full_count, 2))
+
+counting |> gt()
+```
+
+```{r}
+#| label: fig-cs02-counting
+#| fig-cap: "Full vs. fractional publication counts."
+#| fig-alt: "Grouped bar chart showing how fractional counting reduces output for highly collaborative institutions."
+#| fig-width: 6
+#| fig-height: 4
+counting |>
+  pivot_longer(c(full_count, frac_count), names_to = "method", values_to = "count") |>
+  mutate(method = recode(method, full_count = "Full", frac_count = "Fractional")) |>
+  ggplot(aes(x = count, y = reorder(short_name, count), fill = method)) +
+  geom_col(position = "dodge", width = 0.7) +
+  scale_fill_manual(values = palette_sci(2)) +
+  labs(x = "Count", y = NULL, fill = "Method") +
+  theme_sci()
+```
+
+## OA rates
+
+```{r}
+#| label: fig-cs02-oa
+#| fig-cap: "Open access rate by institution."
+#| fig-alt: "Bar chart comparing OA rates across five universities."
+#| fig-width: 5
+#| fig-height: 3.5
+inst_data |>
+  mutate(oa_rate = map_dbl(works, \(w) mean(w$oa_status != "closed", na.rm = TRUE))) |>
+  ggplot(aes(x = oa_rate, y = reorder(short_name, oa_rate))) +
+  geom_col(fill = palette_sci(1)) +
+  scale_x_continuous(labels = scales::percent) +
+  labs(x = "OA rate", y = NULL) +
+  theme_sci()
+```
+
+## Key findings
+
+1. **Size vs. impact**: Raw publication counts favour larger institutions. Fractional counting and h-index provide size-independent comparisons.
+2. **Collaboration intensity**: Institutions with lower fractional/full ratios have more inter-institutional collaborations.
+3. **OA variation**: OA rates differ substantially, reflecting different national mandates and institutional policies.
+4. **No single ranking**: Different indicators produce different orderings. This illustrates the Leiden Manifesto principle that multiple indicators are needed for fair comparison [@hicks2015].
+
+## Lessons learned
+
+- Sampling introduces uncertainty: these are illustrative comparisons, not definitive rankings.
+- Field mix confounds all comparisons: a medical university and a technical university are not directly comparable without field normalisation.
+- Responsible benchmarking requires reporting the counting method, normalisation approach, and sample size transparently.

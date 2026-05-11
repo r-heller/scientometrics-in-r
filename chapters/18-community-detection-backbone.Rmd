@@ -1,0 +1,271 @@
+# Community Detection and Backbone Extraction
+
+## Learning objectives {#backbone-objectives}
+
+After completing this chapter, you will be able to:
+
+- Explain why dense networks require backbone extraction before community detection
+- Apply the disparity filter to extract statistically significant edges
+- Tune the resolution parameter for Louvain and Leiden community detection
+- Compare community assignments across methods using Normalised Mutual Information
+- Interpret hierarchical community structure at multiple resolutions
+
+## Setup {#backbone-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(igraph)
+library(tidygraph)
+library(ggraph)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#backbone-background}
+
+Bibliometric networks are often dense: in a co-citation or bibliographic coupling network, every pair of documents with any shared citation creates an edge. A corpus of 1,000 papers can easily produce a network with hundreds of thousands of edges, most of which represent weak or coincidental relationships. Applying community detection directly to such networks yields poor results --- the algorithms cannot distinguish signal from noise.
+
+**Backbone extraction** addresses this by pruning edges that are not statistically significant, retaining only the "skeleton" of the network. The **disparity filter** [@serrano2009] tests each edge against a null model based on the local weight distribution of its endpoints. An edge is retained if its weight is unexpectedly high given the node's total weight and degree. This preserves multi-scale structure: both high-weight and low-weight nodes can retain their most important connections.
+
+An alternative is simple **threshold filtering** (remove edges below a fixed weight), but this systematically removes connections between low-activity nodes, biasing the backbone toward already-prominent actors. The disparity filter avoids this bias by using a local significance test.
+
+Once the backbone is extracted, **community detection** identifies groups of nodes that are more densely connected internally than externally. The Leiden algorithm [@traag2019] improves on Louvain [@blondel2008] by guaranteeing that all detected communities are internally connected. Both algorithms accept a **resolution parameter** that controls community granularity: lower values produce fewer, larger communities; higher values produce more, smaller communities. There is no single "correct" resolution --- the appropriate value depends on the research question.
+
+@fortunato2010 provides a comprehensive review of community detection methods. In practice, running the algorithm at multiple resolutions and examining the hierarchical structure provides the richest understanding of network organisation.
+
+## Worked example {#backbone-example}
+
+### Building a dense network
+
+We construct a bibliographic coupling network from scientometrics articles.
+
+```{r}
+#| label: fetch-backbone-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S148561398",
+  from_publication_date = "2020-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 300, seed = 42)
+)
+
+refs <- works |>
+  select(citing_id = id, referenced_works) |>
+  unnest(referenced_works) |>
+  rename(cited_id = referenced_works)
+
+bibcoup <- refs |>
+  inner_join(refs, by = "cited_id", suffix = c("_a", "_b"),
+             relationship = "many-to-many") |>
+  filter(citing_id_a < citing_id_b) |>
+  count(citing_id_a, citing_id_b, name = "shared_refs")
+
+g_full <- graph_from_data_frame(
+  bibcoup |> select(citing_id_a, citing_id_b, weight = shared_refs),
+  directed = FALSE
+) |>
+  simplify(edge.attr.comb = list(weight = "sum"))
+
+cat(glue("Full network: {vcount(g_full)} nodes, {ecount(g_full)} edges\n"))
+cat(glue("Density: {round(graph.density(g_full), 4)}\n"))
+```
+
+### Backbone extraction: disparity filter
+
+```{r}
+#| label: disparity-filter
+disparity_filter <- function(g, alpha = 0.05) {
+  el <- as_data_frame(g, what = "edges")
+  node_strength <- strength(g)
+
+  keep <- map2_lgl(seq_len(nrow(el)), el$weight, function(i, w) {
+    from_name <- el$from[i]
+    to_name <- el$to[i]
+    k_from <- degree(g, from_name)
+    k_to <- degree(g, to_name)
+    s_from <- node_strength[from_name]
+    s_to <- node_strength[to_name]
+
+    p_from <- (1 - w / s_from)^(k_from - 1)
+    p_to <- (1 - w / s_to)^(k_to - 1)
+
+    min(p_from, p_to) < alpha
+  })
+
+  subgraph.edges(g, which(keep), delete.vertices = TRUE)
+}
+
+g_backbone <- disparity_filter(g_full, alpha = 0.05)
+cat(glue("Backbone: {vcount(g_backbone)} nodes, {ecount(g_backbone)} edges\n"))
+cat(glue("Edge retention: {scales::percent(ecount(g_backbone) / ecount(g_full))}\n"))
+```
+
+### Threshold filtering for comparison
+
+```{r}
+#| label: threshold-filter
+threshold <- quantile(E(g_full)$weight, 0.75)
+g_threshold <- subgraph.edges(
+  g_full,
+  which(E(g_full)$weight >= threshold),
+  delete.vertices = TRUE
+)
+
+cat(glue("Threshold (75th pctile = {threshold}): {vcount(g_threshold)} nodes, {ecount(g_threshold)} edges\n"))
+```
+
+### Community detection at multiple resolutions
+
+```{r}
+#| label: resolution-sweep
+resolutions <- c(0.5, 0.8, 1.0, 1.5, 2.0)
+
+sweep_results <- map_dfr(resolutions, function(res) {
+  comm <- cluster_leiden(g_backbone, resolution_parameter = res,
+                         objective_function = "modularity")
+  tibble(
+    resolution = res,
+    n_communities = length(unique(membership(comm))),
+    modularity = round(modularity(g_backbone, membership(comm)), 3),
+    max_size = max(table(membership(comm))),
+    min_size = min(table(membership(comm)))
+  )
+})
+
+sweep_results |> gt()
+```
+
+```{r}
+#| label: fig-backbone-resolution
+#| fig-cap: "Number of communities and modularity as a function of resolution parameter."
+#| fig-alt: "Dual-axis line chart showing how the number of detected communities increases and modularity changes as the Leiden resolution parameter increases."
+#| fig-width: 6
+#| fig-height: 4
+ggplot(sweep_results, aes(x = resolution)) +
+  geom_line(aes(y = n_communities), colour = palette_sci(2)[1], linewidth = 1) +
+  geom_point(aes(y = n_communities), colour = palette_sci(2)[1], size = 3) +
+  geom_line(aes(y = modularity * max(n_communities)),
+            colour = palette_sci(2)[2], linewidth = 1, linetype = "dashed") +
+  scale_y_continuous(
+    name = "Number of communities",
+    sec.axis = sec_axis(~ . / max(sweep_results$n_communities),
+                        name = "Modularity")
+  ) +
+  labs(x = "Resolution parameter") +
+  theme_sci()
+```
+
+### Comparing backbone vs. full network communities
+
+```{r}
+#| label: compare-backbone
+comm_full <- cluster_leiden(g_full, resolution_parameter = 1.0,
+                            objective_function = "modularity")
+comm_backbone <- cluster_leiden(g_backbone, resolution_parameter = 1.0,
+                                objective_function = "modularity")
+
+shared_nodes <- intersect(V(g_full)$name, V(g_backbone)$name)
+mem_full <- membership(comm_full)[shared_nodes]
+mem_back <- membership(comm_backbone)[shared_nodes]
+
+nmi <- compare(mem_full, mem_back, method = "nmi")
+cat(glue("NMI (full vs backbone, shared nodes): {round(nmi, 3)}\n"))
+cat(glue("Communities in full network: {length(unique(membership(comm_full)))}\n"))
+cat(glue("Communities in backbone: {length(unique(membership(comm_backbone)))}\n"))
+```
+
+### Visualisation
+
+```{r}
+#| label: fig-backbone-network
+#| fig-cap: "Backbone network with Leiden communities (resolution = 1.0)."
+#| fig-alt: "Network graph showing the backbone of the bibliographic coupling network. Nodes coloured by community, sized by degree. Only statistically significant edges are shown."
+#| fig-width: 6
+#| fig-height: 4.5
+V(g_backbone)$community <- as.factor(membership(comm_backbone))
+V(g_backbone)$degree <- degree(g_backbone)
+
+set.seed(42)
+layout <- create_layout(as_tbl_graph(g_backbone), layout = "fr")
+
+ggraph(layout) +
+  geom_edge_link(alpha = 0.1, colour = "grey60") +
+  geom_node_point(aes(size = degree, colour = community), alpha = 0.8) +
+  scale_size_continuous(range = c(1, 5), guide = "none") +
+  scale_colour_manual(values = palette_sci(
+    n_distinct(V(g_backbone)$community)
+  )) +
+  labs(colour = "Community") +
+  theme_void(base_family = "sans", base_size = 11) +
+  theme(legend.position = "bottom")
+```
+
+## Diagnostics and interpretation {#backbone-diagnostics}
+
+- **Edge retention rate**: The disparity filter typically retains 10–30% of edges. Retention above 50% suggests the network may not be dense enough to require backbone extraction.
+- **Isolated nodes**: Backbone extraction removes nodes that lose all their edges. Report how many nodes are lost and whether they represent a biased subset (e.g., low-cited papers).
+- **Resolution plateau**: If modularity remains stable across a range of resolutions, the community structure is robust. Rapid changes suggest sensitivity to the parameter.
+- **Singleton communities**: Communities with one or two nodes are usually noise. Consider merging them into the nearest larger community or excluding them from interpretation.
+
+## Limitations and responsible use {#backbone-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- **The disparity filter has assumptions.** It assumes a uniform null distribution of edge weights across a node's connections. Highly skewed weight distributions may violate this assumption.
+- **Backbone choice affects conclusions.** Different backbone methods (disparity filter, noise-corrected, threshold) retain different edges and can produce different community structures. Report the method and alpha level.
+- **Resolution is a researcher decision.** There is no objectively "correct" resolution parameter. The choice determines the granularity of analysis and should be justified by the research question, not by optimising modularity alone [@fortunato2010].
+- **Communities are not ground truth.** Detected communities are algorithmic constructs. They reflect structural patterns in citation data, not necessarily real-world research groups or coherent intellectual traditions [@hicks2015].
+</div>
+
+## Common pitfalls {#backbone-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Applying community detection to unfiltered dense networks.** The result is usually a single giant community plus isolated fragments. Always extract the backbone first.
+- **Using a single resolution without justification.** The default resolution of 1.0 is arbitrary. Run a sweep and show the sensitivity analysis.
+- **Comparing modularity across networks of different sizes.** Modularity values are not comparable between different networks. Use NMI to compare partitions.
+- **Interpreting backbone edges as "strong" relationships.** The disparity filter retains *locally significant* edges, not necessarily those with the highest absolute weight. A low-weight edge can be retained if it is important relative to its endpoint's other connections.
+</div>
+
+## Exercises {#backbone-exercises}
+
+1. **Alpha sensitivity.** Run the disparity filter with alpha values of 0.01, 0.05, 0.10, and 0.20. Plot the number of retained edges and communities against alpha. At what alpha does the network become disconnected?
+
+2. **Threshold vs. disparity.** Compare threshold-filtered and disparity-filtered communities for the same network. Use NMI to quantify agreement. Which method produces more interpretable communities?
+
+3. **Hierarchical structure.** Run Leiden at resolutions 0.5, 1.0, and 2.0. For each pair of resolutions, check whether the finer communities are nested within the coarser ones (a Sankey or alluvial diagram can help visualise this).
+
+4. **Weighted vs. unweighted community detection.** Remove edge weights from the backbone and run Leiden again. How much does the community structure change?
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#backbone-reading}
+
+- @serrano2009 --- The disparity filter for extracting multiscale network backbones.
+- @traag2019 --- The Leiden algorithm with resolution parameter tuning.
+- @blondel2008 --- The Louvain algorithm for fast community detection.
+- @fortunato2010 --- Comprehensive review of community detection, including resolution limits.
+- @waltman2012 --- Network construction and clustering for bibliometric applications.
+
+## Session info {#backbone-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

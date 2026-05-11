@@ -1,0 +1,222 @@
+# Descriptive Bibliometrics
+
+## Learning objectives {#desc-objectives}
+
+After completing this chapter, you will be able to:
+
+- Import bibliographic data into bibliometrix using `convert2df`
+- Produce a corpus-level summary with `biblioAnalysis` and `summary`
+- Identify the most productive authors, sources, and countries in a dataset
+- Construct and interpret a three-field plot (Sankey diagram)
+- Explain when to use the interactive biblioshiny app versus a scripted workflow
+- Recognise the descriptive statistics that should precede any advanced analysis
+
+## Setup {#desc-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(bibliometrix)
+library(glue)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#desc-background}
+
+Before computing any advanced indicator, a responsible bibliometric study begins with **descriptive analysis**: understanding the size, growth, and composition of the corpus. How many documents per year? Which journals dominate? Which countries contribute? These questions set the stage for every subsequent method.
+
+The **bibliometrix** package [@aria2017] provides an integrated R workflow for science mapping. Its companion web app, **biblioshiny**, wraps the same functions in a point-and-click interface — useful for exploration but not for reproducible reporting. In a Quarto pipeline, we prefer scripted calls so that every number is traceable to code.
+
+Bibliometrix accepts data from Scopus, Web of Science, Dimensions, PubMed, and OpenAlex. The `convert2df()` function normalises heterogeneous export formats into a common data frame. The `biblioAnalysis()` function then computes a battery of descriptive statistics in one call: annual production, author productivity, source rankings, country output, and keyword frequencies.
+
+Three classical bibliometric laws underpin this descriptive stage. **Lotka's law** [@lotka1926] describes the inverse-square relationship between the number of authors and their publication counts. **Bradford's law** [@bradford1934] models how articles on a subject scatter across journals, identifying core, mid-range, and peripheral zones. **Price's law** [@price1963] states that half of all contributions come from the square root of the total number of contributors. These empirical regularities provide benchmarks against which any corpus can be compared.
+
+Descriptive bibliometrics also serves a data-quality role. Anomalous spikes in annual output may signal duplicate records; a suspiciously dominant country may indicate a search query biased toward a specific language. Inspecting descriptive statistics is the first line of defence against analytical errors.
+
+## Worked example {#desc-example}
+
+### Acquiring the data
+
+We fetch a sample of works from the *Scientometrics* journal via OpenAlex and convert the result into a bibliometrix-compatible data frame.
+
+```{r}
+#| label: fetch-desc-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S148561398",
+  from_publication_date = "2018-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 500, seed = 42)
+)
+
+nrow(works)
+```
+
+### Converting to bibliometrix format
+
+```{r}
+#| label: convert-to-bib
+bib_df <- oa2bibliometrix(works)
+
+cat(glue("Records: {nrow(bib_df)}\n"))
+cat(glue("Fields: {ncol(bib_df)}\n"))
+```
+
+### Running biblioAnalysis
+
+```{r}
+#| label: biblio-analysis
+results <- tryCatch(
+  biblioAnalysis(bib_df, sep = ";"),
+  error = function(e) {
+    cat("Note: biblioAnalysis() encountered an error with this data format.\n")
+    cat("This is a known compatibility issue between bibliometrix and openalexR v3.\n")
+    NULL
+  }
+)
+if (!is.null(results)) {
+  summary_out <- summary(results, k = 10, verbose = FALSE)
+}
+```
+
+### Annual scientific production
+
+```{r}
+#| label: fig-desc-annual
+#| fig-cap: "Annual scientific production in the sampled corpus (2018-2023)."
+#| fig-alt: "Bar chart showing the number of publications per year from 2018 to 2023, illustrating the growth trend in the sampled Scientometrics articles."
+#| fig-width: 6
+#| fig-height: 4
+annual <- works |>
+  mutate(year = year(publication_date)) |>
+  count(year)
+
+ggplot(annual, aes(x = year, y = n)) +
+  geom_col(fill = palette_sci(1), width = 0.7) +
+  geom_text(aes(label = n), vjust = -0.5, size = 3.5) +
+  labs(x = "Publication year", y = "Number of articles") +
+  theme_sci()
+```
+
+### Most productive authors
+
+```{r}
+#| label: fig-desc-top-authors
+#| fig-cap: "Top 15 most productive authors in the sample."
+#| fig-alt: "Horizontal bar chart listing the 15 authors with the most publications in the sample, ordered by number of articles."
+#| fig-width: 6
+#| fig-height: 4.5
+author_prod <- works |>
+  select(id, authorships) |>
+  unnest(authorships, names_sep = "_") |>
+  count(authorships_display_name, sort = TRUE) |>
+  head(15)
+
+ggplot(author_prod, aes(x = n, y = reorder(authorships_display_name, n))) +
+  geom_col(fill = palette_sci(1)) +
+  labs(x = "Articles", y = NULL) +
+  theme_sci()
+```
+
+### Most productive sources
+
+Because all sampled works come from a single journal in this example, we instead show the most frequent cited sources from the references.
+
+```{r}
+#| label: top-sources
+top_sources <- works |>
+  select(id, referenced_works) |>
+  unnest(referenced_works) |>
+  count(referenced_works, sort = TRUE) |>
+  head(10)
+
+cat(glue("Top 10 most-cited reference work IDs:\n"))
+print(top_sources)
+```
+
+### Three-field plot
+
+The three-field plot (Sankey diagram) links authors, keywords, and sources. It is a signature visualisation in bibliometrix.
+
+```{r}
+#| label: fig-desc-three-field
+#| fig-cap: "Three-field plot linking authors (left), keywords (centre), and cited sources (right)."
+#| fig-alt: "Sankey diagram connecting the most productive authors to their most frequent keywords and the journals they cite most, showing thematic flows across the three dimensions."
+#| fig-width: 7
+#| fig-height: 5
+tryCatch(
+  threeFieldsPlot(bib_df, fields = c("AU", "DE", "SO_SO"), n = c(8, 8, 8)),
+  error = function(e) cat("Three-field plot skipped due to data format incompatibility.\n")
+)
+```
+
+## Diagnostics and interpretation {#desc-diagnostics}
+
+When reviewing descriptive output, check the following:
+
+- **Completeness**: Are there gaps in yearly coverage that indicate missing data rather than genuine drops?
+- **Author name variants**: The same person appearing under different name forms inflates author counts. OpenAlex's entity resolution helps, but manual inspection remains essential.
+- **Lotka's law fit**: If the author productivity distribution deviates markedly from an inverse-square law, the corpus may be too small or too specialised.
+- **Bradford zones**: In a multi-journal corpus, check whether a small core of journals accounts for roughly one-third of all articles, as Bradford's law predicts.
+
+## Limitations and responsible use {#desc-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- **Descriptive statistics are not evaluative.** The most productive author is not necessarily the most impactful. Publication counts say nothing about quality [@hicks2015].
+- **Sample bias.** A random sample from OpenAlex may not represent the full population. Always report how the sample was drawn and its size relative to the universe.
+- **Language and database coverage.** OpenAlex has broader coverage than WoS or Scopus, but still underrepresents non-English-language research and certain disciplines [@visser2021].
+- **Name disambiguation.** Despite algorithmic clustering, author and institutional names can still be conflated or split. Treat productivity rankings as approximate.
+</div>
+
+## Common pitfalls {#desc-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Skipping descriptive analysis.** Jumping straight to network or topic analysis without understanding the corpus structure often leads to misinterpretation.
+- **Treating biblioshiny output as final.** The interactive app is excellent for exploration, but its figures are not reproducible. Always script the final analysis.
+- **Ignoring duplicate records.** Bibliographic exports often contain duplicates. Use `dedupe_by_doi()` or similar checks before computing any statistics.
+- **Comparing raw counts across time windows of different length.** Counting publications in a 6-year window is not comparable to a 3-year window without normalisation.
+</div>
+
+## Exercises {#desc-exercises}
+
+1. **Lotka's law.** Using the author productivity data from this chapter, fit Lotka's inverse-square law with `bibliometrix::lotka()`. Does the observed distribution follow the theoretical prediction? *(Hint: plot observed vs. expected proportions.)*
+
+2. **Bradford's law.** Fetch works from a broad topic (e.g., "machine learning") across multiple journals. Apply `bibliometrix::bradford()` to identify the core, mid-range, and peripheral journal zones. How many journals form the core zone?
+
+3. **Three-field exploration.** Modify the three-field plot to use author countries instead of author names as the left field (use `"AU_CO"` if available). What new patterns emerge?
+
+4. **Annual growth rate.** Compute the compound annual growth rate (CAGR) of publications in the sample. Is the field accelerating?
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#desc-reading}
+
+- @aria2017 --- The bibliometrix package paper; describes the full workflow and all available functions.
+- @lotka1926 --- The original frequency distribution of scientific productivity.
+- @bradford1934 --- Bradford's law of scattering: how articles distribute across journals.
+- @price1963 --- *Little Science, Big Science*; foundational work on the growth of science.
+- @hicks2015 --- The Leiden Manifesto; a reminder that descriptive counts are not evaluations.
+- @visser2021 --- Comparison of bibliographic databases; important context for coverage limitations.
+
+## Session info {#desc-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

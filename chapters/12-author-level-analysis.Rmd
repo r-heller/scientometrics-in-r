@@ -1,0 +1,230 @@
+# Author-Level Analysis and Disambiguation
+
+## Learning objectives {#author-objectives}
+
+After completing this chapter, you will be able to:
+
+- Explain the author disambiguation problem and its impact on bibliometric analysis
+- Retrieve and interpret OpenAlex author entities, including name variants
+- Integrate ORCID identifiers to validate author identity
+- Compute author-level productivity, citation, and topical statistics from works data
+- Build a reproducible author profile report from OpenAlex
+
+## Setup {#author-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(glue)
+library(gt)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#author-background}
+
+Correctly attributing publications to individual researchers is a prerequisite for any author-level analysis, yet it remains one of the hardest problems in bibliometrics. **Author disambiguation** --- determining whether two name strings refer to the same person --- is complicated by name variants (initials vs. full names, transliterations, name changes after marriage), homonymy (different people sharing a name), and inconsistent metadata across databases.
+
+OpenAlex [@priem2022] addresses this through algorithmic author clustering that groups works likely belonging to the same person. Each cluster receives a unique author ID (e.g., `A5023888391`). The algorithm considers name similarity, co-author overlap, institutional affiliation, topic continuity, and citation patterns. While imperfect, this clustering is transparent and continuously improved.
+
+**ORCID** (Open Researcher and Contributor ID) provides a complementary solution: a persistent digital identifier that researchers claim and curate themselves. When an ORCID is linked to an OpenAlex author entity, it provides strong confirmation of identity. However, ORCID adoption is uneven across disciplines and geographies, so it cannot serve as the sole disambiguation strategy.
+
+The **h-index** [@hirsch2005] and related indicators (\@ref(indicators-background)) are commonly used to summarise author-level impact, but they are meaningful only when the underlying publication set is correctly attributed. A split author (one person assigned two IDs) will have a deflated h-index; a merged author (two people sharing one ID) will have an inflated one.
+
+Author-level analysis also raises ethical concerns. The Leiden Manifesto [@hicks2015] warns against reducing a researcher's contribution to a single number. Career breaks, discipline-specific norms, and the Matthew effect [@merton1968] --- where established researchers accumulate citations disproportionately --- must all be considered when interpreting author-level metrics.
+
+## Worked example {#author-example}
+
+### Retrieving an author entity
+
+We retrieve the OpenAlex profile for a well-known scientometrician.
+
+```{r}
+#| label: fetch-author
+#| cache: true
+author_entity <- oa_fetch(
+  entity = "authors",
+  search = "Ludo Waltman",
+  options = list(sort = "cited_by_count:desc")
+)
+
+author_info <- author_entity |> slice(1)
+cat(glue("Name: {author_info$display_name}\n"))
+cat(glue("OpenAlex ID: {author_info$id}\n"))
+cat(glue("ORCID: {author_info$orcid}\n"))
+cat(glue("Works count: {author_info$works_count}\n"))
+cat(glue("Cited by count: {author_info$cited_by_count}\n"))
+```
+
+### Fetching the author's works
+
+```{r}
+#| label: fetch-author-works
+#| cache: true
+author_works <- oa_fetch(
+  entity = "works",
+  author.id = author_info$id,
+  from_publication_date = "2010-01-01",
+  to_publication_date = "2023-12-31"
+)
+
+works_slim <- author_works |>
+  select(id, display_name, publication_date, cited_by_count, type, source_display_name) |>
+  mutate(year = year(publication_date))
+
+cat(glue("Works retrieved: {nrow(works_slim)}\n"))
+```
+
+### Author-level statistics
+
+```{r}
+#| label: author-stats
+h_idx <- compute_h_index(works_slim$cited_by_count)
+
+stats <- tibble(
+  Metric = c("Total works", "Total citations", "h-index",
+             "Mean citations/paper", "Median citations/paper",
+             "First publication year", "Most recent year"),
+  Value = c(
+    nrow(works_slim),
+    sum(works_slim$cited_by_count),
+    h_idx,
+    round(mean(works_slim$cited_by_count), 1),
+    median(works_slim$cited_by_count),
+    min(works_slim$year),
+    max(works_slim$year)
+  )
+)
+
+stats |> gt()
+```
+
+### Publication timeline
+
+```{r}
+#| label: fig-author-timeline
+#| fig-cap: "Annual publication output and cumulative citation count."
+#| fig-alt: "Dual-axis chart showing the number of publications per year as bars and cumulative citations as a line, illustrating career trajectory over time."
+#| fig-width: 6
+#| fig-height: 4
+annual <- works_slim |>
+  group_by(year) |>
+  summarise(n_pubs = n(), cites = sum(cited_by_count), .groups = "drop") |>
+  mutate(cum_cites = cumsum(cites))
+
+ggplot(annual, aes(x = year)) +
+  geom_col(aes(y = n_pubs), fill = palette_sci(1), width = 0.7) +
+  geom_line(aes(y = cum_cites / max(cum_cites) * max(n_pubs)),
+            colour = palette_sci(2)[2], linewidth = 1) +
+  scale_y_continuous(
+    name = "Publications per year",
+    sec.axis = sec_axis(~ . / max(annual$n_pubs) * max(annual$cum_cites),
+                        name = "Cumulative citations")
+  ) +
+  labs(x = "Year") +
+  theme_sci()
+```
+
+### Top venues
+
+```{r}
+#| label: fig-author-venues
+#| fig-cap: "Top 10 venues by number of publications for this author."
+#| fig-alt: "Horizontal bar chart showing the 10 journals or venues where the author published the most articles."
+#| fig-width: 6
+#| fig-height: 4
+venue_counts <- works_slim |>
+  filter(!is.na(source_display_name)) |>
+  count(source_display_name, sort = TRUE) |>
+  head(10)
+
+ggplot(venue_counts, aes(x = n, y = reorder(source_display_name, n))) +
+  geom_col(fill = palette_sci(1)) +
+  labs(x = "Number of articles", y = NULL) +
+  theme_sci()
+```
+
+### Checking for name variants
+
+```{r}
+#| label: name-variants
+if ("display_name_alternatives" %in% names(author_info)) {
+  cat("Known name variants:\n")
+  print(author_info$display_name_alternatives)
+} else {
+  cat("No alternative display names recorded in this entity.\n")
+}
+```
+
+## Diagnostics and interpretation {#author-diagnostics}
+
+When building author profiles, verify the following:
+
+- **Works count plausibility**: Does the number of retrieved works match the author's known output? Large discrepancies suggest a split or merged entity.
+- **Topical coherence**: Scan titles and venues. If the works span wildly unrelated fields, the entity may conflate two researchers with similar names.
+- **ORCID match**: If the author has an ORCID, cross-check that the OpenAlex entity links to it.
+- **Co-author consistency**: The author's frequent co-authors should be recognisable collaborators, not strangers from an unrelated field.
+- **Citation distribution**: An extreme outlier (e.g., one paper with 10,000 citations while all others have fewer than 50) may indicate an attribution error.
+
+## Limitations and responsible use {#author-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- **Disambiguation is imperfect.** OpenAlex's algorithm will sometimes split one person into multiple entities or merge distinct individuals. Always validate profiles manually for high-stakes analyses.
+- **ORCID coverage is uneven.** Researchers in the Global South, early-career scholars, and those in humanities adopt ORCID at lower rates. Filtering to ORCID-linked authors introduces bias.
+- **The Matthew effect.** Established researchers accumulate citations disproportionately [@merton1968]. Author-level metrics favour seniority and visibility, not necessarily quality or originality.
+- **Career breaks and part-time research.** Indicators like the h-index penalise researchers who take parental leave, work part-time, or switch careers. The m-quotient is only a rough correction [@hirsch2005].
+- **Never evaluate individuals by numbers alone** [@hicks2015; @dora2012]. Author profiles should supplement, not replace, reading the actual work.
+</div>
+
+## Common pitfalls {#author-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Trusting a single database.** OpenAlex may lack works indexed only in domain-specific databases (e.g., SSRN, arXiv preprints not yet linked). Cross-check with ORCID profiles.
+- **Ignoring co-author contributions.** Raw publication counts treat single-author and 50-author papers equally. Consider fractional counting for productivity analysis.
+- **Comparing across career stages.** An early-career researcher with h = 8 after 5 years may be more productive than a senior researcher with h = 25 after 30 years. Use the m-quotient or age-normalised indicators.
+- **Conflating author-level and paper-level metrics.** An author's h-index says nothing about which of their papers are excellent and which are not.
+</div>
+
+## Exercises {#author-exercises}
+
+1. **Profile comparison.** Fetch profiles for two researchers in the same field. Compare their h-index, publication count, and mean citations per paper. What does each metric reveal that the others do not?
+
+2. **ORCID validation.** For an author with an ORCID, fetch their works via both OpenAlex author ID and ORCID filtering. Do the two sets agree? What might explain discrepancies?
+
+3. **Name variant detection.** Search OpenAlex for a common name (e.g., "Wang Wei"). How many author entities are returned? What heuristics could you use to identify the correct one?
+
+4. **Fractional productivity.** Recompute annual publication counts using fractional counting (1/k credit per paper with k authors). How does this change the author's productivity curve?
+
+5. **Self-citation ratio.** For an author's works, estimate the fraction of citations that come from the author's own other papers. *(Hint: check if cited works share the same author ID.)*
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#author-reading}
+
+- @priem2022 --- OpenAlex's author disambiguation and entity resolution approach.
+- @hirsch2005 --- The h-index, the most widely used author-level indicator.
+- @merton1968 --- The Matthew effect: cumulative advantage in scientific recognition.
+- @hicks2015 --- The Leiden Manifesto: principles for responsible author evaluation.
+- @dora2012 --- DORA: recommendations against reducing researchers to single numbers.
+- @egghe2006 --- The g-index, a complement to the h-index for author evaluation.
+
+## Session info {#author-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

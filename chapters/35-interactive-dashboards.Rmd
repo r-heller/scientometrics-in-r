@@ -1,0 +1,199 @@
+# Interactive Dashboards
+
+## Learning objectives {#dashboard-objectives}
+
+After completing this chapter, you will be able to:
+
+- Create a Quarto dashboard layout with multiple panels and pages
+- Convert ggplot2 figures to interactive plotly charts
+- Build searchable, filterable data tables with the DT package
+- Design effective dashboard layouts for bibliometric data exploration
+- Deploy dashboards as self-contained HTML files
+
+## Setup {#dashboard-setup}
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(openalexR)
+library(plotly)
+library(DT)
+library(glue)
+
+set.seed(20260509)
+
+source(here::here("R", "api_helpers.R"))
+source(here::here("R", "utils.R"))
+source(here::here("R", "sci_palette.R"))
+```
+
+## Conceptual background {#dashboard-background}
+
+Bibliometric analysis often produces more data than can be communicated through static figures and tables. Interactive dashboards allow stakeholders — research managers, librarians, policy makers — to explore data on their own terms: filtering by year, hovering for details, sorting tables, and drilling down into specific subsets.
+
+**Quarto dashboards** use the `format: dashboard` output type to arrange content in cards, rows, and columns. They support static and interactive content side by side, and can be deployed as self-contained HTML files (no server needed) or as server-backed applications.
+
+**plotly** converts ggplot2 figures into interactive JavaScript visualisations with hover tooltips, zooming, panning, and selection. The `ggplotly()` function provides a zero-effort upgrade path from static to interactive figures, though fine-tuning often requires direct plotly syntax.
+
+**DT** (DataTables) renders data frames as interactive HTML tables with search, sort, pagination, and filtering. For bibliometric data, DT is invaluable: users can search for specific authors, sort by citation count, and filter by year — all without writing code.
+
+The key design principle for dashboards is **progressive disclosure**: show the most important summary first, then let users drill down into details. Avoid overwhelming users with every metric at once.
+
+## Worked example {#dashboard-example}
+
+### Preparing dashboard data
+
+```{r}
+#| label: fetch-dashboard-data
+#| cache: true
+works <- oa_fetch(
+  entity = "works",
+  primary_location.source.id = "S148561398",
+  from_publication_date = "2019-01-01",
+  to_publication_date = "2023-12-31",
+  options = list(sample = 500, seed = 42)
+)
+
+dash_data <- works |>
+  transmute(
+    id, title = display_name,
+    year = year(publication_date),
+    cited_by_count, oa_status, type, source_display_name
+  )
+
+cat(glue("Dashboard data: {nrow(dash_data)} records\n"))
+```
+
+### Interactive trend chart
+
+```{r}
+#| label: fig-dashboard-trend
+#| fig-cap: "Interactive publication trend with hover details."
+#| fig-alt: "Interactive line chart showing annual publication counts with tooltips on hover."
+#| fig-width: 6
+#| fig-height: 3.5
+#| eval: !expr knitr::is_html_output(excludes = c("epub","epub2","epub3"))
+# Interactive plotly widget — only rendered for HTML output.
+trend <- dash_data |>
+  count(year)
+
+p <- ggplot(trend, aes(x = year, y = n)) +
+  geom_line(colour = palette_sci(1), linewidth = 1) +
+  geom_point(colour = palette_sci(1), size = 3) +
+  labs(x = "Year", y = "Publications") +
+  theme_sci()
+
+ggplotly(p)
+```
+
+### Interactive citation distribution
+
+```{r}
+#| label: fig-dashboard-citedist
+#| fig-cap: "Interactive citation distribution with hover details."
+#| fig-alt: "Interactive histogram of citation counts where hovering reveals bin details."
+#| fig-width: 6
+#| fig-height: 3.5
+#| eval: !expr knitr::is_html_output(excludes = c("epub","epub2","epub3"))
+# Interactive plotly widget — only rendered for HTML output.
+p2 <- ggplot(dash_data, aes(x = cited_by_count)) +
+  geom_histogram(binwidth = 5, fill = palette_sci(1), colour = "white") +
+  labs(x = "Citation count", y = "Papers") +
+  theme_sci()
+
+ggplotly(p2)
+```
+
+### Searchable data table
+
+```{r}
+#| label: data-table
+#| eval: !expr knitr::is_html_output(excludes = c("epub","epub2","epub3"))
+# Interactive DT widget — only rendered for HTML output.
+dash_data |>
+  select(title, year, cited_by_count, oa_status) |>
+  arrange(desc(cited_by_count)) |>
+  datatable(
+    options = list(pageLength = 10, searchHighlight = TRUE),
+    filter = "top",
+    rownames = FALSE
+  )
+```
+
+### OA status breakdown (interactive)
+
+```{r}
+#| label: fig-dashboard-oa
+#| fig-cap: "Interactive OA status breakdown by year."
+#| fig-alt: "Interactive stacked bar chart showing OA status proportions by year."
+#| fig-width: 6
+#| fig-height: 4
+#| eval: !expr knitr::is_html_output(excludes = c("epub","epub2","epub3"))
+# Interactive plotly widget — only rendered for HTML output.
+oa_trend <- dash_data |>
+  count(year, oa_status)
+
+p3 <- ggplot(oa_trend, aes(x = factor(year), y = n, fill = oa_status)) +
+  geom_col() +
+  scale_fill_manual(values = palette_sci(n_distinct(oa_trend$oa_status))) +
+  labs(x = "Year", y = "Count", fill = "OA Status") +
+  theme_sci()
+
+ggplotly(p3)
+```
+
+## Diagnostics and interpretation {#dashboard-diagnostics}
+
+- **Performance**: Large datasets (> 10,000 rows) can make plotly and DT slow. Aggregate or sample data before rendering interactive widgets.
+- **Accessibility**: Interactive figures are not accessible to screen readers. Always provide alt text and consider static fallbacks.
+- **File size**: Self-contained HTML dashboards embed all data and JavaScript libraries. Files can reach 5–50 MB for complex dashboards.
+- **Browser compatibility**: Test in Chrome, Firefox, and Safari. Some plotly features render differently across browsers.
+
+## Limitations and responsible use {#dashboard-limitations}
+
+<div class="callout callout-warn">
+## Limitations and responsible use
+
+- **Interactivity is not analysis.** A dashboard lets users explore data, but exploration without statistical rigour can produce misleading impressions. Pair dashboards with proper analysis.
+- **Dashboards can mislead.** Default axis ranges, binning, and colour choices affect interpretation. Design dashboards to prevent misreading, not enable it.
+- **Data privacy.** Interactive tables may expose individual-level data (author names, paper titles). Consider whether the dashboard's audience should see this level of detail.
+- **Maintenance burden.** Dashboards that query live APIs need updating when APIs change. Static dashboards based on cached data are more sustainable [@hicks2015].
+</div>
+
+## Common pitfalls {#dashboard-pitfalls}
+
+<div class="callout callout-stop">
+## Common pitfalls
+
+- **Too many widgets.** A dashboard with 15 interactive panels is overwhelming. Start with 3–5 and add more only if users need them.
+- **Not filtering large datasets.** Rendering 50,000 rows in DT or 100,000 points in plotly will crash the browser. Pre-aggregate.
+- **Ignoring PDF fallbacks.** If your Quarto book renders to PDF, interactive widgets become static. Ensure the static version is still informative.
+- **Using ggplotly without cleanup.** `ggplotly()` produces verbose tooltips. Customise hover text with `tooltip` parameter or direct plotly.
+</div>
+
+## Exercises {#dashboard-exercises}
+
+1. **Multi-page dashboard.** Create a Quarto dashboard (format: dashboard) with two pages: "Overview" (trend + citation distribution) and "Details" (searchable table).
+
+2. **Linked brushing.** Use plotly's selection features to highlight papers in a scatter plot and simultaneously filter a DT table below.
+
+3. **Custom tooltips.** Modify the trend chart to show "Year: 2023, Papers: 87, Mean cites: 12.3" on hover instead of the default tooltip.
+
+<div class="callout callout-ok">
+## Solutions
+
+Solutions are provided in \@ref(solutions).
+</div>
+
+## Further reading {#dashboard-reading}
+
+- @aria2017 --- `bibliometrix` and `biblioshiny` for interactive bibliometric exploration.
+- @priem2022 --- OpenAlex as a data source for dashboard construction.
+
+## Session info {#dashboard-sessioninfo}
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
