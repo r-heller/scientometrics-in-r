@@ -24,11 +24,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Disable renv autoloader in CI
-        # The project .Rprofile sources renv/activate.R, which keeps
-        # re-activating an empty project library across steps and hides
-        # whatever setup-r-dependencies installs into R_LIBS_USER.
-        # Removing the file makes every Rscript step use the standard
-        # user-lib search path.
         run: rm -f .Rprofile
 
       - name: Install system dependencies
@@ -47,20 +42,29 @@ jobs:
           r-version: "4.4.1"
           use-public-rspm: true
 
-      - name: Setup R dependencies via pak (lockfile + book deps)
-        uses: r-lib/actions/setup-r-dependencies@v2
+      - name: Cache R library
+        uses: actions/cache@v4
         with:
-          cache-version: 2
-          # Force-install bookdown and the rest of the render-time deps
-          # explicitly, in case DESCRIPTION-detection misses any.
-          extra-packages: |
-            any::bookdown
-            any::rmarkdown
-            any::knitr
-            any::downlit
-            any::xml2
-            any::sessioninfo
-            any::tinytex
+          path: /home/runner/work/_temp/Library
+          key: rlib-Linux-r4.4.1-renvlock-${{ hashFiles('renv.lock') }}
+          restore-keys: |
+            rlib-Linux-r4.4.1-renvlock-
+
+      - name: Install renv and restore lockfile
+        # With .Rprofile removed, renv won't auto-activate a project
+        # library. install.packages defaults to .libPaths()[1] which is
+        # R_LIBS_USER. We bootstrap renv there, then use renv::restore to
+        # install everything in renv.lock into the same path.
+        run: |
+          options(install.packages.check.source = "no")
+          if (!requireNamespace("renv", quietly = TRUE)) {
+            install.packages(
+              "renv",
+              repos = "https://packagemanager.posit.co/cran/__linux__/noble/latest"
+            )
+          }
+          renv::restore(prompt = FALSE)
+        shell: Rscript {0}
 
       - uses: r-lib/actions/setup-tinytex@v2
 
