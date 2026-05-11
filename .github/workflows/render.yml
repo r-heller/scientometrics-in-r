@@ -50,23 +50,22 @@ jobs:
           restore-keys: |
             rlib-Linux-r4.4.1-renvlock-
 
-      - name: Install renv and restore lockfile
-        # renv normally installs into renv/library/<R>/<platform>. We
-        # need packages reachable by every Rscript step, so override
-        # RENV_PATHS_LIBRARY to point straight at R_LIBS_USER. That way
-        # restore() installs to /home/runner/work/_temp/Library, which
-        # is also where .libPaths()[1] points without .Rprofile active.
-        env:
-          RENV_PATHS_LIBRARY: /home/runner/work/_temp/Library
+      - name: Install lockfile packages via pak into user lib
+        # Earlier attempts with renv installed packages under
+        # <RENV_PATHS_LIBRARY>/<R-ver>/<platform>/, which is not on
+        # .libPaths(). pak::lockfile_install honours `lib` literally
+        # and resolves renv.lock directly. The user lib is .libPaths()[1].
         run: |
           options(install.packages.check.source = "no")
-          if (!requireNamespace("renv", quietly = TRUE)) {
-            install.packages(
-              "renv",
-              repos = "https://packagemanager.posit.co/cran/__linux__/noble/latest"
-            )
-          }
-          renv::restore(library = .libPaths()[1], prompt = FALSE)
+          install.packages(
+            "pak",
+            repos = "https://packagemanager.posit.co/cran/__linux__/noble/latest"
+          )
+          pak::lockfile_install(
+            lockfile = "renv.lock",
+            lib      = .libPaths()[1],
+            update   = FALSE
+          )
           cat("--- .libPaths() ---\n"); print(.libPaths())
           cat("--- bookdown ---\n")
           print(find.package("bookdown", quiet = TRUE))
