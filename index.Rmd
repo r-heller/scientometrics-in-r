@@ -15,48 +15,34 @@ description: "A hands-on guide to scientometrics in R: data acquisition, bibliom
 cover-image: "images/cover.png"
 ---
 
-# Preface {.unnumbered}
+# Welcome! {-}
 
-![](images/cover.png){width=55%}
+```{r cover, echo=FALSE, out.width="280px", fig.align="left"}
+knitr::include_graphics("images/cover.png")
+```
 
-Welcome to **Scientometrics in R** — a hands-on guide to bibliometrics, network science, and research evaluation using the R programming language.
+A hands-on guide to scientometrics in R --- from raw bibliographic data to publication-ready analyses.
 
-## Who this book is for
+## About this book
 
-This book is written for researchers, librarians, research administrators, and data scientists who want to analyze scholarly communication quantitatively. You should have a working knowledge of R (tidyverse level) and basic statistics. No prior experience with bibliometrics is assumed.
+*Scientometrics in R* is a working guide for researchers, librarians, research administrators, and data scientists who want to analyse scholarly communication quantitatively. It walks the full pipeline: pulling records from open databases (OpenAlex, Crossref, PubMed), computing standard indicators (h-index, MNCS, journal metrics), building co-authorship, co-citation, and keyword networks, applying text and topic models to scientific corpora, and packaging the results into reproducible reports and dashboards.
 
-## What you will learn
+The book assumes a working knowledge of R at the tidyverse level and basic statistics. No prior scientometric experience is needed; the early chapters lay the conceptual and ethical foundations, and each later chapter starts with the question it answers and ends with a callout on responsible use grounded in the Leiden Manifesto and DORA.
 
-By the end of this book you will be able to:
+All examples run against free, open data --- no Web of Science or Scopus subscription is required. Small sample datasets ship with the companion R package `scientometricsInR`; everything else is fetched live from public APIs.
 
-- Acquire bibliographic data from OpenAlex, Crossref, PubMed, and other sources directly from R
-- Compute and interpret standard bibliometric indicators (h-index, MNCS, journal metrics) responsibly
-- Build and analyze co-authorship, co-citation, and keyword co-occurrence networks
-- Apply text mining and topic modeling to scientific corpora
-- Create reproducible bibliometric pipelines and interactive dashboards
-- Critically evaluate the limitations and ethical dimensions of quantitative research evaluation
+## How to use this book
 
-## How this book is organized
-
-The book is structured in seven parts plus case studies, followed by appendices.
-
-Start with the *Find Your Method* decision tree (Chapter \@ref(find-your-method)) if you have a specific research question and want to jump straight to the relevant chapter.
-
-## Reproducibility
-
-All examples run against [OpenAlex](https://openalex.org/), a free and open bibliographic database. No paid subscriptions are required to reproduce any analysis. Small sample datasets are bundled with the companion R package `scientometricsInR`. The book is built with [bookdown](https://bookdown.org/) and all code chunks execute during the build; a Docker image is provided for fully reproducible builds.
-
-## Sibling volumes
-
-This book is part of a series:
-
-- [Strategy in R](https://r-heller.github.io/strategy-in-r/) — strategic management and competitive analysis
-- [Methods in R](https://r-heller.github.io/methods-in-r/) — research methods and data analysis
-
-## How to cite this book
-
-> Heller, R. (2026). *Scientometrics in R: Bibliometrics, Network Science, and Research Evaluation*. <https://r-heller.github.io/scientometrics-in-r/>
+- **Linear or lookup.** Read front to back, or use the *Find Your Method* navigator (Chapter \@ref(find-your-method)) to jump to the chapter that answers your question.
+- **Code.** Reusable helpers live in the companion package and in `R/` in the source repository; every chapter shows the full chunk it depends on.
+- **Corrections.** Please file an issue at <https://github.com/r-heller/scientometrics-in-r/issues>.
+- **Per-chapter PDFs.** Each chapter page has a *Download this chapter (PDF)* button at the top right.
+- **Whole-book downloads.** Use the *Download* menu in the top navigation bar for PDF and EPUB.
 
 ## License
 
-The text of this book is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). All code is licensed under the [MIT License](LICENSE-CODE).
+Text and figures are released under [CC BY-SA 4.0](LICENSE); source code is MIT.
+
+## Citing this Guide
+
+If you use this book, please cite it. The full citation, BibTeX, and RIS downloads live on the [Citing this Guide](#citing-this-guide) page.
