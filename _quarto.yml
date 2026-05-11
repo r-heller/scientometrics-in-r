@@ -11,6 +11,10 @@ book:
   date: today
   cover-image: "images/cover.png"
   favicon: "images/cover.png"
+  site-url: "https://r-heller.github.io/scientometrics-in-r/"
+  open-graph: true
+  twitter-card:
+    image: "images/cover.png"
   repo-url: https://github.com/r-heller/scientometrics-in-r
   repo-branch: main
   repo-actions: [edit, source, issue]
