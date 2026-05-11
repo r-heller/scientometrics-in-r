@@ -50,24 +50,29 @@ jobs:
           restore-keys: |
             rlib-Linux-r4.4.1-renvlock-
 
-      - name: Install lockfile packages via pak into user lib
-        # pak::lockfile_install expects pak's own lockfile schema, not
-        # renv.lock — they're not compatible. Parse renv.lock for the
-        # package name list, then pak::pkg_install into the user lib.
-        # We lose strict version pinning vs. the lockfile, but every
-        # package in the lockfile is on RSPM at a compatible version.
+      - name: Install lockfile package names via install.packages
+        # pak's dependency solver rejects the lockfile (version conflicts
+        # against RSPM heads). Use plain install.packages, which is
+        # permissive: it'll pull the current RSPM-compatible version of
+        # every name in renv.lock, plus deps. We give up strict version
+        # pinning vs. renv.lock — acceptable in CI for a docs site.
         run: |
-          options(install.packages.check.source = "no")
-          install.packages(
-            c("jsonlite", "pak"),
-            repos = "https://packagemanager.posit.co/cran/__linux__/noble/latest"
+          options(
+            install.packages.check.source = "no",
+            repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/latest"),
+            Ncpus = parallel::detectCores()
           )
+          install.packages("jsonlite")
           lock <- jsonlite::fromJSON("renv.lock", simplifyVector = FALSE)
           pkgs <- names(lock$Packages)
-          # Drop renv itself (already loaded) and any base/recommended pkgs.
-          pkgs <- setdiff(pkgs, c("renv", rownames(installed.packages(priority = "high"))))
-          cat("Installing", length(pkgs), "packages from renv.lock\n")
-          pak::pkg_install(pkgs, lib = .libPaths()[1], ask = FALSE)
+          # Drop base + recommended (already on .libPaths(), can't reinstall
+          # over them anyway).
+          base_rec <- rownames(installed.packages(
+            lib.loc = .Library, priority = c("base", "recommended")
+          ))
+          pkgs <- setdiff(pkgs, c("renv", base_rec))
+          cat("Installing", length(pkgs), "packages\n")
+          install.packages(pkgs, dependencies = TRUE, lib = .libPaths()[1])
           cat("--- .libPaths() ---\n"); print(.libPaths())
           cat("--- bookdown ---\n")
           print(find.package("bookdown", quiet = TRUE))
