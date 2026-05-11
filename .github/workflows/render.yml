@@ -31,6 +31,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Disable renv in CI
+        # The project .Rprofile sources renv/activate.R, which keeps
+        # re-activating an empty project library across steps. We install
+        # packages into R_LIBS_USER and let R use that. Remove the
+        # auto-loader so every Rscript step starts cleanly.
+        run: rm -f .Rprofile
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
