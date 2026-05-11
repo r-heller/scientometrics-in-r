@@ -32,3 +32,13 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
       )
   )
 }
+
+# Copy citation files into docs/citation-files/ on every render so that the
+# Citing this Guide page's download links resolve on the deployed site.
+local({
+  out <- "docs/citation-files"
+  if (!dir.exists(out)) dir.create(out, recursive = TRUE, showWarnings = FALSE)
+  for (f in c("citation.bib", "citation.ris")) {
+    if (file.exists(f)) file.copy(f, file.path(out, basename(f)), overwrite = TRUE)
+  }
+})

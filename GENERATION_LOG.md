@@ -33,3 +33,15 @@ Append-only log of chapter and case study generation.
 - Rewrote .github/workflows/render.yml: setup-r + manual renv bootstrap (Posit mirror) + setup-tinytex, then bookdown::render_book("…", output_format="all"), per-chapter PDFs, then JamesIves/github-pages-deploy-action → gh-pages branch.
 - README rewritten: plain prose, no badges, download links, BibTeX block.
 - Local verifiers green (citations, chunks, lint). Render to be validated by CI.
+
+## 2026-05-11 — Harrer-style landing page refinement
+
+- Restructured index.Rmd: cover image chunk at top (280px, left-aligned), one-line pitch, "About this book", "How to use this book", "License", "Citing this Guide" pointer.
+- Added 9 part files (part-foundations, part-data-acquisition, part-core-bibliometrics, part-networks-mapping, part-text-topic, part-advanced-topics, part-production, part-case-studies, part-appendix). part-appendix uses (APPENDIX) for letter-keyed appendices; others use (PART) for sidebar group headers.
+- Switched _bookdown.yml rmd_files to explicit ordering interleaving part-*.Rmd files between chapter groups.
+- Added 98-citing-this-guide.Rmd with prose block-quote citation + BibTeX and RIS download links.
+- Created citation.ris alongside the existing citation.bib.
+- Added style/footer.html with the "Built by bookdown" attribution; combined with the per-chapter PDF button into style/after-body.html and wired into _output.yml under bs4_book.includes.after_body.
+- _common.R: added a copy hook so citation.bib and citation.ris land in docs/citation-files/ on every render.
+- No changes to design tokens, _common.R knitr opts, color palette, style/style.css, fonts, chapter prose, code, numbering, references.bib, or renv.lock.
+- Commit: 336cb6c - Manual: importing the generated citation.ris into Zotero needs spot-checking after the first deploy.
