@@ -1,6 +1,4 @@
----
-title: "Network Visualization and Interoperability"
----
+# Network Visualization and Interoperability
 
 ## Learning objectives {#viz-objectives}
 

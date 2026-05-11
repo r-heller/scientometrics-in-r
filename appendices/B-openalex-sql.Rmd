@@ -1,6 +1,4 @@
----
-title: "SQL Primer for the OpenAlex Snapshot"
----
+# SQL Primer for the OpenAlex Snapshot
 
 <!-- verify_chunks: skip-file
      Snippets require a populated PostgreSQL OpenAlex snapshot, which is not

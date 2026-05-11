@@ -1,6 +1,4 @@
----
-title: "Glossary"
----
+# Glossary {-}
 
 **Altmetrics.** Metrics derived from online activity (social media mentions, news coverage, policy documents) rather than citations. See Chapter 26.
 

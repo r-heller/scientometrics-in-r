@@ -1,6 +1,4 @@
----
-title: "Temporal Analysis and Citation Aging"
----
+# Temporal Analysis and Citation Aging
 
 ## Learning objectives {#temporal-objectives}
 

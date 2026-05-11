@@ -1,6 +1,4 @@
----
-title: "Open Science Indicators"
----
+# Open Science Indicators
 
 ## Learning objectives {#openscience-objectives}
 

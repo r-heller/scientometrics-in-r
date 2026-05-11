@@ -1,6 +1,4 @@
----
-title: "Text Mining Bibliographic Corpora"
----
+# Text Mining Bibliographic Corpora
 
 ## Learning objectives {#textmine-objectives}
 

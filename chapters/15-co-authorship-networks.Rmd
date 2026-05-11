@@ -1,6 +1,4 @@
----
-title: "Co-authorship Networks"
----
+# Co-authorship Networks
 
 ## Learning objectives {#coauth-objectives}
 

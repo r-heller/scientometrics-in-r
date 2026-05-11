@@ -1,6 +1,4 @@
----
-title: "Data Sources Compared"
----
+# Data Sources Compared
 
 ## Learning objectives {#datasources-objectives}
 

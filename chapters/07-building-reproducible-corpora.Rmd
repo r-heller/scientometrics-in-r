@@ -1,6 +1,4 @@
----
-title: "Building Reproducible Corpora"
----
+# Building Reproducible Corpora
 
 ## Learning objectives {#corpora-objectives}
 

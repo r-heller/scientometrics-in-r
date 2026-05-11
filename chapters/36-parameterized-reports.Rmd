@@ -1,6 +1,4 @@
----
-title: "Parameterized Quarto Reports"
----
+# Parameterized Quarto Reports
 
 ## Learning objectives {#paramreport-objectives}
 

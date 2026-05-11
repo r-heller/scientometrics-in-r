@@ -1,6 +1,4 @@
----
-title: "Productivity and Impact Indicators"
----
+# Productivity and Impact Indicators
 
 ## Learning objectives {#indicators-objectives}
 

@@ -1,6 +1,4 @@
----
-title: "Patent–Paper Linkages"
----
+# Patent–Paper Linkages
 
 ## Learning objectives {#patent-objectives}
 

@@ -1,6 +1,4 @@
----
-title: "Reproducibility, RRIDs, and Badges"
----
+# Reproducibility, RRIDs, and Badges
 
 ## Learning objectives {#repro-objectives}
 

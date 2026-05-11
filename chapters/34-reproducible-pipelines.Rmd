@@ -1,6 +1,4 @@
----
-title: "Reproducible Pipelines"
----
+# Reproducible Pipelines
 
 ## Learning objectives {#pipeline-objectives}
 

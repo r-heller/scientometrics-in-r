@@ -1,6 +1,4 @@
----
-title: "Co-word and Keyword Co-occurrence"
----
+# Co-word and Keyword Co-occurrence
 
 ## Learning objectives {#coword-objectives}
 

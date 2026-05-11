@@ -1,6 +1,4 @@
----
-title: "Indicator Crosswalk Across Databases"
----
+# Indicator Crosswalk Across Databases
 
 This appendix maps common bibliometric indicators to the data sources and tools that support them. Use it to choose the right source for your analysis.
 

@@ -1,6 +1,4 @@
----
-title: "Author-Level Analysis and Disambiguation"
----
+# Author-Level Analysis and Disambiguation
 
 ## Learning objectives {#author-objectives}
 

@@ -1,6 +1,4 @@
----
-title: "Interactive Dashboards"
----
+# Interactive Dashboards
 
 ## Learning objectives {#dashboard-objectives}
 

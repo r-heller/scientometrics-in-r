@@ -1,0 +1,30 @@
+# Acknowledgments {-}
+
+This book stands on a wide stack of free software. Particular thanks to
+the [bookdown](https://bookdown.org/) authors and the broader R Core
+and tidyverse communities; to the maintainers of `openalexR`,
+`bibliometrix`, `igraph`, `tidygraph`, `ggraph`, `quanteda`, `stm`, and
+`tidytext` for the packages this book relies on most; and to the
+[OpenAlex](https://openalex.org/) project for making large-scale,
+open bibliographic data freely available.
+
+<!-- TODO: Reviewers, funding sources, institutional support. -->
+
+## Use of LLM tools {-}
+
+Portions of this book were prepared with assistance from large language
+model tooling for narrowly defined, non-authorial tasks: copyediting,
+prose smoothing, LaTeX/Markdown formatting, scaffolding of boilerplate
+files (CI configs, CSS, build scripts), code refactoring, and citation
+lookup against verified DOIs. The tools used were the latest Mistral
+Le Chat model run locally via [Ollama](https://ollama.com/) and the
+[`ollamar`](https://cran.r-project.org/package=ollamar) R package — all
+inference performed on local hardware, with no data sent to third-party
+services — and GitHub Copilot inside RStudio for code completion.
+
+All scientific claims, methodological choices, data analyses,
+interpretations, and conclusions are the author's own. No text generated
+by an LLM was incorporated without review and revision by the author.
+LLM tools were not used to generate, fabricate, or paraphrase cited
+sources; every reference was verified against its DOI, arXiv ID, or
+ISBN (see `scripts/verify-citations.R`).

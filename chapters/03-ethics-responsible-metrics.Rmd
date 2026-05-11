@@ -1,6 +1,4 @@
----
-title: "Ethics and Responsible Metrics"
----
+# Ethics and Responsible Metrics
 
 ## Learning objectives {#ethics-objectives}
 

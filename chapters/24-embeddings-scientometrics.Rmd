@@ -1,6 +1,4 @@
----
-title: "Embeddings for Scientometrics"
----
+# Embeddings for Scientometrics
 
 ## Learning objectives {#embed-objectives}
 

@@ -1,0 +1,46 @@
+# Notation {-}
+
+The following symbols, abbreviations, and conventions are used
+throughout the book.
+
+## Mathematical notation {-}
+
+| Symbol | Meaning |
+|:-------|:--------|
+| $c_i$ | Citations received by paper $i$ |
+| $N$   | Number of papers in a corpus |
+| $h$   | Hirsch index (h-index) |
+| $g$   | g-index |
+| $\text{MNCS}$ | Mean normalised citation score |
+| $\bar{x}$ | Sample mean |
+| $\tilde{x}$ | Sample median |
+| $G$ | Graph $(V, E)$ — vertices and edges |
+| $k_v$ | Degree of vertex $v$ |
+| $B(v)$ | Betweenness centrality of vertex $v$ |
+
+## Abbreviations {-}
+
+| Acronym | Expansion |
+|:--------|:----------|
+| API | Application Programming Interface |
+| DOI | Digital Object Identifier |
+| FWCI | Field-Weighted Citation Impact |
+| JIF | Journal Impact Factor |
+| MNCS | Mean Normalised Citation Score |
+| NMI | Normalised Mutual Information |
+| OA | Open Access |
+| ORCID | Open Researcher and Contributor ID |
+| ROR | Research Organization Registry |
+| RRID | Research Resource Identifier |
+| SCI | Science Citation Index |
+| SDG | Sustainable Development Goal |
+| WoS | Web of Science |
+
+## Code-style conventions {-}
+
+- Object names describe what they are (`effect_sizes`), not how they were
+  produced (`df2`).
+- Pipes use the base `|>`. Tidyverse verbs are preferred over base R
+  where readability favours them.
+- Network objects use `igraph` representations unless explicitly stated.
+- Random seeds are set per chapter; the global default is `42`.

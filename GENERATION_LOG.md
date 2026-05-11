@@ -20,3 +20,16 @@ Append-only log of chapter and case study generation.
 - This Quarto project has no 95-colophon.qmd; the pointer line from the
   brief is therefore omitted. If a colophon file is added later, copy
   the one-liner from the brief into it.
+
+## 2026-05-11 — Comprehensive checkup: Quarto → bookdown conversion
+
+- Engine: was Quarto, converted to bookdown (Phase 1 of brief).
+- Renamed 51 .qmd → .Rmd with git mv (history preserved).
+- Rewrote cross-refs, callouts, anchors; added H1 from YAML title.
+- New config: index.Rmd YAML, _bookdown.yml (full chapter order incl. front/back matter), _output.yml (bs4_book + pdf_book + epub_book), _common.R per CLAUDE.md §A3, style/{style.css,header.html,preamble.tex,per-chapter-pdf-button.html} per §A6.
+- Added front matter: 00-impressum, 00-acknowledgments (incl. LLM-use subsection — self-hosted Mistral Le Chat via Ollama/ollamar + Copilot in RStudio), 00-how-to-use, 00-notation, 00-about-the-author.
+- Added back matter: 90-glossary (relocated from appendices/C-glossary), 95-colophon (with packages.bib auto-write and one-line LLM pointer), 99-references.
+- Added scripts/render-chapter-pdfs.R; renamed scripts/verify_citations.R → verify-citations.R; updated all verifiers to .Rmd and to ignore bookdown's \@ref(...).
+- Rewrote .github/workflows/render.yml: setup-r + manual renv bootstrap (Posit mirror) + setup-tinytex, then bookdown::render_book("…", output_format="all"), per-chapter PDFs, then JamesIves/github-pages-deploy-action → gh-pages branch.
+- README rewritten: plain prose, no badges, download links, BibTeX block.
+- Local verifiers green (citations, chunks, lint). Render to be validated by CI.

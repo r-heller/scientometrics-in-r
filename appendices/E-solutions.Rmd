@@ -1,6 +1,4 @@
----
-title: "Exercise Solutions"
----
+# Exercise Solutions
 
 <!-- verify_chunks: skip-file
      Every chunk in this appendix is intentionally not evaluated; solutions

@@ -1,6 +1,4 @@
----
-title: "Detecting Emerging Topics"
----
+# Detecting Emerging Topics
 
 ## Learning objectives {#emerging-objectives}
 

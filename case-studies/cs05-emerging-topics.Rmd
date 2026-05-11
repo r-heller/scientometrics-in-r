@@ -1,6 +1,4 @@
----
-title: "Case Study 5: Detecting Emerging Topics"
----
+# Case Study 5: Detecting Emerging Topics
 
 ## Objective
 
