@@ -25,9 +25,13 @@ dir_create(out_dir)
 # then fails with "Undefined control sequence" on every chapter that
 # references a figure or table. pdf_document2 also keeps the book's
 # LaTeX preamble (tcolorbox box envs, hyperref, fontspec fallback).
+#
+# Resolve the preamble path absolutely. When rendering chapters/NN-*.Rmd
+# pandoc otherwise looks for chapters/style/preamble.tex.
+preamble_path <- normalizePath("style/preamble.tex", mustWork = TRUE)
 pdf_fmt <- bookdown::pdf_document2(
   latex_engine = "xelatex",
-  includes     = rmarkdown::includes(in_header = "style/preamble.tex"),
+  includes     = rmarkdown::includes(in_header = preamble_path),
   toc          = FALSE,
   number_sections = FALSE
 )
