@@ -1,52 +1,61 @@
 suppressPackageStartupMessages({
   library(rmarkdown)
   library(fs)
+  library(bookdown)
 })
+
+# Source the project-wide knitr/ggplot setup so chunk options, theme,
+# AND the mermaid engine registration are in place for every per-chapter
+# render. bookdown's full-book render does this via before_chapter_script;
+# rmarkdown::render() doesn't, so we do it here once.
+source("_common.R", local = FALSE)
 
 chapters <- c(
   dir_ls("chapters",     glob = "*.Rmd"),
   dir_ls("case-studies", glob = "*.Rmd"),
   dir_ls("appendices",   glob = "*.Rmd")
 )
+chapters <- chapters[!grepl("_template\\.Rmd$", chapters)]
 
 out_dir <- "docs/pdf-chapters"
 dir_create(out_dir)
 
-# Use xelatex so Unicode glyphs (en/em dashes, curly quotes, accented
-# characters in author names) compile. pdf_document defaults to
-# pdflatex, which rejects them. Reuse style/preamble.tex for the same
-# tcolorbox/hyperref/fontspec setup as the full-book PDF.
-pdf_fmt <- rmarkdown::pdf_document(
+# bookdown::pdf_document2 supports the \@ref() cross-references that
+# plain rmarkdown::pdf_document leaves as literal \@ref text — pdflatex
+# then fails with "Undefined control sequence" on every chapter that
+# references a figure or table. pdf_document2 also keeps the book's
+# LaTeX preamble (tcolorbox box envs, hyperref, fontspec fallback).
+pdf_fmt <- bookdown::pdf_document2(
   latex_engine = "xelatex",
-  includes     = rmarkdown::includes(in_header = "style/preamble.tex")
+  includes     = rmarkdown::includes(in_header = "style/preamble.tex"),
+  toc          = FALSE,
+  number_sections = FALSE
 )
 
 failed <- character()
 for (ch in chapters) {
   out_file <- path_ext_set(path_file(ch), "pdf")
   message("Rendering: ", ch, " -> ", out_file)
-  result <- tryCatch(
-    {
-      rmarkdown::render(
-        input         = ch,
-        output_format = pdf_fmt,
-        output_file   = out_file,
-        output_dir    = out_dir,
-        envir         = new.env(),
-        quiet         = TRUE
-      )
-      TRUE
-    },
-    error = function(e) {
-      message("FAILED: ", ch, " — ", conditionMessage(e))
-      FALSE
-    }
-  )
-  if (!isTRUE(result)) failed <- c(failed, ch)
+  ok <- tryCatch({
+    rmarkdown::render(
+      input         = ch,
+      output_format = pdf_fmt,
+      output_file   = out_file,
+      output_dir    = out_dir,
+      envir         = new.env(),
+      quiet         = TRUE
+    )
+    TRUE
+  }, error = function(e) {
+    message("FAILED: ", ch, " — ", conditionMessage(e))
+    FALSE
+  })
+  if (!isTRUE(ok)) failed <- c(failed, ch)
 }
 
 if (length(failed)) {
-  message("\n", length(failed), " chapter PDF(s) failed; continuing.")
-  # Don't fail the workflow — per-chapter PDFs are a nice-to-have and
-  # the full-book PDF / HTML / EPUB are already rendered upstream.
+  message("\n", length(failed), " of ", length(chapters), " chapter PDFs failed:")
+  message(paste("  -", failed, collapse = "\n"))
+} else {
+  message("All ", length(chapters), " chapter PDFs rendered cleanly.")
 }
