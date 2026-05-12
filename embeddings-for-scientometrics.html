@@ -247,7 +247,7 @@
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Documents for embedding: {nrow(text_df)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Documents for embedding: 104</code></pre>
+<pre><code>#&gt; Documents for embedding: 106</code></pre>
 </div>
 <div id="training-word2vec-embeddings" class="section level3" number="25.4.2">
 <h3>
@@ -263,7 +263,7 @@
 <span>                  type <span class="op">=</span> <span class="st">"skip-gram"</span>, threads <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Vocabulary size: {nrow(as.matrix(model))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Vocabulary size: 1269</code></pre>
+<pre><code>#&gt; Vocabulary size: 1280</code></pre>
 <div class="sourceCode" id="cb373"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="st">"citation"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">nn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">model</span>, newdata <span class="op">=</span> <span class="st">"citation"</span>, type <span class="op">=</span> <span class="st">"nearest"</span>, top_n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
@@ -272,17 +272,17 @@
 <span><span class="op">}</span></span></code></pre></div>
 <pre><code>#&gt; Nearest neighbours of 'citation':
 #&gt; $citation
-#&gt;       term1           term2 similarity rank
-#&gt; 1  citation     measurement      0.736    1
-#&gt; 2  citation          impact      0.721    2
-#&gt; 3  citation      normalized      0.708    3
-#&gt; 4  citation     comparisons      0.697    4
-#&gt; 5  citation          counts      0.696    5
-#&gt; 6  citation    correlations      0.689    6
-#&gt; 7  citation       indicated      0.680    7
-#&gt; 8  citation classifications      0.678    8
-#&gt; 9  citation       citations      0.669    9
-#&gt; 10 citation          intent      0.662   10</code></pre>
+#&gt;       term1        term2 similarity rank
+#&gt; 1  citation   normalized      0.720    1
+#&gt; 2  citation  comparisons      0.705    2
+#&gt; 3  citation  measurement      0.703    3
+#&gt; 4  citation    indicated      0.695    4
+#&gt; 5  citation       counts      0.694    5
+#&gt; 6  citation    citations      0.689    6
+#&gt; 7  citation correlations      0.687    7
+#&gt; 8  citation        parts      0.684    8
+#&gt; 9  citation          ten      0.684    9
+#&gt; 10 citation         rank      0.677   10</code></pre>
 </div>
 <div id="computing-document-embeddings-via-mean-pooling" class="section level3" number="25.4.3">
 <h3>
@@ -307,7 +307,7 @@
 <span><span class="va">text_df_valid</span> <span class="op">&lt;-</span> <span class="va">text_df</span><span class="op">[</span><span class="va">valid</span>, <span class="op">]</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Valid document embeddings: {nrow(embed_mat)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Valid document embeddings: 104</code></pre>
+<pre><code>#&gt; Valid document embeddings: 106</code></pre>
 </div>
 <div id="dimensionality-reduction-with-umap" class="section level3" number="25.4.4">
 <h3>
@@ -355,7 +355,7 @@ Figure 25.1: UMAP projection of document embeddings, coloured by publication yea
 <code class="sourceCode R"><span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">walk</a></span><span class="op">(</span><span class="va">top_similar</span>, \<span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"  [{round(sims[i], 3)}] {text_df_valid$title[i]}\n"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; [0.922] Sample size in bibliometric analysis[0.921] Draw me Science[0.915] COVID-19 enabled co-authoring networks: a country-case analysis[0.912] Academic social networks metrics: an effective indicator for university performance?[0.91] Do main paths reflect technological trajectories? Applying main path analysis to the semiconductor manufacturing industry</code></pre>
+<pre><code>#&gt; [0.927] COVID-19 enabled co-authoring networks: a country-case analysis[0.927] Sample size in bibliometric analysis[0.923] Draw me Science[0.92] A bibliometric methodology to unveil territorial inequities in the scientific wealth to combat COVID-19[0.916] Analysis of the evolution and collaboration networks of citizen science scientific publications</code></pre>
 </div>
 <div id="embedding-clusters-vs.-citation-impact" class="section level3" number="25.4.6">
 <h3>
@@ -551,18 +551,68 @@ Figure 25.2: UMAP embedding coloured by citation impact (log scale).
       });
     });
   })();
-</script><!-- Per-chapter PDF download button --><script>
+</script><!--
+  Right-side panel "Download" section: adds
+    - Download
+      - Entire book (PDF)
+      - This chapter (PDF)
+  above the existing "View source" / "Edit this page" links produced by
+  bs4_book's repo:base config. The chapter PDF URL is derived from the
+  View-source href so it stays in sync with however bookdown slugs the
+  page filename.
+--><script>
   document.addEventListener("DOMContentLoaded", function () {
-    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
-    if (!file || file === ".pdf") return;
-    var btn = document.createElement("a");
-    btn.href = "pdf-chapters/" + file;
-    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
-    btn.style = "float:right;margin-top:0.5em;";
-    btn.textContent = "⬇ Download this chapter (PDF)";
-    var header = document.querySelector("main h1, .page-inner h1");
-    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
-      header.appendChild(btn);
+    var extraList = document.querySelector(".book-extra ul.list-unstyled");
+    if (!extraList) return;
+
+    var bookName = "scientometrics-in-r";
+    var bookPdf  = bookName + ".pdf";
+
+    // Derive the chapter PDF from the source path:
+    //   chapters/01-foo.Rmd  -> pdf-chapters/01-foo.pdf
+    var src = document.getElementById("book-source");
+    var chapterPdf = null;
+    if (src && src.href) {
+      var match = src.href.match(/blob\/[^/]+\/(.+\.Rmd)$/);
+      if (match) {
+        var rmd = match[1];                              // e.g. chapters/01-foo.Rmd
+        var baseName = rmd.split("/").pop().replace(/\.Rmd$/, ".pdf");
+        chapterPdf = "pdf-chapters/" + baseName;
+      }
+    }
+
+    // Header above the download entries
+    var header = document.createElement("li");
+    header.className = "book-extra-section";
+    var hb = document.createElement("strong");
+    hb.textContent = "Download";
+    header.appendChild(hb);
+
+    var bookItem = document.createElement("li");
+    var bookA    = document.createElement("a");
+    bookA.id         = "book-pdf-full";
+    bookA.href       = bookPdf;
+    bookA.textContent = "Entire book (PDF) ";
+    var bookI    = document.createElement("i");
+    bookI.className = "fa-solid fa-file-pdf";
+    bookA.appendChild(bookI);
+    bookItem.appendChild(bookA);
+
+    var firstChild = extraList.firstElementChild;
+    extraList.insertBefore(header,   firstChild);
+    extraList.insertBefore(bookItem, firstChild);
+
+    if (chapterPdf) {
+      var chapItem = document.createElement("li");
+      var chapA    = document.createElement("a");
+      chapA.id         = "book-pdf-chapter";
+      chapA.href       = chapterPdf;
+      chapA.textContent = "This chapter (PDF) ";
+      var chapI    = document.createElement("i");
+      chapI.className = "fa-solid fa-file-pdf";
+      chapA.appendChild(chapI);
+      chapItem.appendChild(chapA);
+      extraList.insertBefore(chapItem, firstChild);
     }
   });
 </script><!-- Footer attribution --><div class="bookdown-attribution">

@@ -251,10 +251,10 @@
 <span>        name <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Authors: {n_distinct(c(edges$author_id_1, edges$author_id_2))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Authors: 785</code></pre>
+<pre><code>#&gt; Authors: 784</code></pre>
 <div class="sourceCode" id="cb203"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Edges: {nrow(edges)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Edges: 1814</code></pre>
+<pre><code>#&gt; Edges: 1813</code></pre>
 </div>
 <div id="building-the-network" class="section level3" number="16.4.3">
 <h3>
@@ -269,7 +269,7 @@
 <span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/simplify.html">simplify</a></span><span class="op">(</span><span class="va">g</span>, edge.attr.comb <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>weight <span class="op">=</span> <span class="st">"sum"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Nodes: {vcount(g)}, Edges: {ecount(g)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Nodes: 785, Edges: 1814</code></pre>
+<pre><code>#&gt; Nodes: 784, Edges: 1813</code></pre>
 <div class="sourceCode" id="cb207"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Components: {components(g)$no}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Components: 188</code></pre>
@@ -304,16 +304,16 @@
 <pre><code>#&gt; # A tibble: 10 × 4
 #&gt;    author_name                degree betweenness clustering
 #&gt;    &lt;chr&gt;                       &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;
-#&gt;  1 Vincent Larivière              31 0.00148          0.708
-#&gt;  2 Rodrigo Costas                 30 0.00232          0.749
-#&gt;  3 Loet Leydesdorff               30 0.00779          0.752
-#&gt;  4 Ludo Waltman                   29 0.000899         0.808
-#&gt;  5 Isabella Peters                29 0.000899         0.808
-#&gt;  6 Mike Thelwall                  28 0.000606         0.862
-#&gt;  7 Isidro F. Aguillo              26 0.000000125      1    
-#&gt;  8 Zaida Chinchilla‐Rodríguez     26 0.000000125      1    
+#&gt;  1 Vincent Larivière              31 0.00149          0.708
+#&gt;  2 Rodrigo Costas                 30 0.00233          0.749
+#&gt;  3 Loet Leydesdorff               30 0.00781          0.752
+#&gt;  4 Ludo Waltman                   29 0.000902         0.808
+#&gt;  5 Isabella Peters                29 0.000902         0.808
+#&gt;  6 Mike Thelwall                  28 0.000608         0.862
+#&gt;  7 Isidro F. Aguillo              26 0.000000126      1    
+#&gt;  8 Zaida Chinchilla‐Rodríguez     26 0.000000126      1    
 #&gt;  9 Ciriaco Andrea D’Angelo        26 0                1    
-#&gt; 10 Juan Miguel Campanario         26 0.000000125      1</code></pre>
+#&gt; 10 Juan Miguel Campanario         26 0.000000126      1</code></pre>
 </div>
 <div id="community-detection" class="section level3" number="16.4.5">
 <h3>
@@ -428,7 +428,7 @@ Figure 16.2: Degree distribution of the co-authorship network.
 <div class="sourceCode" id="cb225"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">giant_ratio</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/gorder.html">vcount</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://r.igraph.org/reference/gorder.html">vcount</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Giant component: {vcount(giant)}/{vcount(g)} nodes ({scales::percent(giant_ratio)})\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Giant component: 96/785 nodes (12%)</code></pre>
+<pre><code>#&gt; Giant component: 96/784 nodes (12%)</code></pre>
 <div class="sourceCode" id="cb227"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Mean degree: {round(mean(degree(giant)), 1)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Mean degree: 10.4</code></pre>
@@ -599,18 +599,68 @@ Figure 16.2: Degree distribution of the co-authorship network.
       });
     });
   })();
-</script><!-- Per-chapter PDF download button --><script>
+</script><!--
+  Right-side panel "Download" section: adds
+    - Download
+      - Entire book (PDF)
+      - This chapter (PDF)
+  above the existing "View source" / "Edit this page" links produced by
+  bs4_book's repo:base config. The chapter PDF URL is derived from the
+  View-source href so it stays in sync with however bookdown slugs the
+  page filename.
+--><script>
   document.addEventListener("DOMContentLoaded", function () {
-    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
-    if (!file || file === ".pdf") return;
-    var btn = document.createElement("a");
-    btn.href = "pdf-chapters/" + file;
-    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
-    btn.style = "float:right;margin-top:0.5em;";
-    btn.textContent = "⬇ Download this chapter (PDF)";
-    var header = document.querySelector("main h1, .page-inner h1");
-    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
-      header.appendChild(btn);
+    var extraList = document.querySelector(".book-extra ul.list-unstyled");
+    if (!extraList) return;
+
+    var bookName = "scientometrics-in-r";
+    var bookPdf  = bookName + ".pdf";
+
+    // Derive the chapter PDF from the source path:
+    //   chapters/01-foo.Rmd  -> pdf-chapters/01-foo.pdf
+    var src = document.getElementById("book-source");
+    var chapterPdf = null;
+    if (src && src.href) {
+      var match = src.href.match(/blob\/[^/]+\/(.+\.Rmd)$/);
+      if (match) {
+        var rmd = match[1];                              // e.g. chapters/01-foo.Rmd
+        var baseName = rmd.split("/").pop().replace(/\.Rmd$/, ".pdf");
+        chapterPdf = "pdf-chapters/" + baseName;
+      }
+    }
+
+    // Header above the download entries
+    var header = document.createElement("li");
+    header.className = "book-extra-section";
+    var hb = document.createElement("strong");
+    hb.textContent = "Download";
+    header.appendChild(hb);
+
+    var bookItem = document.createElement("li");
+    var bookA    = document.createElement("a");
+    bookA.id         = "book-pdf-full";
+    bookA.href       = bookPdf;
+    bookA.textContent = "Entire book (PDF) ";
+    var bookI    = document.createElement("i");
+    bookI.className = "fa-solid fa-file-pdf";
+    bookA.appendChild(bookI);
+    bookItem.appendChild(bookA);
+
+    var firstChild = extraList.firstElementChild;
+    extraList.insertBefore(header,   firstChild);
+    extraList.insertBefore(bookItem, firstChild);
+
+    if (chapterPdf) {
+      var chapItem = document.createElement("li");
+      var chapA    = document.createElement("a");
+      chapA.id         = "book-pdf-chapter";
+      chapA.href       = chapterPdf;
+      chapA.textContent = "This chapter (PDF) ";
+      var chapI    = document.createElement("i");
+      chapI.className = "fa-solid fa-file-pdf";
+      chapA.appendChild(chapI);
+      chapItem.appendChild(chapA);
+      extraList.insertBefore(chapItem, firstChild);
     }
   });
 </script><!-- Footer attribution --><div class="bookdown-attribution">

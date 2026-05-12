@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Colophon | Scientometrics in R</title>
 <meta name="author" content="R. Heller">
-<meta name="description" content="#&gt; Built with: #&gt;  bookdown: 0.46 #&gt;  R: R version 4.4.1 (2024-06-14) #&gt;  Build date: 2026-05-12 #&gt;  Commit: 5a8f786 #&gt; #&gt; Attached packages: #&gt; ─ Session info...">
+<meta name="description" content="#&gt; Built with: #&gt;  bookdown: 0.46 #&gt;  R: R version 4.4.1 (2024-06-14) #&gt;  Build date: 2026-05-12 #&gt;  Commit: dc4269e #&gt; #&gt; Attached packages: #&gt; ─ Session info...">
 <meta name="generator" content="bookdown 0.46 with bs4_book()">
 <meta property="og:title" content="Colophon | Scientometrics in R">
 <meta property="og:type" content="book">
 <meta property="og:url" content="https://r-heller.github.io/scientometrics-in-r/colophon.html">
 <meta property="og:image" content="https://r-heller.github.io/scientometrics-in-r/images/cover.png">
-<meta property="og:description" content="#&gt; Built with: #&gt;  bookdown: 0.46 #&gt;  R: R version 4.4.1 (2024-06-14) #&gt;  Build date: 2026-05-12 #&gt;  Commit: 5a8f786 #&gt; #&gt; Attached packages: #&gt; ─ Session info...">
+<meta property="og:description" content="#&gt; Built with: #&gt;  bookdown: 0.46 #&gt;  R: R version 4.4.1 (2024-06-14) #&gt;  Build date: 2026-05-12 #&gt;  Commit: dc4269e #&gt; #&gt; Attached packages: #&gt; ─ Session info...">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Colophon | Scientometrics in R">
-<meta name="twitter:description" content="#&gt; Built with: #&gt;  bookdown: 0.46 #&gt;  R: R version 4.4.1 (2024-06-14) #&gt;  Build date: 2026-05-12 #&gt;  Commit: 5a8f786 #&gt; #&gt; Attached packages: #&gt; ─ Session info...">
+<meta name="twitter:description" content="#&gt; Built with: #&gt;  bookdown: 0.46 #&gt;  R: R version 4.4.1 (2024-06-14) #&gt;  Build date: 2026-05-12 #&gt;  Commit: dc4269e #&gt; #&gt; Attached packages: #&gt; ─ Session info...">
 <meta name="twitter:image" content="https://r-heller.github.io/scientometrics-in-r/images/cover.png">
 <!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
@@ -171,7 +171,7 @@
 <pre><code>#&gt;   bookdown:  0.46</code></pre>
 <pre><code>#&gt;   R:  R version 4.4.1 (2024-06-14)</code></pre>
 <pre><code>#&gt;   Build date:  2026-05-12</code></pre>
-<pre><code>#&gt;   Commit:  5a8f786</code></pre>
+<pre><code>#&gt;   Commit:  dc4269e</code></pre>
 <pre><code>#&gt; 
 #&gt; Attached packages:</code></pre>
 <pre><code>#&gt; ─ Session info ───────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -260,18 +260,68 @@ scaffolding tasks only — see Acknowledgments.</p>
       });
     });
   })();
-</script><!-- Per-chapter PDF download button --><script>
+</script><!--
+  Right-side panel "Download" section: adds
+    - Download
+      - Entire book (PDF)
+      - This chapter (PDF)
+  above the existing "View source" / "Edit this page" links produced by
+  bs4_book's repo:base config. The chapter PDF URL is derived from the
+  View-source href so it stays in sync with however bookdown slugs the
+  page filename.
+--><script>
   document.addEventListener("DOMContentLoaded", function () {
-    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
-    if (!file || file === ".pdf") return;
-    var btn = document.createElement("a");
-    btn.href = "pdf-chapters/" + file;
-    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
-    btn.style = "float:right;margin-top:0.5em;";
-    btn.textContent = "⬇ Download this chapter (PDF)";
-    var header = document.querySelector("main h1, .page-inner h1");
-    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
-      header.appendChild(btn);
+    var extraList = document.querySelector(".book-extra ul.list-unstyled");
+    if (!extraList) return;
+
+    var bookName = "scientometrics-in-r";
+    var bookPdf  = bookName + ".pdf";
+
+    // Derive the chapter PDF from the source path:
+    //   chapters/01-foo.Rmd  -> pdf-chapters/01-foo.pdf
+    var src = document.getElementById("book-source");
+    var chapterPdf = null;
+    if (src && src.href) {
+      var match = src.href.match(/blob\/[^/]+\/(.+\.Rmd)$/);
+      if (match) {
+        var rmd = match[1];                              // e.g. chapters/01-foo.Rmd
+        var baseName = rmd.split("/").pop().replace(/\.Rmd$/, ".pdf");
+        chapterPdf = "pdf-chapters/" + baseName;
+      }
+    }
+
+    // Header above the download entries
+    var header = document.createElement("li");
+    header.className = "book-extra-section";
+    var hb = document.createElement("strong");
+    hb.textContent = "Download";
+    header.appendChild(hb);
+
+    var bookItem = document.createElement("li");
+    var bookA    = document.createElement("a");
+    bookA.id         = "book-pdf-full";
+    bookA.href       = bookPdf;
+    bookA.textContent = "Entire book (PDF) ";
+    var bookI    = document.createElement("i");
+    bookI.className = "fa-solid fa-file-pdf";
+    bookA.appendChild(bookI);
+    bookItem.appendChild(bookA);
+
+    var firstChild = extraList.firstElementChild;
+    extraList.insertBefore(header,   firstChild);
+    extraList.insertBefore(bookItem, firstChild);
+
+    if (chapterPdf) {
+      var chapItem = document.createElement("li");
+      var chapA    = document.createElement("a");
+      chapA.id         = "book-pdf-chapter";
+      chapA.href       = chapterPdf;
+      chapA.textContent = "This chapter (PDF) ";
+      var chapI    = document.createElement("i");
+      chapI.className = "fa-solid fa-file-pdf";
+      chapA.appendChild(chapI);
+      chapItem.appendChild(chapA);
+      extraList.insertBefore(chapItem, firstChild);
     }
   });
 </script><!-- Footer attribution --><div class="bookdown-attribution">

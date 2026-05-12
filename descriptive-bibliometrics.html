@@ -323,8 +323,8 @@ Figure 10.2: Top 15 most productive authors in the sample.
 <pre><code>#&gt; # A tibble: 10 × 2
 #&gt;    referenced_works                     n
 #&gt;    &lt;chr&gt;                            &lt;int&gt;
-#&gt;  1 https://openalex.org/W4285719527    52
-#&gt;  2 https://openalex.org/W2128438887    46
+#&gt;  1 https://openalex.org/W4285719527    53
+#&gt;  2 https://openalex.org/W2128438887    47
 #&gt;  3 https://openalex.org/W2037925493    27
 #&gt;  4 https://openalex.org/W4254947497    26
 #&gt;  5 https://openalex.org/W767067438     26
@@ -332,7 +332,7 @@ Figure 10.2: Top 15 most productive authors in the sample.
 #&gt;  7 https://openalex.org/W2068452509    21
 #&gt;  8 https://openalex.org/W2122831750    18
 #&gt;  9 https://openalex.org/W1546171873    17
-#&gt; 10 https://openalex.org/W1965631677    16</code></pre>
+#&gt; 10 https://openalex.org/W2019753053    16</code></pre>
 </div>
 <div id="three-field-plot" class="section level3" number="10.4.7">
 <h3>
@@ -521,18 +521,68 @@ Figure 10.2: Top 15 most productive authors in the sample.
       });
     });
   })();
-</script><!-- Per-chapter PDF download button --><script>
+</script><!--
+  Right-side panel "Download" section: adds
+    - Download
+      - Entire book (PDF)
+      - This chapter (PDF)
+  above the existing "View source" / "Edit this page" links produced by
+  bs4_book's repo:base config. The chapter PDF URL is derived from the
+  View-source href so it stays in sync with however bookdown slugs the
+  page filename.
+--><script>
   document.addEventListener("DOMContentLoaded", function () {
-    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
-    if (!file || file === ".pdf") return;
-    var btn = document.createElement("a");
-    btn.href = "pdf-chapters/" + file;
-    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
-    btn.style = "float:right;margin-top:0.5em;";
-    btn.textContent = "⬇ Download this chapter (PDF)";
-    var header = document.querySelector("main h1, .page-inner h1");
-    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
-      header.appendChild(btn);
+    var extraList = document.querySelector(".book-extra ul.list-unstyled");
+    if (!extraList) return;
+
+    var bookName = "scientometrics-in-r";
+    var bookPdf  = bookName + ".pdf";
+
+    // Derive the chapter PDF from the source path:
+    //   chapters/01-foo.Rmd  -> pdf-chapters/01-foo.pdf
+    var src = document.getElementById("book-source");
+    var chapterPdf = null;
+    if (src && src.href) {
+      var match = src.href.match(/blob\/[^/]+\/(.+\.Rmd)$/);
+      if (match) {
+        var rmd = match[1];                              // e.g. chapters/01-foo.Rmd
+        var baseName = rmd.split("/").pop().replace(/\.Rmd$/, ".pdf");
+        chapterPdf = "pdf-chapters/" + baseName;
+      }
+    }
+
+    // Header above the download entries
+    var header = document.createElement("li");
+    header.className = "book-extra-section";
+    var hb = document.createElement("strong");
+    hb.textContent = "Download";
+    header.appendChild(hb);
+
+    var bookItem = document.createElement("li");
+    var bookA    = document.createElement("a");
+    bookA.id         = "book-pdf-full";
+    bookA.href       = bookPdf;
+    bookA.textContent = "Entire book (PDF) ";
+    var bookI    = document.createElement("i");
+    bookI.className = "fa-solid fa-file-pdf";
+    bookA.appendChild(bookI);
+    bookItem.appendChild(bookA);
+
+    var firstChild = extraList.firstElementChild;
+    extraList.insertBefore(header,   firstChild);
+    extraList.insertBefore(bookItem, firstChild);
+
+    if (chapterPdf) {
+      var chapItem = document.createElement("li");
+      var chapA    = document.createElement("a");
+      chapA.id         = "book-pdf-chapter";
+      chapA.href       = chapterPdf;
+      chapA.textContent = "This chapter (PDF) ";
+      var chapI    = document.createElement("i");
+      chapI.className = "fa-solid fa-file-pdf";
+      chapA.appendChild(chapI);
+      chapItem.appendChild(chapA);
+      extraList.insertBefore(chapItem, firstChild);
     }
   });
 </script><!-- Footer attribution --><div class="bookdown-attribution">

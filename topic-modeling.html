@@ -237,7 +237,7 @@
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Documents for topic modelling: {nrow(text_df)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Documents for topic modelling: 88</code></pre>
+<pre><code>#&gt; Documents for topic modelling: 92</code></pre>
 <div class="sourceCode" id="cb345"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">corp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/corpus.html">corpus</a></span><span class="op">(</span><span class="va">text_df</span>, docid_field <span class="op">=</span> <span class="st">"doc_id"</span>, text_field <span class="op">=</span> <span class="st">"text"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://quanteda.io/reference/docvars.html">docvars</a></span><span class="op">(</span><span class="va">corp</span>, <span class="st">"year"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">text_df</span><span class="op">$</span><span class="va">year</span></span>
@@ -252,7 +252,7 @@
 <span>  <span class="fu"><a href="https://quanteda.io/reference/dfm_trim.html">dfm_trim</a></span><span class="op">(</span>min_termfreq <span class="op">=</span> <span class="fl">5</span>, min_docfreq <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"DFM: {nrow(dfmat)} docs x {ncol(dfmat)} features\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; DFM: 88 docs x 469 features</code></pre>
+<pre><code>#&gt; DFM: 92 docs x 495 features</code></pre>
 </div>
 <div id="fitting-lda" class="section level3" number="23.4.2">
 <h3>
@@ -365,23 +365,23 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">diag_df</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div id="csbbnkktgx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#csbbnkktgx table {
+<div id="pxmvqsaqnc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#pxmvqsaqnc table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#csbbnkktgx thead, #csbbnkktgx tbody, #csbbnkktgx tfoot, #csbbnkktgx tr, #csbbnkktgx td, #csbbnkktgx th {
+#pxmvqsaqnc thead, #pxmvqsaqnc tbody, #pxmvqsaqnc tfoot, #pxmvqsaqnc tr, #pxmvqsaqnc td, #pxmvqsaqnc th {
   border-style: none;
 }
 
-#csbbnkktgx p {
+#pxmvqsaqnc p {
   margin: 0;
   padding: 0;
 }
 
-#csbbnkktgx .gt_table {
+#pxmvqsaqnc .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -407,12 +407,12 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   border-left-color: #D3D3D3;
 }
 
-#csbbnkktgx .gt_caption {
+#pxmvqsaqnc .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#csbbnkktgx .gt_title {
+#pxmvqsaqnc .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -424,7 +424,7 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   border-bottom-width: 0;
 }
 
-#csbbnkktgx .gt_subtitle {
+#pxmvqsaqnc .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -436,7 +436,7 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   border-top-width: 0;
 }
 
-#csbbnkktgx .gt_heading {
+#pxmvqsaqnc .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -448,13 +448,13 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   border-right-color: #D3D3D3;
 }
 
-#csbbnkktgx .gt_bottom_border {
+#pxmvqsaqnc .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#csbbnkktgx .gt_col_headings {
+#pxmvqsaqnc .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -469,7 +469,7 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   border-right-color: #D3D3D3;
 }
 
-#csbbnkktgx .gt_col_heading {
+#pxmvqsaqnc .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -489,7 +489,7 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   overflow-x: hidden;
 }
 
-#csbbnkktgx .gt_column_spanner_outer {
+#pxmvqsaqnc .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -501,15 +501,15 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   padding-right: 4px;
 }
 
-#csbbnkktgx .gt_column_spanner_outer:first-child {
+#pxmvqsaqnc .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#csbbnkktgx .gt_column_spanner_outer:last-child {
+#pxmvqsaqnc .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#csbbnkktgx .gt_column_spanner {
+#pxmvqsaqnc .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -521,11 +521,11 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   width: 100%;
 }
 
-#csbbnkktgx .gt_spanner_row {
+#pxmvqsaqnc .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#csbbnkktgx .gt_group_heading {
+#pxmvqsaqnc .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -551,7 +551,7 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   text-align: left;
 }
 
-#csbbnkktgx .gt_empty_group_heading {
+#pxmvqsaqnc .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -566,15 +566,15 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   vertical-align: middle;
 }
 
-#csbbnkktgx .gt_from_md > :first-child {
+#pxmvqsaqnc .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#csbbnkktgx .gt_from_md > :last-child {
+#pxmvqsaqnc .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#csbbnkktgx .gt_row {
+#pxmvqsaqnc .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -593,7 +593,7 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   overflow-x: hidden;
 }
 
-#csbbnkktgx .gt_stub {
+#pxmvqsaqnc .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -606,7 +606,7 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   padding-right: 5px;
 }
 
-#csbbnkktgx .gt_stub_row_group {
+#pxmvqsaqnc .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -620,15 +620,15 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   vertical-align: top;
 }
 
-#csbbnkktgx .gt_row_group_first td {
+#pxmvqsaqnc .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#csbbnkktgx .gt_row_group_first th {
+#pxmvqsaqnc .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#csbbnkktgx .gt_summary_row {
+#pxmvqsaqnc .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -638,16 +638,16 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   padding-right: 5px;
 }
 
-#csbbnkktgx .gt_first_summary_row {
+#pxmvqsaqnc .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#csbbnkktgx .gt_first_summary_row.thick {
+#pxmvqsaqnc .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#csbbnkktgx .gt_last_summary_row {
+#pxmvqsaqnc .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -657,7 +657,7 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   border-bottom-color: #D3D3D3;
 }
 
-#csbbnkktgx .gt_grand_summary_row {
+#pxmvqsaqnc .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -667,7 +667,7 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   padding-right: 5px;
 }
 
-#csbbnkktgx .gt_first_grand_summary_row {
+#pxmvqsaqnc .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -677,7 +677,7 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   border-top-color: #D3D3D3;
 }
 
-#csbbnkktgx .gt_last_grand_summary_row_top {
+#pxmvqsaqnc .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -687,11 +687,11 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   border-bottom-color: #D3D3D3;
 }
 
-#csbbnkktgx .gt_striped {
+#pxmvqsaqnc .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#csbbnkktgx .gt_table_body {
+#pxmvqsaqnc .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -700,7 +700,7 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   border-bottom-color: #D3D3D3;
 }
 
-#csbbnkktgx .gt_footnotes {
+#pxmvqsaqnc .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -714,7 +714,7 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   border-right-color: #D3D3D3;
 }
 
-#csbbnkktgx .gt_footnote {
+#pxmvqsaqnc .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -723,7 +723,7 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   padding-right: 5px;
 }
 
-#csbbnkktgx .gt_sourcenotes {
+#pxmvqsaqnc .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -737,7 +737,7 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   border-right-color: #D3D3D3;
 }
 
-#csbbnkktgx .gt_sourcenote {
+#pxmvqsaqnc .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -745,72 +745,72 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
   padding-right: 5px;
 }
 
-#csbbnkktgx .gt_left {
+#pxmvqsaqnc .gt_left {
   text-align: left;
 }
 
-#csbbnkktgx .gt_center {
+#pxmvqsaqnc .gt_center {
   text-align: center;
 }
 
-#csbbnkktgx .gt_right {
+#pxmvqsaqnc .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#csbbnkktgx .gt_font_normal {
+#pxmvqsaqnc .gt_font_normal {
   font-weight: normal;
 }
 
-#csbbnkktgx .gt_font_bold {
+#pxmvqsaqnc .gt_font_bold {
   font-weight: bold;
 }
 
-#csbbnkktgx .gt_font_italic {
+#pxmvqsaqnc .gt_font_italic {
   font-style: italic;
 }
 
-#csbbnkktgx .gt_super {
+#pxmvqsaqnc .gt_super {
   font-size: 65%;
 }
 
-#csbbnkktgx .gt_footnote_marks {
+#pxmvqsaqnc .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#csbbnkktgx .gt_asterisk {
+#pxmvqsaqnc .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#csbbnkktgx .gt_indent_1 {
+#pxmvqsaqnc .gt_indent_1 {
   text-indent: 5px;
 }
 
-#csbbnkktgx .gt_indent_2 {
+#pxmvqsaqnc .gt_indent_2 {
   text-indent: 10px;
 }
 
-#csbbnkktgx .gt_indent_3 {
+#pxmvqsaqnc .gt_indent_3 {
   text-indent: 15px;
 }
 
-#csbbnkktgx .gt_indent_4 {
+#pxmvqsaqnc .gt_indent_4 {
   text-indent: 20px;
 }
 
-#csbbnkktgx .gt_indent_5 {
+#pxmvqsaqnc .gt_indent_5 {
   text-indent: 25px;
 }
 
-#csbbnkktgx .katex-display {
+#pxmvqsaqnc .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#csbbnkktgx div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#pxmvqsaqnc div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -823,43 +823,43 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
 <tbody class="gt_table_body">
 <tr>
 <td headers="topic" class="gt_row gt_right">1</td>
-<td headers="coherence" class="gt_row gt_right">-103.9</td>
-<td headers="exclusivity" class="gt_row gt_right">9.26</td>
-</tr>
-<tr>
-<td headers="topic" class="gt_row gt_right">2</td>
-<td headers="coherence" class="gt_row gt_right">-100.7</td>
-<td headers="exclusivity" class="gt_row gt_right">9.14</td>
-</tr>
-<tr>
-<td headers="topic" class="gt_row gt_right">3</td>
-<td headers="coherence" class="gt_row gt_right">-76.8</td>
-<td headers="exclusivity" class="gt_row gt_right">9.38</td>
-</tr>
-<tr>
-<td headers="topic" class="gt_row gt_right">4</td>
-<td headers="coherence" class="gt_row gt_right">-55.4</td>
-<td headers="exclusivity" class="gt_row gt_right">8.58</td>
-</tr>
-<tr>
-<td headers="topic" class="gt_row gt_right">5</td>
-<td headers="coherence" class="gt_row gt_right">-105.2</td>
-<td headers="exclusivity" class="gt_row gt_right">9.54</td>
-</tr>
-<tr>
-<td headers="topic" class="gt_row gt_right">6</td>
-<td headers="coherence" class="gt_row gt_right">-77.8</td>
-<td headers="exclusivity" class="gt_row gt_right">8.78</td>
-</tr>
-<tr>
-<td headers="topic" class="gt_row gt_right">7</td>
-<td headers="coherence" class="gt_row gt_right">-99.2</td>
+<td headers="coherence" class="gt_row gt_right">-98.7</td>
 <td headers="exclusivity" class="gt_row gt_right">9.30</td>
 </tr>
 <tr>
+<td headers="topic" class="gt_row gt_right">2</td>
+<td headers="coherence" class="gt_row gt_right">-81.3</td>
+<td headers="exclusivity" class="gt_row gt_right">9.47</td>
+</tr>
+<tr>
+<td headers="topic" class="gt_row gt_right">3</td>
+<td headers="coherence" class="gt_row gt_right">-56.3</td>
+<td headers="exclusivity" class="gt_row gt_right">9.05</td>
+</tr>
+<tr>
+<td headers="topic" class="gt_row gt_right">4</td>
+<td headers="coherence" class="gt_row gt_right">-84.2</td>
+<td headers="exclusivity" class="gt_row gt_right">9.44</td>
+</tr>
+<tr>
+<td headers="topic" class="gt_row gt_right">5</td>
+<td headers="coherence" class="gt_row gt_right">-74.9</td>
+<td headers="exclusivity" class="gt_row gt_right">9.34</td>
+</tr>
+<tr>
+<td headers="topic" class="gt_row gt_right">6</td>
+<td headers="coherence" class="gt_row gt_right">-138.0</td>
+<td headers="exclusivity" class="gt_row gt_right">9.52</td>
+</tr>
+<tr>
+<td headers="topic" class="gt_row gt_right">7</td>
+<td headers="coherence" class="gt_row gt_right">-121.0</td>
+<td headers="exclusivity" class="gt_row gt_right">9.27</td>
+</tr>
+<tr>
 <td headers="topic" class="gt_row gt_right">8</td>
-<td headers="coherence" class="gt_row gt_right">-98.3</td>
-<td headers="exclusivity" class="gt_row gt_right">9.15</td>
+<td headers="coherence" class="gt_row gt_right">-100.9</td>
+<td headers="exclusivity" class="gt_row gt_right">9.37</td>
 </tr>
 </tbody>
 </table></div>
@@ -1043,18 +1043,68 @@ Figure 23.3: Estimated topic prevalence by publication year (STM).
       });
     });
   })();
-</script><!-- Per-chapter PDF download button --><script>
+</script><!--
+  Right-side panel "Download" section: adds
+    - Download
+      - Entire book (PDF)
+      - This chapter (PDF)
+  above the existing "View source" / "Edit this page" links produced by
+  bs4_book's repo:base config. The chapter PDF URL is derived from the
+  View-source href so it stays in sync with however bookdown slugs the
+  page filename.
+--><script>
   document.addEventListener("DOMContentLoaded", function () {
-    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
-    if (!file || file === ".pdf") return;
-    var btn = document.createElement("a");
-    btn.href = "pdf-chapters/" + file;
-    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
-    btn.style = "float:right;margin-top:0.5em;";
-    btn.textContent = "⬇ Download this chapter (PDF)";
-    var header = document.querySelector("main h1, .page-inner h1");
-    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
-      header.appendChild(btn);
+    var extraList = document.querySelector(".book-extra ul.list-unstyled");
+    if (!extraList) return;
+
+    var bookName = "scientometrics-in-r";
+    var bookPdf  = bookName + ".pdf";
+
+    // Derive the chapter PDF from the source path:
+    //   chapters/01-foo.Rmd  -> pdf-chapters/01-foo.pdf
+    var src = document.getElementById("book-source");
+    var chapterPdf = null;
+    if (src && src.href) {
+      var match = src.href.match(/blob\/[^/]+\/(.+\.Rmd)$/);
+      if (match) {
+        var rmd = match[1];                              // e.g. chapters/01-foo.Rmd
+        var baseName = rmd.split("/").pop().replace(/\.Rmd$/, ".pdf");
+        chapterPdf = "pdf-chapters/" + baseName;
+      }
+    }
+
+    // Header above the download entries
+    var header = document.createElement("li");
+    header.className = "book-extra-section";
+    var hb = document.createElement("strong");
+    hb.textContent = "Download";
+    header.appendChild(hb);
+
+    var bookItem = document.createElement("li");
+    var bookA    = document.createElement("a");
+    bookA.id         = "book-pdf-full";
+    bookA.href       = bookPdf;
+    bookA.textContent = "Entire book (PDF) ";
+    var bookI    = document.createElement("i");
+    bookI.className = "fa-solid fa-file-pdf";
+    bookA.appendChild(bookI);
+    bookItem.appendChild(bookA);
+
+    var firstChild = extraList.firstElementChild;
+    extraList.insertBefore(header,   firstChild);
+    extraList.insertBefore(bookItem, firstChild);
+
+    if (chapterPdf) {
+      var chapItem = document.createElement("li");
+      var chapA    = document.createElement("a");
+      chapA.id         = "book-pdf-chapter";
+      chapA.href       = chapterPdf;
+      chapA.textContent = "This chapter (PDF) ";
+      var chapI    = document.createElement("i");
+      chapI.className = "fa-solid fa-file-pdf";
+      chapA.appendChild(chapI);
+      chapItem.appendChild(chapA);
+      extraList.insertBefore(chapItem, firstChild);
     }
   });
 </script><!-- Footer attribution --><div class="bookdown-attribution">

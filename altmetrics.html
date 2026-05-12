@@ -704,23 +704,23 @@
 <tbody class="gt_table_body">
 <tr>
 <td headers="oa_status" class="gt_row gt_left">closed</td>
-<td headers="n" class="gt_row gt_right">204</td>
-<td headers="pct" class="gt_row gt_right">51%</td>
+<td headers="n" class="gt_row gt_right">201</td>
+<td headers="pct" class="gt_row gt_right">50.2%</td>
 </tr>
 <tr>
 <td headers="oa_status" class="gt_row gt_left">hybrid</td>
-<td headers="n" class="gt_row gt_right">120</td>
-<td headers="pct" class="gt_row gt_right">30%</td>
+<td headers="n" class="gt_row gt_right">123</td>
+<td headers="pct" class="gt_row gt_right">30.8%</td>
 </tr>
 <tr>
 <td headers="oa_status" class="gt_row gt_left">green</td>
-<td headers="n" class="gt_row gt_right">48</td>
-<td headers="pct" class="gt_row gt_right">12%</td>
+<td headers="n" class="gt_row gt_right">47</td>
+<td headers="pct" class="gt_row gt_right">11.7%</td>
 </tr>
 <tr>
 <td headers="oa_status" class="gt_row gt_left">bronze</td>
-<td headers="n" class="gt_row gt_right">28</td>
-<td headers="pct" class="gt_row gt_right">7%</td>
+<td headers="n" class="gt_row gt_right">29</td>
+<td headers="pct" class="gt_row gt_right">7.2%</td>
 </tr>
 </tbody>
 </table></div>
@@ -777,7 +777,7 @@ Figure 27.3: Relationship between reference list length and citation count.
 <code class="sourceCode R"><span><span class="va">cor_val</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cor</a></span><span class="op">(</span><span class="va">works_slim</span><span class="op">$</span><span class="va">referenced_works_count</span>, <span class="va">works_slim</span><span class="op">$</span><span class="va">cited_by_count</span>,</span>
 <span>               use <span class="op">=</span> <span class="st">"complete.obs"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Pearson correlation (references vs. citations): {round(cor_val, 3)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Pearson correlation (references vs. citations): 0.102</code></pre>
+<pre><code>#&gt; Pearson correlation (references vs. citations): 0.097</code></pre>
 </div>
 </div>
 <div id="altmetrics-diagnostics" class="section level2" number="27.5">
@@ -956,18 +956,68 @@ Figure 27.3: Relationship between reference list length and citation count.
       });
     });
   })();
-</script><!-- Per-chapter PDF download button --><script>
+</script><!--
+  Right-side panel "Download" section: adds
+    - Download
+      - Entire book (PDF)
+      - This chapter (PDF)
+  above the existing "View source" / "Edit this page" links produced by
+  bs4_book's repo:base config. The chapter PDF URL is derived from the
+  View-source href so it stays in sync with however bookdown slugs the
+  page filename.
+--><script>
   document.addEventListener("DOMContentLoaded", function () {
-    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
-    if (!file || file === ".pdf") return;
-    var btn = document.createElement("a");
-    btn.href = "pdf-chapters/" + file;
-    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
-    btn.style = "float:right;margin-top:0.5em;";
-    btn.textContent = "⬇ Download this chapter (PDF)";
-    var header = document.querySelector("main h1, .page-inner h1");
-    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
-      header.appendChild(btn);
+    var extraList = document.querySelector(".book-extra ul.list-unstyled");
+    if (!extraList) return;
+
+    var bookName = "scientometrics-in-r";
+    var bookPdf  = bookName + ".pdf";
+
+    // Derive the chapter PDF from the source path:
+    //   chapters/01-foo.Rmd  -> pdf-chapters/01-foo.pdf
+    var src = document.getElementById("book-source");
+    var chapterPdf = null;
+    if (src && src.href) {
+      var match = src.href.match(/blob\/[^/]+\/(.+\.Rmd)$/);
+      if (match) {
+        var rmd = match[1];                              // e.g. chapters/01-foo.Rmd
+        var baseName = rmd.split("/").pop().replace(/\.Rmd$/, ".pdf");
+        chapterPdf = "pdf-chapters/" + baseName;
+      }
+    }
+
+    // Header above the download entries
+    var header = document.createElement("li");
+    header.className = "book-extra-section";
+    var hb = document.createElement("strong");
+    hb.textContent = "Download";
+    header.appendChild(hb);
+
+    var bookItem = document.createElement("li");
+    var bookA    = document.createElement("a");
+    bookA.id         = "book-pdf-full";
+    bookA.href       = bookPdf;
+    bookA.textContent = "Entire book (PDF) ";
+    var bookI    = document.createElement("i");
+    bookI.className = "fa-solid fa-file-pdf";
+    bookA.appendChild(bookI);
+    bookItem.appendChild(bookA);
+
+    var firstChild = extraList.firstElementChild;
+    extraList.insertBefore(header,   firstChild);
+    extraList.insertBefore(bookItem, firstChild);
+
+    if (chapterPdf) {
+      var chapItem = document.createElement("li");
+      var chapA    = document.createElement("a");
+      chapA.id         = "book-pdf-chapter";
+      chapA.href       = chapterPdf;
+      chapA.textContent = "This chapter (PDF) ";
+      var chapI    = document.createElement("i");
+      chapI.className = "fa-solid fa-file-pdf";
+      chapA.appendChild(chapI);
+      chapItem.appendChild(chapA);
+      extraList.insertBefore(chapItem, firstChild);
     }
   });
 </script><!-- Footer attribution --><div class="bookdown-attribution">

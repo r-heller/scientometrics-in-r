@@ -237,10 +237,10 @@
 <pre><code>#&gt; Citing works: 200</code></pre>
 <div class="sourceCode" id="cb236"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Cited works: {n_distinct(refs$cited_id)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Cited works: 8486</code></pre>
+<pre><code>#&gt; Cited works: 8536</code></pre>
 <div class="sourceCode" id="cb238"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Citation links: {nrow(refs)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Citation links: 9930</code></pre>
+<pre><code>#&gt; Citation links: 9988</code></pre>
 </div>
 <div id="building-a-co-citation-network" class="section level3" number="17.4.2">
 <h3>
@@ -258,7 +258,7 @@
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">cocit_count</span> <span class="op">&gt;=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Co-citation pairs (count &gt;= 3): {nrow(cocit_top)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Co-citation pairs (count &gt;= 3): 133</code></pre>
+<pre><code>#&gt; Co-citation pairs (count &gt;= 3): 135</code></pre>
 <div class="sourceCode" id="cb242"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g_cocit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/graph_from_data_frame.html">graph_from_data_frame</a></span><span class="op">(</span></span>
 <span>  <span class="va">cocit_top</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">cited_id_a</span>, <span class="va">cited_id_b</span>, weight <span class="op">=</span> <span class="va">cocit_count</span><span class="op">)</span>,</span>
@@ -267,7 +267,7 @@
 <span>  <span class="fu"><a href="https://r.igraph.org/reference/simplify.html">simplify</a></span><span class="op">(</span>edge.attr.comb <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>weight <span class="op">=</span> <span class="st">"sum"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Co-citation network: {vcount(g_cocit)} nodes, {ecount(g_cocit)} edges\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Co-citation network: 107 nodes, 133 edges</code></pre>
+<pre><code>#&gt; Co-citation network: 110 nodes, 135 edges</code></pre>
 </div>
 <div id="building-a-bibliographic-coupling-network" class="section level3" number="17.4.3">
 <h3>
@@ -285,7 +285,7 @@
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">shared_refs</span> <span class="op">&gt;=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Bibliographic coupling pairs (shared refs &gt;= 5): {nrow(bibcoup_top)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Bibliographic coupling pairs (shared refs &gt;= 5): 72</code></pre>
+<pre><code>#&gt; Bibliographic coupling pairs (shared refs &gt;= 5): 73</code></pre>
 <div class="sourceCode" id="cb246"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g_bibcoup</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/graph_from_data_frame.html">graph_from_data_frame</a></span><span class="op">(</span></span>
 <span>  <span class="va">bibcoup_top</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">citing_id_a</span>, <span class="va">citing_id_b</span>, weight <span class="op">=</span> <span class="va">shared_refs</span><span class="op">)</span>,</span>
@@ -294,7 +294,7 @@
 <span>  <span class="fu"><a href="https://r.igraph.org/reference/simplify.html">simplify</a></span><span class="op">(</span>edge.attr.comb <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>weight <span class="op">=</span> <span class="st">"sum"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Coupling network: {vcount(g_bibcoup)} nodes, {ecount(g_bibcoup)} edges\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Coupling network: 80 nodes, 72 edges</code></pre>
+<pre><code>#&gt; Coupling network: 80 nodes, 73 edges</code></pre>
 </div>
 <div id="visualisation" class="section level3" number="17.4.4">
 <h3>
@@ -371,23 +371,23 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">comparison</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div id="afbfudqidb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#afbfudqidb table {
+<div id="ulnbkvzijo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#ulnbkvzijo table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#afbfudqidb thead, #afbfudqidb tbody, #afbfudqidb tfoot, #afbfudqidb tr, #afbfudqidb td, #afbfudqidb th {
+#ulnbkvzijo thead, #ulnbkvzijo tbody, #ulnbkvzijo tfoot, #ulnbkvzijo tr, #ulnbkvzijo td, #ulnbkvzijo th {
   border-style: none;
 }
 
-#afbfudqidb p {
+#ulnbkvzijo p {
   margin: 0;
   padding: 0;
 }
 
-#afbfudqidb .gt_table {
+#ulnbkvzijo .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -413,12 +413,12 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   border-left-color: #D3D3D3;
 }
 
-#afbfudqidb .gt_caption {
+#ulnbkvzijo .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#afbfudqidb .gt_title {
+#ulnbkvzijo .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -430,7 +430,7 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   border-bottom-width: 0;
 }
 
-#afbfudqidb .gt_subtitle {
+#ulnbkvzijo .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -442,7 +442,7 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   border-top-width: 0;
 }
 
-#afbfudqidb .gt_heading {
+#ulnbkvzijo .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -454,13 +454,13 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   border-right-color: #D3D3D3;
 }
 
-#afbfudqidb .gt_bottom_border {
+#ulnbkvzijo .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#afbfudqidb .gt_col_headings {
+#ulnbkvzijo .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -475,7 +475,7 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   border-right-color: #D3D3D3;
 }
 
-#afbfudqidb .gt_col_heading {
+#ulnbkvzijo .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -495,7 +495,7 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   overflow-x: hidden;
 }
 
-#afbfudqidb .gt_column_spanner_outer {
+#ulnbkvzijo .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -507,15 +507,15 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   padding-right: 4px;
 }
 
-#afbfudqidb .gt_column_spanner_outer:first-child {
+#ulnbkvzijo .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#afbfudqidb .gt_column_spanner_outer:last-child {
+#ulnbkvzijo .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#afbfudqidb .gt_column_spanner {
+#ulnbkvzijo .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -527,11 +527,11 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   width: 100%;
 }
 
-#afbfudqidb .gt_spanner_row {
+#ulnbkvzijo .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#afbfudqidb .gt_group_heading {
+#ulnbkvzijo .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -557,7 +557,7 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   text-align: left;
 }
 
-#afbfudqidb .gt_empty_group_heading {
+#ulnbkvzijo .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -572,15 +572,15 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   vertical-align: middle;
 }
 
-#afbfudqidb .gt_from_md > :first-child {
+#ulnbkvzijo .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#afbfudqidb .gt_from_md > :last-child {
+#ulnbkvzijo .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#afbfudqidb .gt_row {
+#ulnbkvzijo .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -599,7 +599,7 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   overflow-x: hidden;
 }
 
-#afbfudqidb .gt_stub {
+#ulnbkvzijo .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -612,7 +612,7 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   padding-right: 5px;
 }
 
-#afbfudqidb .gt_stub_row_group {
+#ulnbkvzijo .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -626,15 +626,15 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   vertical-align: top;
 }
 
-#afbfudqidb .gt_row_group_first td {
+#ulnbkvzijo .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#afbfudqidb .gt_row_group_first th {
+#ulnbkvzijo .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#afbfudqidb .gt_summary_row {
+#ulnbkvzijo .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -644,16 +644,16 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   padding-right: 5px;
 }
 
-#afbfudqidb .gt_first_summary_row {
+#ulnbkvzijo .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#afbfudqidb .gt_first_summary_row.thick {
+#ulnbkvzijo .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#afbfudqidb .gt_last_summary_row {
+#ulnbkvzijo .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -663,7 +663,7 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   border-bottom-color: #D3D3D3;
 }
 
-#afbfudqidb .gt_grand_summary_row {
+#ulnbkvzijo .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -673,7 +673,7 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   padding-right: 5px;
 }
 
-#afbfudqidb .gt_first_grand_summary_row {
+#ulnbkvzijo .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -683,7 +683,7 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   border-top-color: #D3D3D3;
 }
 
-#afbfudqidb .gt_last_grand_summary_row_top {
+#ulnbkvzijo .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -693,11 +693,11 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   border-bottom-color: #D3D3D3;
 }
 
-#afbfudqidb .gt_striped {
+#ulnbkvzijo .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#afbfudqidb .gt_table_body {
+#ulnbkvzijo .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -706,7 +706,7 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   border-bottom-color: #D3D3D3;
 }
 
-#afbfudqidb .gt_footnotes {
+#ulnbkvzijo .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -720,7 +720,7 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   border-right-color: #D3D3D3;
 }
 
-#afbfudqidb .gt_footnote {
+#ulnbkvzijo .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -729,7 +729,7 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   padding-right: 5px;
 }
 
-#afbfudqidb .gt_sourcenotes {
+#ulnbkvzijo .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -743,7 +743,7 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   border-right-color: #D3D3D3;
 }
 
-#afbfudqidb .gt_sourcenote {
+#ulnbkvzijo .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -751,72 +751,72 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
   padding-right: 5px;
 }
 
-#afbfudqidb .gt_left {
+#ulnbkvzijo .gt_left {
   text-align: left;
 }
 
-#afbfudqidb .gt_center {
+#ulnbkvzijo .gt_center {
   text-align: center;
 }
 
-#afbfudqidb .gt_right {
+#ulnbkvzijo .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#afbfudqidb .gt_font_normal {
+#ulnbkvzijo .gt_font_normal {
   font-weight: normal;
 }
 
-#afbfudqidb .gt_font_bold {
+#ulnbkvzijo .gt_font_bold {
   font-weight: bold;
 }
 
-#afbfudqidb .gt_font_italic {
+#ulnbkvzijo .gt_font_italic {
   font-style: italic;
 }
 
-#afbfudqidb .gt_super {
+#ulnbkvzijo .gt_super {
   font-size: 65%;
 }
 
-#afbfudqidb .gt_footnote_marks {
+#ulnbkvzijo .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#afbfudqidb .gt_asterisk {
+#ulnbkvzijo .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#afbfudqidb .gt_indent_1 {
+#ulnbkvzijo .gt_indent_1 {
   text-indent: 5px;
 }
 
-#afbfudqidb .gt_indent_2 {
+#ulnbkvzijo .gt_indent_2 {
   text-indent: 10px;
 }
 
-#afbfudqidb .gt_indent_3 {
+#ulnbkvzijo .gt_indent_3 {
   text-indent: 15px;
 }
 
-#afbfudqidb .gt_indent_4 {
+#ulnbkvzijo .gt_indent_4 {
   text-indent: 20px;
 }
 
-#afbfudqidb .gt_indent_5 {
+#ulnbkvzijo .gt_indent_5 {
   text-indent: 25px;
 }
 
-#afbfudqidb .katex-display {
+#ulnbkvzijo .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#afbfudqidb div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#ulnbkvzijo div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -831,17 +831,17 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
 <tbody class="gt_table_body">
 <tr>
 <td headers="Method" class="gt_row gt_left">Co-citation</td>
-<td headers="Nodes" class="gt_row gt_right">107</td>
-<td headers="Edges" class="gt_row gt_right">133</td>
-<td headers="Components" class="gt_row gt_right">24</td>
-<td headers="Density" class="gt_row gt_right">0.0235</td>
+<td headers="Nodes" class="gt_row gt_right">110</td>
+<td headers="Edges" class="gt_row gt_right">135</td>
+<td headers="Components" class="gt_row gt_right">25</td>
+<td headers="Density" class="gt_row gt_right">0.0225</td>
 </tr>
 <tr>
 <td headers="Method" class="gt_row gt_left">Bibliographic coupling</td>
 <td headers="Nodes" class="gt_row gt_right">80</td>
-<td headers="Edges" class="gt_row gt_right">72</td>
+<td headers="Edges" class="gt_row gt_right">73</td>
 <td headers="Components" class="gt_row gt_right">20</td>
-<td headers="Density" class="gt_row gt_right">0.0228</td>
+<td headers="Density" class="gt_row gt_right">0.0231</td>
 </tr>
 </tbody>
 </table></div>
@@ -1020,18 +1020,68 @@ Figure 17.2: Bibliographic coupling network of Scientometrics articles (2020–2
       });
     });
   })();
-</script><!-- Per-chapter PDF download button --><script>
+</script><!--
+  Right-side panel "Download" section: adds
+    - Download
+      - Entire book (PDF)
+      - This chapter (PDF)
+  above the existing "View source" / "Edit this page" links produced by
+  bs4_book's repo:base config. The chapter PDF URL is derived from the
+  View-source href so it stays in sync with however bookdown slugs the
+  page filename.
+--><script>
   document.addEventListener("DOMContentLoaded", function () {
-    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
-    if (!file || file === ".pdf") return;
-    var btn = document.createElement("a");
-    btn.href = "pdf-chapters/" + file;
-    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
-    btn.style = "float:right;margin-top:0.5em;";
-    btn.textContent = "⬇ Download this chapter (PDF)";
-    var header = document.querySelector("main h1, .page-inner h1");
-    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
-      header.appendChild(btn);
+    var extraList = document.querySelector(".book-extra ul.list-unstyled");
+    if (!extraList) return;
+
+    var bookName = "scientometrics-in-r";
+    var bookPdf  = bookName + ".pdf";
+
+    // Derive the chapter PDF from the source path:
+    //   chapters/01-foo.Rmd  -> pdf-chapters/01-foo.pdf
+    var src = document.getElementById("book-source");
+    var chapterPdf = null;
+    if (src && src.href) {
+      var match = src.href.match(/blob\/[^/]+\/(.+\.Rmd)$/);
+      if (match) {
+        var rmd = match[1];                              // e.g. chapters/01-foo.Rmd
+        var baseName = rmd.split("/").pop().replace(/\.Rmd$/, ".pdf");
+        chapterPdf = "pdf-chapters/" + baseName;
+      }
+    }
+
+    // Header above the download entries
+    var header = document.createElement("li");
+    header.className = "book-extra-section";
+    var hb = document.createElement("strong");
+    hb.textContent = "Download";
+    header.appendChild(hb);
+
+    var bookItem = document.createElement("li");
+    var bookA    = document.createElement("a");
+    bookA.id         = "book-pdf-full";
+    bookA.href       = bookPdf;
+    bookA.textContent = "Entire book (PDF) ";
+    var bookI    = document.createElement("i");
+    bookI.className = "fa-solid fa-file-pdf";
+    bookA.appendChild(bookI);
+    bookItem.appendChild(bookA);
+
+    var firstChild = extraList.firstElementChild;
+    extraList.insertBefore(header,   firstChild);
+    extraList.insertBefore(bookItem, firstChild);
+
+    if (chapterPdf) {
+      var chapItem = document.createElement("li");
+      var chapA    = document.createElement("a");
+      chapA.id         = "book-pdf-chapter";
+      chapA.href       = chapterPdf;
+      chapA.textContent = "This chapter (PDF) ";
+      var chapI    = document.createElement("i");
+      chapI.className = "fa-solid fa-file-pdf";
+      chapA.appendChild(chapI);
+      chapItem.appendChild(chapA);
+      extraList.insertBefore(chapItem, firstChild);
     }
   });
 </script><!-- Footer attribution --><div class="bookdown-attribution">

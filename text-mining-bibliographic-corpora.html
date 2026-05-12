@@ -235,16 +235,16 @@
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Documents with abstracts: {nrow(text_df)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Documents with abstracts: 134</code></pre>
+<pre><code>#&gt; Documents with abstracts: 136</code></pre>
 <div class="sourceCode" id="cb327"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">corp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/corpus.html">corpus</a></span><span class="op">(</span><span class="va">text_df</span>, docid_field <span class="op">=</span> <span class="st">"doc_id"</span>, text_field <span class="op">=</span> <span class="st">"text"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://quanteda.io/reference/docvars.html">docvars</a></span><span class="op">(</span><span class="va">corp</span>, <span class="st">"year"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">text_df</span><span class="op">$</span><span class="va">year</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Corpus size: {ndoc(corp)} documents\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Corpus size: 134 documents</code></pre>
+<pre><code>#&gt; Corpus size: 136 documents</code></pre>
 <div class="sourceCode" id="cb329"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Total tokens: {sum(ntoken(corp))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Total tokens: 32034</code></pre>
+<pre><code>#&gt; Total tokens: 32335</code></pre>
 </div>
 <div id="tokenisation-and-preprocessing" class="section level3" number="22.4.2">
 <h3>
@@ -262,7 +262,7 @@
 <span>  <span class="fu"><a href="https://quanteda.io/reference/tokens_wordstem.html">tokens_wordstem</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Tokens after preprocessing: {sum(ntoken(toks))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Tokens after preprocessing: 16065</code></pre>
+<pre><code>#&gt; Tokens after preprocessing: 16218</code></pre>
 </div>
 <div id="document-feature-matrix" class="section level3" number="22.4.3">
 <h3>
@@ -273,10 +273,10 @@
 <span>  <span class="fu"><a href="https://quanteda.io/reference/dfm_trim.html">dfm_trim</a></span><span class="op">(</span>min_termfreq <span class="op">=</span> <span class="fl">5</span>, min_docfreq <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"DFM dimensions: {nrow(dfmat)} docs x {ncol(dfmat)} features\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; DFM dimensions: 134 docs x 678 features</code></pre>
+<pre><code>#&gt; DFM dimensions: 136 docs x 689 features</code></pre>
 <div class="sourceCode" id="cb335"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Sparsity: {scales::percent(sparsity(dfmat))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Sparsity: 91%</code></pre>
+<pre><code>#&gt; Sparsity: 92%</code></pre>
 <div class="sourceCode" id="cb337"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">top_terms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://quanteda.io/reference/topfeatures.html">topfeatures</a></span><span class="op">(</span><span class="va">dfmat</span>, <span class="fl">20</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/enframe.html">enframe</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"term"</span>, value <span class="op">=</span> <span class="st">"frequency"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -775,116 +775,116 @@ Figure 22.1: Top 20 most frequent terms in the Scientometrics corpus.
 <th colspan="2" class="gt_group_heading" scope="colgroup" id="2019">2019</th>
     </tr>
 <tr class="gt_row_group_first">
-<td headers="2019  term" class="gt_row gt_left">usag</td>
-<td headers="2019  tfidf" class="gt_row gt_right">14.8</td>
-</tr>
-<tr>
 <td headers="2019  term" class="gt_row gt_left">clinic</td>
-<td headers="2019  tfidf" class="gt_row gt_right">14.1</td>
+<td headers="2019  tfidf" class="gt_row gt_right">14.2</td>
 </tr>
 <tr>
 <td headers="2019  term" class="gt_row gt_left">collabor</td>
-<td headers="2019  tfidf" class="gt_row gt_right">13.3</td>
+<td headers="2019  tfidf" class="gt_row gt_right">12.5</td>
 </tr>
 <tr>
 <td headers="2019  term" class="gt_row gt_left">faculti</td>
-<td headers="2019  tfidf" class="gt_row gt_right">12.1</td>
+<td headers="2019  tfidf" class="gt_row gt_right">12.2</td>
 </tr>
 <tr>
 <td headers="2019  term" class="gt_row gt_left">citat</td>
 <td headers="2019  tfidf" class="gt_row gt_right">11.7</td>
+</tr>
+<tr>
+<td headers="2019  term" class="gt_row gt_left">wealth</td>
+<td headers="2019  tfidf" class="gt_row gt_right">11.6</td>
 </tr>
 <tr class="gt_group_heading_row">
 <th colspan="2" class="gt_group_heading" scope="colgroup" id="2020">2020</th>
     </tr>
 <tr class="gt_row_group_first">
 <td headers="2020  term" class="gt_row gt_left">journal</td>
-<td headers="2020  tfidf" class="gt_row gt_right">30.6</td>
+<td headers="2020  tfidf" class="gt_row gt_right">30.7</td>
 </tr>
 <tr>
 <td headers="2020  term" class="gt_row gt_left">review</td>
-<td headers="2020  tfidf" class="gt_row gt_right">21.2</td>
+<td headers="2020  tfidf" class="gt_row gt_right">27.0</td>
+</tr>
+<tr>
+<td headers="2020  term" class="gt_row gt_left">innov</td>
+<td headers="2020  tfidf" class="gt_row gt_right">20.1</td>
 </tr>
 <tr>
 <td headers="2020  term" class="gt_row gt_left">public</td>
-<td headers="2020  tfidf" class="gt_row gt_right">20.6</td>
+<td headers="2020  tfidf" class="gt_row gt_right">19.7</td>
 </tr>
 <tr>
 <td headers="2020  term" class="gt_row gt_left">open</td>
-<td headers="2020  tfidf" class="gt_row gt_right">18.2</td>
-</tr>
-<tr>
-<td headers="2020  term" class="gt_row gt_left">local</td>
-<td headers="2020  tfidf" class="gt_row gt_right">17.5</td>
+<td headers="2020  tfidf" class="gt_row gt_right">18.4</td>
 </tr>
 <tr class="gt_group_heading_row">
 <th colspan="2" class="gt_group_heading" scope="colgroup" id="2021">2021</th>
     </tr>
 <tr class="gt_row_group_first">
 <td headers="2021  term" class="gt_row gt_left">journal</td>
-<td headers="2021  tfidf" class="gt_row gt_right">25.2</td>
+<td headers="2021  tfidf" class="gt_row gt_right">24.5</td>
 </tr>
 <tr>
 <td headers="2021  term" class="gt_row gt_left">covid-19</td>
-<td headers="2021  tfidf" class="gt_row gt_right">24.3</td>
+<td headers="2021  tfidf" class="gt_row gt_right">24.5</td>
 </tr>
 <tr>
 <td headers="2021  term" class="gt_row gt_left">predatori</td>
-<td headers="2021  tfidf" class="gt_row gt_right">21.4</td>
+<td headers="2021  tfidf" class="gt_row gt_right">21.5</td>
 </tr>
 <tr>
 <td headers="2021  term" class="gt_row gt_left">peer</td>
-<td headers="2021  tfidf" class="gt_row gt_right">19.6</td>
+<td headers="2021  tfidf" class="gt_row gt_right">18.9</td>
 </tr>
 <tr>
 <td headers="2021  term" class="gt_row gt_left">review</td>
-<td headers="2021  tfidf" class="gt_row gt_right">18.8</td>
+<td headers="2021  tfidf" class="gt_row gt_right">18.5</td>
 </tr>
 <tr class="gt_group_heading_row">
 <th colspan="2" class="gt_group_heading" scope="colgroup" id="2022">2022</th>
     </tr>
 <tr class="gt_row_group_first">
-<td headers="2022  term" class="gt_row gt_left">topic</td>
-<td headers="2022  tfidf" class="gt_row gt_right">27.1</td>
+<td headers="2022  term" class="gt_row gt_left">patent</td>
+<td headers="2022  tfidf" class="gt_row gt_right">32.2</td>
 </tr>
 <tr>
 <td headers="2022  term" class="gt_row gt_left">univers</td>
-<td headers="2022  tfidf" class="gt_row gt_right">25.5</td>
+<td headers="2022  tfidf" class="gt_row gt_right">27.6</td>
+</tr>
+<tr>
+<td headers="2022  term" class="gt_row gt_left">topic</td>
+<td headers="2022  tfidf" class="gt_row gt_right">26.0</td>
 </tr>
 <tr>
 <td headers="2022  term" class="gt_row gt_left">tweet</td>
-<td headers="2022  tfidf" class="gt_row gt_right">24.4</td>
-</tr>
-<tr>
-<td headers="2022  term" class="gt_row gt_left">citat</td>
-<td headers="2022  tfidf" class="gt_row gt_right">23.1</td>
+<td headers="2022  tfidf" class="gt_row gt_right">24.5</td>
 </tr>
 <tr>
 <td headers="2022  term" class="gt_row gt_left">link</td>
-<td headers="2022  tfidf" class="gt_row gt_right">22.3</td>
+<td headers="2022  tfidf" class="gt_row gt_right">23.2</td>
 </tr>
 <tr class="gt_group_heading_row">
 <th colspan="2" class="gt_group_heading" scope="colgroup" id="2023">2023</th>
     </tr>
 <tr class="gt_row_group_first">
 <td headers="2023  term" class="gt_row gt_left">collabor</td>
-<td headers="2023  tfidf" class="gt_row gt_right">28.2</td>
-</tr>
-<tr>
-<td headers="2023  term" class="gt_row gt_left">articl</td>
-<td headers="2023  tfidf" class="gt_row gt_right">21.8</td>
-</tr>
-<tr>
-<td headers="2023  term" class="gt_row gt_left">countri</td>
-<td headers="2023  tfidf" class="gt_row gt_right">21.6</td>
+<td headers="2023  tfidf" class="gt_row gt_right">27.2</td>
 </tr>
 <tr>
 <td headers="2023  term" class="gt_row gt_left">journal</td>
-<td headers="2023  tfidf" class="gt_row gt_right">21.2</td>
+<td headers="2023  tfidf" class="gt_row gt_right">24.0</td>
+</tr>
+<tr>
+<td headers="2023  term" class="gt_row gt_left">countri</td>
+<td headers="2023  tfidf" class="gt_row gt_right">22.0</td>
+</tr>
+<tr>
+<td headers="2023  term" class="gt_row gt_left">articl</td>
+<td headers="2023  tfidf" class="gt_row gt_right">21.7</td>
 </tr>
 <tr>
 <td headers="2023  term" class="gt_row gt_left">guidelin</td>
-<td headers="2023  tfidf" class="gt_row gt_right">19.8</td>
+<td headers="2023  tfidf" class="gt_row gt_right">19.9</td>
 </tr>
 </tbody>
 </table></div>
@@ -1095,18 +1095,68 @@ Figure 22.2: Relative frequency of selected terms over time.
       });
     });
   })();
-</script><!-- Per-chapter PDF download button --><script>
+</script><!--
+  Right-side panel "Download" section: adds
+    - Download
+      - Entire book (PDF)
+      - This chapter (PDF)
+  above the existing "View source" / "Edit this page" links produced by
+  bs4_book's repo:base config. The chapter PDF URL is derived from the
+  View-source href so it stays in sync with however bookdown slugs the
+  page filename.
+--><script>
   document.addEventListener("DOMContentLoaded", function () {
-    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
-    if (!file || file === ".pdf") return;
-    var btn = document.createElement("a");
-    btn.href = "pdf-chapters/" + file;
-    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
-    btn.style = "float:right;margin-top:0.5em;";
-    btn.textContent = "⬇ Download this chapter (PDF)";
-    var header = document.querySelector("main h1, .page-inner h1");
-    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
-      header.appendChild(btn);
+    var extraList = document.querySelector(".book-extra ul.list-unstyled");
+    if (!extraList) return;
+
+    var bookName = "scientometrics-in-r";
+    var bookPdf  = bookName + ".pdf";
+
+    // Derive the chapter PDF from the source path:
+    //   chapters/01-foo.Rmd  -> pdf-chapters/01-foo.pdf
+    var src = document.getElementById("book-source");
+    var chapterPdf = null;
+    if (src && src.href) {
+      var match = src.href.match(/blob\/[^/]+\/(.+\.Rmd)$/);
+      if (match) {
+        var rmd = match[1];                              // e.g. chapters/01-foo.Rmd
+        var baseName = rmd.split("/").pop().replace(/\.Rmd$/, ".pdf");
+        chapterPdf = "pdf-chapters/" + baseName;
+      }
+    }
+
+    // Header above the download entries
+    var header = document.createElement("li");
+    header.className = "book-extra-section";
+    var hb = document.createElement("strong");
+    hb.textContent = "Download";
+    header.appendChild(hb);
+
+    var bookItem = document.createElement("li");
+    var bookA    = document.createElement("a");
+    bookA.id         = "book-pdf-full";
+    bookA.href       = bookPdf;
+    bookA.textContent = "Entire book (PDF) ";
+    var bookI    = document.createElement("i");
+    bookI.className = "fa-solid fa-file-pdf";
+    bookA.appendChild(bookI);
+    bookItem.appendChild(bookA);
+
+    var firstChild = extraList.firstElementChild;
+    extraList.insertBefore(header,   firstChild);
+    extraList.insertBefore(bookItem, firstChild);
+
+    if (chapterPdf) {
+      var chapItem = document.createElement("li");
+      var chapA    = document.createElement("a");
+      chapA.id         = "book-pdf-chapter";
+      chapA.href       = chapterPdf;
+      chapA.textContent = "This chapter (PDF) ";
+      var chapI    = document.createElement("i");
+      chapI.className = "fa-solid fa-file-pdf";
+      chapA.appendChild(chapI);
+      chapItem.appendChild(chapA);
+      extraList.insertBefore(chapItem, firstChild);
     }
   });
 </script><!-- Footer attribution --><div class="bookdown-attribution">

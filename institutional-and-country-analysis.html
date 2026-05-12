@@ -750,8 +750,8 @@
 <tr>
 <td headers="short_name" class="gt_row gt_left">MIT</td>
 <td headers="full_count" class="gt_row gt_right">400</td>
-<td headers="frac_count" class="gt_row gt_right">163</td>
-<td headers="ratio" class="gt_row gt_right">0.41</td>
+<td headers="frac_count" class="gt_row gt_right">161</td>
+<td headers="ratio" class="gt_row gt_right">0.40</td>
 </tr>
 <tr>
 <td headers="short_name" class="gt_row gt_left">Oxford</td>
@@ -1254,20 +1254,20 @@
 <tbody class="gt_table_body">
 <tr>
 <td headers="short_name" class="gt_row gt_left">MIT</td>
-<td headers="mean_cites" class="gt_row gt_right">37.59</td>
-<td headers="median_cites" class="gt_row gt_right">14</td>
+<td headers="mean_cites" class="gt_row gt_right">45.19</td>
+<td headers="median_cites" class="gt_row gt_right">15</td>
 <td headers="mncs_approx" class="gt_row gt_right">1.00</td>
 </tr>
 <tr>
 <td headers="short_name" class="gt_row gt_left">Oxford</td>
-<td headers="mean_cites" class="gt_row gt_right">38.84</td>
-<td headers="median_cites" class="gt_row gt_right">12</td>
+<td headers="mean_cites" class="gt_row gt_right">37.57</td>
+<td headers="median_cites" class="gt_row gt_right">13</td>
 <td headers="mncs_approx" class="gt_row gt_right">1.00</td>
 </tr>
 <tr>
 <td headers="short_name" class="gt_row gt_left">ETH Zurich</td>
-<td headers="mean_cites" class="gt_row gt_right">23.26</td>
-<td headers="median_cites" class="gt_row gt_right">11</td>
+<td headers="mean_cites" class="gt_row gt_right">24.03</td>
+<td headers="median_cites" class="gt_row gt_right">12</td>
 <td headers="mncs_approx" class="gt_row gt_right">1.00</td>
 </tr>
 </tbody>
@@ -1488,18 +1488,68 @@ Figure 14.2: Approximate MNCS for each institution (within-sample normalisation)
       });
     });
   })();
-</script><!-- Per-chapter PDF download button --><script>
+</script><!--
+  Right-side panel "Download" section: adds
+    - Download
+      - Entire book (PDF)
+      - This chapter (PDF)
+  above the existing "View source" / "Edit this page" links produced by
+  bs4_book's repo:base config. The chapter PDF URL is derived from the
+  View-source href so it stays in sync with however bookdown slugs the
+  page filename.
+--><script>
   document.addEventListener("DOMContentLoaded", function () {
-    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
-    if (!file || file === ".pdf") return;
-    var btn = document.createElement("a");
-    btn.href = "pdf-chapters/" + file;
-    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
-    btn.style = "float:right;margin-top:0.5em;";
-    btn.textContent = "⬇ Download this chapter (PDF)";
-    var header = document.querySelector("main h1, .page-inner h1");
-    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
-      header.appendChild(btn);
+    var extraList = document.querySelector(".book-extra ul.list-unstyled");
+    if (!extraList) return;
+
+    var bookName = "scientometrics-in-r";
+    var bookPdf  = bookName + ".pdf";
+
+    // Derive the chapter PDF from the source path:
+    //   chapters/01-foo.Rmd  -> pdf-chapters/01-foo.pdf
+    var src = document.getElementById("book-source");
+    var chapterPdf = null;
+    if (src && src.href) {
+      var match = src.href.match(/blob\/[^/]+\/(.+\.Rmd)$/);
+      if (match) {
+        var rmd = match[1];                              // e.g. chapters/01-foo.Rmd
+        var baseName = rmd.split("/").pop().replace(/\.Rmd$/, ".pdf");
+        chapterPdf = "pdf-chapters/" + baseName;
+      }
+    }
+
+    // Header above the download entries
+    var header = document.createElement("li");
+    header.className = "book-extra-section";
+    var hb = document.createElement("strong");
+    hb.textContent = "Download";
+    header.appendChild(hb);
+
+    var bookItem = document.createElement("li");
+    var bookA    = document.createElement("a");
+    bookA.id         = "book-pdf-full";
+    bookA.href       = bookPdf;
+    bookA.textContent = "Entire book (PDF) ";
+    var bookI    = document.createElement("i");
+    bookI.className = "fa-solid fa-file-pdf";
+    bookA.appendChild(bookI);
+    bookItem.appendChild(bookA);
+
+    var firstChild = extraList.firstElementChild;
+    extraList.insertBefore(header,   firstChild);
+    extraList.insertBefore(bookItem, firstChild);
+
+    if (chapterPdf) {
+      var chapItem = document.createElement("li");
+      var chapA    = document.createElement("a");
+      chapA.id         = "book-pdf-chapter";
+      chapA.href       = chapterPdf;
+      chapA.textContent = "This chapter (PDF) ";
+      var chapI    = document.createElement("i");
+      chapI.className = "fa-solid fa-file-pdf";
+      chapA.appendChild(chapI);
+      chapItem.appendChild(chapA);
+      extraList.insertBefore(chapItem, firstChild);
     }
   });
 </script><!-- Footer attribution --><div class="bookdown-attribution">

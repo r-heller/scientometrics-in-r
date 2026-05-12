@@ -249,10 +249,10 @@
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">count</a></span><span class="op">(</span><span class="va">keyword</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Total keyword occurrences: {nrow(keywords)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Total keyword occurrences: 5216</code></pre>
+<pre><code>#&gt; Total keyword occurrences: 5224</code></pre>
 <div class="sourceCode" id="cb257"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Unique keywords: {n_distinct(keywords$keyword)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Unique keywords: 411</code></pre>
+<pre><code>#&gt; Unique keywords: 413</code></pre>
 <div class="sourceCode" id="cb259"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">kw_counts</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="fl">20</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -297,7 +297,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
 <span>  <span class="fu"><a href="https://r.igraph.org/reference/simplify.html">simplify</a></span><span class="op">(</span>edge.attr.comb <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>weight <span class="op">=</span> <span class="st">"sum"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Keyword network: {vcount(g_kw)} nodes, {ecount(g_kw)} edges\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Keyword network: 115 nodes, 942 edges</code></pre>
+<pre><code>#&gt; Keyword network: 112 nodes, 937 edges</code></pre>
 </div>
 <div id="community-detection-for-topical-clusters" class="section level3" number="18.4.3">
 <h3>
@@ -315,7 +315,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
 <pre><code>#&gt; Communities: 2</code></pre>
 <div class="sourceCode" id="cb264"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Modularity: {round(modularity(g_kw, membership(communities)), 3)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Modularity: 0.217</code></pre>
+<pre><code>#&gt; Modularity: 0.214</code></pre>
 <div class="sourceCode" id="cb266"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">community_summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
 <span>  keyword <span class="op">=</span> <span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">g_kw</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>,</span>
@@ -328,23 +328,23 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
 <span>            n_keywords <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">n</a></span><span class="op">(</span><span class="op">)</span>, .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">community_summary</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div id="zzleptelsl" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#zzleptelsl table {
+<div id="szzleptels" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#szzleptels table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#zzleptelsl thead, #zzleptelsl tbody, #zzleptelsl tfoot, #zzleptelsl tr, #zzleptelsl td, #zzleptelsl th {
+#szzleptels thead, #szzleptels tbody, #szzleptels tfoot, #szzleptels tr, #szzleptels td, #szzleptels th {
   border-style: none;
 }
 
-#zzleptelsl p {
+#szzleptels p {
   margin: 0;
   padding: 0;
 }
 
-#zzleptelsl .gt_table {
+#szzleptels .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -370,12 +370,12 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   border-left-color: #D3D3D3;
 }
 
-#zzleptelsl .gt_caption {
+#szzleptels .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#zzleptelsl .gt_title {
+#szzleptels .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -387,7 +387,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   border-bottom-width: 0;
 }
 
-#zzleptelsl .gt_subtitle {
+#szzleptels .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -399,7 +399,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   border-top-width: 0;
 }
 
-#zzleptelsl .gt_heading {
+#szzleptels .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -411,13 +411,13 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   border-right-color: #D3D3D3;
 }
 
-#zzleptelsl .gt_bottom_border {
+#szzleptels .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#zzleptelsl .gt_col_headings {
+#szzleptels .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -432,7 +432,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   border-right-color: #D3D3D3;
 }
 
-#zzleptelsl .gt_col_heading {
+#szzleptels .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -452,7 +452,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   overflow-x: hidden;
 }
 
-#zzleptelsl .gt_column_spanner_outer {
+#szzleptels .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -464,15 +464,15 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   padding-right: 4px;
 }
 
-#zzleptelsl .gt_column_spanner_outer:first-child {
+#szzleptels .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#zzleptelsl .gt_column_spanner_outer:last-child {
+#szzleptels .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#zzleptelsl .gt_column_spanner {
+#szzleptels .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -484,11 +484,11 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   width: 100%;
 }
 
-#zzleptelsl .gt_spanner_row {
+#szzleptels .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#zzleptelsl .gt_group_heading {
+#szzleptels .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -514,7 +514,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   text-align: left;
 }
 
-#zzleptelsl .gt_empty_group_heading {
+#szzleptels .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -529,15 +529,15 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   vertical-align: middle;
 }
 
-#zzleptelsl .gt_from_md > :first-child {
+#szzleptels .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#zzleptelsl .gt_from_md > :last-child {
+#szzleptels .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#zzleptelsl .gt_row {
+#szzleptels .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -556,7 +556,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   overflow-x: hidden;
 }
 
-#zzleptelsl .gt_stub {
+#szzleptels .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -569,7 +569,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   padding-right: 5px;
 }
 
-#zzleptelsl .gt_stub_row_group {
+#szzleptels .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -583,15 +583,15 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   vertical-align: top;
 }
 
-#zzleptelsl .gt_row_group_first td {
+#szzleptels .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#zzleptelsl .gt_row_group_first th {
+#szzleptels .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#zzleptelsl .gt_summary_row {
+#szzleptels .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -601,16 +601,16 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   padding-right: 5px;
 }
 
-#zzleptelsl .gt_first_summary_row {
+#szzleptels .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#zzleptelsl .gt_first_summary_row.thick {
+#szzleptels .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#zzleptelsl .gt_last_summary_row {
+#szzleptels .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -620,7 +620,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   border-bottom-color: #D3D3D3;
 }
 
-#zzleptelsl .gt_grand_summary_row {
+#szzleptels .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -630,7 +630,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   padding-right: 5px;
 }
 
-#zzleptelsl .gt_first_grand_summary_row {
+#szzleptels .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -640,7 +640,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   border-top-color: #D3D3D3;
 }
 
-#zzleptelsl .gt_last_grand_summary_row_top {
+#szzleptels .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -650,11 +650,11 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   border-bottom-color: #D3D3D3;
 }
 
-#zzleptelsl .gt_striped {
+#szzleptels .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#zzleptelsl .gt_table_body {
+#szzleptels .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -663,7 +663,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   border-bottom-color: #D3D3D3;
 }
 
-#zzleptelsl .gt_footnotes {
+#szzleptels .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -677,7 +677,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   border-right-color: #D3D3D3;
 }
 
-#zzleptelsl .gt_footnote {
+#szzleptels .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -686,7 +686,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   padding-right: 5px;
 }
 
-#zzleptelsl .gt_sourcenotes {
+#szzleptels .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -700,7 +700,7 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   border-right-color: #D3D3D3;
 }
 
-#zzleptelsl .gt_sourcenote {
+#szzleptels .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -708,72 +708,72 @@ Figure 18.1: Top 20 most frequent keywords in the Scientometrics sample.
   padding-right: 5px;
 }
 
-#zzleptelsl .gt_left {
+#szzleptels .gt_left {
   text-align: left;
 }
 
-#zzleptelsl .gt_center {
+#szzleptels .gt_center {
   text-align: center;
 }
 
-#zzleptelsl .gt_right {
+#szzleptels .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#zzleptelsl .gt_font_normal {
+#szzleptels .gt_font_normal {
   font-weight: normal;
 }
 
-#zzleptelsl .gt_font_bold {
+#szzleptels .gt_font_bold {
   font-weight: bold;
 }
 
-#zzleptelsl .gt_font_italic {
+#szzleptels .gt_font_italic {
   font-style: italic;
 }
 
-#zzleptelsl .gt_super {
+#szzleptels .gt_super {
   font-size: 65%;
 }
 
-#zzleptelsl .gt_footnote_marks {
+#szzleptels .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#zzleptelsl .gt_asterisk {
+#szzleptels .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#zzleptelsl .gt_indent_1 {
+#szzleptels .gt_indent_1 {
   text-indent: 5px;
 }
 
-#zzleptelsl .gt_indent_2 {
+#szzleptels .gt_indent_2 {
   text-indent: 10px;
 }
 
-#zzleptelsl .gt_indent_3 {
+#szzleptels .gt_indent_3 {
   text-indent: 15px;
 }
 
-#zzleptelsl .gt_indent_4 {
+#szzleptels .gt_indent_4 {
   text-indent: 20px;
 }
 
-#zzleptelsl .gt_indent_5 {
+#szzleptels .gt_indent_5 {
   text-indent: 25px;
 }
 
-#zzleptelsl .katex-display {
+#szzleptels .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#zzleptelsl div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#szzleptels div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -998,18 +998,68 @@ Figure 18.2: Keyword co-occurrence network coloured by topical cluster.
       });
     });
   })();
-</script><!-- Per-chapter PDF download button --><script>
+</script><!--
+  Right-side panel "Download" section: adds
+    - Download
+      - Entire book (PDF)
+      - This chapter (PDF)
+  above the existing "View source" / "Edit this page" links produced by
+  bs4_book's repo:base config. The chapter PDF URL is derived from the
+  View-source href so it stays in sync with however bookdown slugs the
+  page filename.
+--><script>
   document.addEventListener("DOMContentLoaded", function () {
-    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
-    if (!file || file === ".pdf") return;
-    var btn = document.createElement("a");
-    btn.href = "pdf-chapters/" + file;
-    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
-    btn.style = "float:right;margin-top:0.5em;";
-    btn.textContent = "⬇ Download this chapter (PDF)";
-    var header = document.querySelector("main h1, .page-inner h1");
-    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
-      header.appendChild(btn);
+    var extraList = document.querySelector(".book-extra ul.list-unstyled");
+    if (!extraList) return;
+
+    var bookName = "scientometrics-in-r";
+    var bookPdf  = bookName + ".pdf";
+
+    // Derive the chapter PDF from the source path:
+    //   chapters/01-foo.Rmd  -> pdf-chapters/01-foo.pdf
+    var src = document.getElementById("book-source");
+    var chapterPdf = null;
+    if (src && src.href) {
+      var match = src.href.match(/blob\/[^/]+\/(.+\.Rmd)$/);
+      if (match) {
+        var rmd = match[1];                              // e.g. chapters/01-foo.Rmd
+        var baseName = rmd.split("/").pop().replace(/\.Rmd$/, ".pdf");
+        chapterPdf = "pdf-chapters/" + baseName;
+      }
+    }
+
+    // Header above the download entries
+    var header = document.createElement("li");
+    header.className = "book-extra-section";
+    var hb = document.createElement("strong");
+    hb.textContent = "Download";
+    header.appendChild(hb);
+
+    var bookItem = document.createElement("li");
+    var bookA    = document.createElement("a");
+    bookA.id         = "book-pdf-full";
+    bookA.href       = bookPdf;
+    bookA.textContent = "Entire book (PDF) ";
+    var bookI    = document.createElement("i");
+    bookI.className = "fa-solid fa-file-pdf";
+    bookA.appendChild(bookI);
+    bookItem.appendChild(bookA);
+
+    var firstChild = extraList.firstElementChild;
+    extraList.insertBefore(header,   firstChild);
+    extraList.insertBefore(bookItem, firstChild);
+
+    if (chapterPdf) {
+      var chapItem = document.createElement("li");
+      var chapA    = document.createElement("a");
+      chapA.id         = "book-pdf-chapter";
+      chapA.href       = chapterPdf;
+      chapA.textContent = "This chapter (PDF) ";
+      var chapI    = document.createElement("i");
+      chapI.className = "fa-solid fa-file-pdf";
+      chapA.appendChild(chapI);
+      chapItem.appendChild(chapA);
+      extraList.insertBefore(chapItem, firstChild);
     }
   });
 </script><!-- Footer attribution --><div class="bookdown-attribution">

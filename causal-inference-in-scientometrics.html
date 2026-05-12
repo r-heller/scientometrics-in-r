@@ -735,38 +735,38 @@ Figure 33.1: Mean citations by OA status and time period.
 <tbody class="gt_table_body">
 <tr>
 <td headers="term" class="gt_row gt_left">(Intercept)</td>
-<td headers="estimate" class="gt_row gt_right">16.679</td>
-<td headers="std.error" class="gt_row gt_right">4.596</td>
-<td headers="statistic" class="gt_row gt_right">3.63</td>
+<td headers="estimate" class="gt_row gt_right">17.648</td>
+<td headers="std.error" class="gt_row gt_right">4.557</td>
+<td headers="statistic" class="gt_row gt_right">3.87</td>
 <td headers="p.value" class="gt_row gt_right">0.000</td>
 </tr>
 <tr>
 <td headers="term" class="gt_row gt_left">is_oaTRUE</td>
-<td headers="estimate" class="gt_row gt_right">23.033</td>
-<td headers="std.error" class="gt_row gt_right">5.913</td>
-<td headers="statistic" class="gt_row gt_right">3.90</td>
+<td headers="estimate" class="gt_row gt_right">23.177</td>
+<td headers="std.error" class="gt_row gt_right">6.010</td>
+<td headers="statistic" class="gt_row gt_right">3.86</td>
 <td headers="p.value" class="gt_row gt_right">0.000</td>
 </tr>
 <tr>
 <td headers="term" class="gt_row gt_left">post_2020TRUE</td>
-<td headers="estimate" class="gt_row gt_right">-11.165</td>
-<td headers="std.error" class="gt_row gt_right">5.289</td>
-<td headers="statistic" class="gt_row gt_right">-2.11</td>
-<td headers="p.value" class="gt_row gt_right">0.035</td>
+<td headers="estimate" class="gt_row gt_right">-11.590</td>
+<td headers="std.error" class="gt_row gt_right">5.263</td>
+<td headers="statistic" class="gt_row gt_right">-2.20</td>
+<td headers="p.value" class="gt_row gt_right">0.028</td>
 </tr>
 <tr>
 <td headers="term" class="gt_row gt_left">referenced_works_count</td>
-<td headers="estimate" class="gt_row gt_right">0.203</td>
-<td headers="std.error" class="gt_row gt_right">0.063</td>
-<td headers="statistic" class="gt_row gt_right">3.24</td>
-<td headers="p.value" class="gt_row gt_right">0.001</td>
+<td headers="estimate" class="gt_row gt_right">0.193</td>
+<td headers="std.error" class="gt_row gt_right">0.062</td>
+<td headers="statistic" class="gt_row gt_right">3.10</td>
+<td headers="p.value" class="gt_row gt_right">0.002</td>
 </tr>
 <tr>
 <td headers="term" class="gt_row gt_left">is_oaTRUE:post_2020TRUE</td>
-<td headers="estimate" class="gt_row gt_right">-14.504</td>
-<td headers="std.error" class="gt_row gt_right">8.241</td>
-<td headers="statistic" class="gt_row gt_right">-1.76</td>
-<td headers="p.value" class="gt_row gt_right">0.079</td>
+<td headers="estimate" class="gt_row gt_right">-14.408</td>
+<td headers="std.error" class="gt_row gt_right">8.242</td>
+<td headers="statistic" class="gt_row gt_right">-1.75</td>
+<td headers="p.value" class="gt_row gt_right">0.081</td>
 </tr>
 </tbody>
 </table></div>
@@ -798,7 +798,7 @@ Figure 33.1: Mean citations by OA status and time period.
 <pre><code>#&gt; Mean cites (OA): 33.9</code></pre>
 <div class="sourceCode" id="cb475"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Mean cites (closed match): {round(mean(matched$cited_by_count_closed), 1)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Mean cites (closed match): 21.5</code></pre>
+<pre><code>#&gt; Mean cites (closed match): 23.4</code></pre>
 </div>
 <div id="visualising-the-parallel-trends-assumption" class="section level3" number="33.4.5">
 <h3>
@@ -1001,18 +1001,68 @@ Figure 33.2: Citation trends by OA status over time (checking parallel trends).
       });
     });
   })();
-</script><!-- Per-chapter PDF download button --><script>
+</script><!--
+  Right-side panel "Download" section: adds
+    - Download
+      - Entire book (PDF)
+      - This chapter (PDF)
+  above the existing "View source" / "Edit this page" links produced by
+  bs4_book's repo:base config. The chapter PDF URL is derived from the
+  View-source href so it stays in sync with however bookdown slugs the
+  page filename.
+--><script>
   document.addEventListener("DOMContentLoaded", function () {
-    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
-    if (!file || file === ".pdf") return;
-    var btn = document.createElement("a");
-    btn.href = "pdf-chapters/" + file;
-    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
-    btn.style = "float:right;margin-top:0.5em;";
-    btn.textContent = "⬇ Download this chapter (PDF)";
-    var header = document.querySelector("main h1, .page-inner h1");
-    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
-      header.appendChild(btn);
+    var extraList = document.querySelector(".book-extra ul.list-unstyled");
+    if (!extraList) return;
+
+    var bookName = "scientometrics-in-r";
+    var bookPdf  = bookName + ".pdf";
+
+    // Derive the chapter PDF from the source path:
+    //   chapters/01-foo.Rmd  -> pdf-chapters/01-foo.pdf
+    var src = document.getElementById("book-source");
+    var chapterPdf = null;
+    if (src && src.href) {
+      var match = src.href.match(/blob\/[^/]+\/(.+\.Rmd)$/);
+      if (match) {
+        var rmd = match[1];                              // e.g. chapters/01-foo.Rmd
+        var baseName = rmd.split("/").pop().replace(/\.Rmd$/, ".pdf");
+        chapterPdf = "pdf-chapters/" + baseName;
+      }
+    }
+
+    // Header above the download entries
+    var header = document.createElement("li");
+    header.className = "book-extra-section";
+    var hb = document.createElement("strong");
+    hb.textContent = "Download";
+    header.appendChild(hb);
+
+    var bookItem = document.createElement("li");
+    var bookA    = document.createElement("a");
+    bookA.id         = "book-pdf-full";
+    bookA.href       = bookPdf;
+    bookA.textContent = "Entire book (PDF) ";
+    var bookI    = document.createElement("i");
+    bookI.className = "fa-solid fa-file-pdf";
+    bookA.appendChild(bookI);
+    bookItem.appendChild(bookA);
+
+    var firstChild = extraList.firstElementChild;
+    extraList.insertBefore(header,   firstChild);
+    extraList.insertBefore(bookItem, firstChild);
+
+    if (chapterPdf) {
+      var chapItem = document.createElement("li");
+      var chapA    = document.createElement("a");
+      chapA.id         = "book-pdf-chapter";
+      chapA.href       = chapterPdf;
+      chapA.textContent = "This chapter (PDF) ";
+      var chapI    = document.createElement("i");
+      chapI.className = "fa-solid fa-file-pdf";
+      chapA.appendChild(chapI);
+      chapItem.appendChild(chapA);
+      extraList.insertBefore(chapItem, firstChild);
     }
   });
 </script><!-- Footer attribution --><div class="bookdown-attribution">

@@ -236,10 +236,10 @@
 <span>         <span class="va">cited_by_count</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Funder-work pairs: {nrow(funder_data)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Funder-work pairs: 506</code></pre>
+<pre><code>#&gt; Funder-work pairs: 509</code></pre>
 <div class="sourceCode" id="cb449"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Unique funders: {n_distinct(funder_data$funder)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Unique funders: 177</code></pre>
+<pre><code>#&gt; Unique funders: 178</code></pre>
 </div>
 <div id="top-funders-by-publication-count" class="section level3" number="31.4.2">
 <h3>
@@ -763,21 +763,27 @@ Figure 31.1: Top 15 funders by number of supported publications.
 </tr>
 <tr>
 <td headers="funder" class="gt_row gt_left">National Natural Science Foundation of China</td>
-<td headers="n_pubs" class="gt_row gt_right">49</td>
-<td headers="mean_cites" class="gt_row gt_right">19.9</td>
+<td headers="n_pubs" class="gt_row gt_right">48</td>
+<td headers="mean_cites" class="gt_row gt_right">20.1</td>
 <td headers="median_cites" class="gt_row gt_right">14.0</td>
 </tr>
 <tr>
 <td headers="funder" class="gt_row gt_left">NA</td>
-<td headers="n_pubs" class="gt_row gt_right">209</td>
-<td headers="mean_cites" class="gt_row gt_right">19.2</td>
+<td headers="n_pubs" class="gt_row gt_right">208</td>
+<td headers="mean_cites" class="gt_row gt_right">19.3</td>
 <td headers="median_cites" class="gt_row gt_right">10.0</td>
 </tr>
 <tr>
-<td headers="funder" class="gt_row gt_left">Japan Society for the Promotion of Science</td>
+<td headers="funder" class="gt_row gt_left">European Commission</td>
 <td headers="n_pubs" class="gt_row gt_right">6</td>
-<td headers="mean_cites" class="gt_row gt_right">8.3</td>
-<td headers="median_cites" class="gt_row gt_right">8.0</td>
+<td headers="mean_cites" class="gt_row gt_right">12.8</td>
+<td headers="median_cites" class="gt_row gt_right">11.0</td>
+</tr>
+<tr>
+<td headers="funder" class="gt_row gt_left">Japan Society for the Promotion of Science</td>
+<td headers="n_pubs" class="gt_row gt_right">5</td>
+<td headers="mean_cites" class="gt_row gt_right">8.0</td>
+<td headers="median_cites" class="gt_row gt_right">7.0</td>
 </tr>
 </tbody>
 </table></div>
@@ -977,18 +983,68 @@ Figure 31.2: Citation distribution for funded vs. unfunded papers.
       });
     });
   })();
-</script><!-- Per-chapter PDF download button --><script>
+</script><!--
+  Right-side panel "Download" section: adds
+    - Download
+      - Entire book (PDF)
+      - This chapter (PDF)
+  above the existing "View source" / "Edit this page" links produced by
+  bs4_book's repo:base config. The chapter PDF URL is derived from the
+  View-source href so it stays in sync with however bookdown slugs the
+  page filename.
+--><script>
   document.addEventListener("DOMContentLoaded", function () {
-    var file = window.location.pathname.split("/").pop().replace(".html", ".pdf");
-    if (!file || file === ".pdf") return;
-    var btn = document.createElement("a");
-    btn.href = "pdf-chapters/" + file;
-    btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
-    btn.style = "float:right;margin-top:0.5em;";
-    btn.textContent = "⬇ Download this chapter (PDF)";
-    var header = document.querySelector("main h1, .page-inner h1");
-    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
-      header.appendChild(btn);
+    var extraList = document.querySelector(".book-extra ul.list-unstyled");
+    if (!extraList) return;
+
+    var bookName = "scientometrics-in-r";
+    var bookPdf  = bookName + ".pdf";
+
+    // Derive the chapter PDF from the source path:
+    //   chapters/01-foo.Rmd  -> pdf-chapters/01-foo.pdf
+    var src = document.getElementById("book-source");
+    var chapterPdf = null;
+    if (src && src.href) {
+      var match = src.href.match(/blob\/[^/]+\/(.+\.Rmd)$/);
+      if (match) {
+        var rmd = match[1];                              // e.g. chapters/01-foo.Rmd
+        var baseName = rmd.split("/").pop().replace(/\.Rmd$/, ".pdf");
+        chapterPdf = "pdf-chapters/" + baseName;
+      }
+    }
+
+    // Header above the download entries
+    var header = document.createElement("li");
+    header.className = "book-extra-section";
+    var hb = document.createElement("strong");
+    hb.textContent = "Download";
+    header.appendChild(hb);
+
+    var bookItem = document.createElement("li");
+    var bookA    = document.createElement("a");
+    bookA.id         = "book-pdf-full";
+    bookA.href       = bookPdf;
+    bookA.textContent = "Entire book (PDF) ";
+    var bookI    = document.createElement("i");
+    bookI.className = "fa-solid fa-file-pdf";
+    bookA.appendChild(bookI);
+    bookItem.appendChild(bookA);
+
+    var firstChild = extraList.firstElementChild;
+    extraList.insertBefore(header,   firstChild);
+    extraList.insertBefore(bookItem, firstChild);
+
+    if (chapterPdf) {
+      var chapItem = document.createElement("li");
+      var chapA    = document.createElement("a");
+      chapA.id         = "book-pdf-chapter";
+      chapA.href       = chapterPdf;
+      chapA.textContent = "This chapter (PDF) ";
+      var chapI    = document.createElement("i");
+      chapI.className = "fa-solid fa-file-pdf";
+      chapA.appendChild(chapI);
+      chapItem.appendChild(chapA);
+      extraList.insertBefore(chapItem, firstChild);
     }
   });
 </script><!-- Footer attribution --><div class="bookdown-attribution">
