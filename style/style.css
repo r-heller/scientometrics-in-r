@@ -289,6 +289,20 @@ small.text-muted {
   pointer-events: none;
 }
 
+/* ---------- Right-side "Download" section header ---------- */
+.book-extra ul.list-unstyled li.book-extra-section {
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+  color: var(--text-color);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.85em;
+}
+
+.book-extra ul.list-unstyled li.book-extra-section:first-child {
+  margin-top: 0;
+}
+
 /* ---------- Footer attribution ---------- */
 .bookdown-attribution {
   text-align: center;
