@@ -21,7 +21,7 @@
 <link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
 <script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
 <link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
-<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs3compat-0.11.0/transition.js"></script><script src="libs/bs3compat-0.11.0/tabs.js"></script><script src="libs/bs3compat-0.11.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
 <script src="libs/bs4_book-1.0.0/bs4_book.js"></script><script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><link href="libs/vis-9.1.0/vis-network.min.css" rel="stylesheet">
 <script src="libs/vis-9.1.0/vis-network.min.js"></script><script src="libs/visNetwork-binding-2.1.4/visNetwork.js"></script><link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
 <script src="libs/plotly-binding-4.12.0/plotly.js"></script><script src="libs/typedarray-0.1/typedarray.min.js"></script><link href="libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
@@ -230,22 +230,22 @@
 #&gt; $ id                            &lt;chr&gt; "https://openalex.org/W4220987815", "htt…
 #&gt; $ title                         &lt;chr&gt; "The link between countries’ economic an…
 #&gt; $ display_name                  &lt;chr&gt; "The link between countries’ economic an…
-#&gt; $ authorships                   &lt;list&gt; [&lt;tbl_df[2 x 7]&gt;], [&lt;tbl_df[4 x 7]&gt;], […
+#&gt; $ authorships                   &lt;list&gt; [&lt;tbl_df[2 x 7]&gt;], [&lt;tbl_df[2 x 7]&gt;], […
 #&gt; $ abstract                      &lt;chr&gt; "Abstract We studied the research perfor…
 #&gt; $ doi                           &lt;chr&gt; "https://doi.org/10.1007/s11192-022-0431…
-#&gt; $ publication_date              &lt;date&gt; 2022-03-12, 2021-07-10, 2023-06-17, 202…
-#&gt; $ publication_year              &lt;int&gt; 2022, 2021, 2023, 2020, 2021, 2023, 2023…
-#&gt; $ relevance_score               &lt;dbl&gt; 1.000, 0.998, 0.997, 0.996, 0.995, 0.995…
-#&gt; $ fwci                          &lt;dbl&gt; 11.792, 2.616, 0.474, 1.466, 0.656, 5.20…
-#&gt; $ cited_by_count                &lt;int&gt; 46, 21, 1, 14, 8, 11, 4, 1, 16, 9, 2, 7,…
-#&gt; $ counts_by_year                &lt;list&gt; [&lt;data.frame[5 x 2]&gt;], [&lt;data.frame[5 x…
+#&gt; $ publication_date              &lt;date&gt; 2022-03-12, 2020-03-07, 2020-02-08, 202…
+#&gt; $ publication_year              &lt;int&gt; 2022, 2020, 2020, 2021, 2023, 2020, 2021…
+#&gt; $ relevance_score               &lt;dbl&gt; 1.000, 0.999, 0.999, 0.998, 0.997, 0.996…
+#&gt; $ fwci                          &lt;dbl&gt; 11.792, 14.757, 4.242, 2.616, 0.474, 1.4…
+#&gt; $ cited_by_count                &lt;int&gt; 46, 74, 27, 21, 1, 14, 8, 11, 4, 1, 16, …
+#&gt; $ counts_by_year                &lt;list&gt; [&lt;data.frame[5 x 2]&gt;], [&lt;data.frame[7 x…
 #&gt; $ ids                           &lt;list&gt; &lt;"https://openalex.org/W4220987815", "h…
 #&gt; $ type                          &lt;chr&gt; "article", "article", "article", "articl…
-#&gt; $ is_oa                         &lt;lgl&gt; TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, …
-#&gt; $ is_oa_anywhere                &lt;lgl&gt; TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, …
-#&gt; $ oa_status                     &lt;chr&gt; "hybrid", "hybrid", "closed", "closed", …
+#&gt; $ is_oa                         &lt;lgl&gt; TRUE, TRUE, FALSE, TRUE, FALSE, FALSE, F…
+#&gt; $ is_oa_anywhere                &lt;lgl&gt; TRUE, TRUE, FALSE, TRUE, FALSE, FALSE, F…
+#&gt; $ oa_status                     &lt;chr&gt; "hybrid", "hybrid", "closed", "hybrid", …
 #&gt; $ oa_url                        &lt;chr&gt; "https://link.springer.com/content/pdf/1…
-#&gt; $ any_repository_has_fulltext   &lt;lgl&gt; TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, …
+#&gt; $ any_repository_has_fulltext   &lt;lgl&gt; TRUE, TRUE, FALSE, TRUE, FALSE, FALSE, F…
 #&gt; $ source_display_name           &lt;chr&gt; "Scientometrics", "Scientometrics", "Sci…
 #&gt; $ source_id                     &lt;chr&gt; "https://openalex.org/S148561398", "http…
 #&gt; $ issn_l                        &lt;chr&gt; "0138-9130", "0138-9130", "0138-9130", "…
@@ -253,25 +253,25 @@
 #&gt; $ host_organization_name        &lt;chr&gt; "Springer Nature (Netherlands)", "Spring…
 #&gt; $ landing_page_url              &lt;chr&gt; "https://doi.org/10.1007/s11192-022-0431…
 #&gt; $ pdf_url                       &lt;chr&gt; "https://link.springer.com/content/pdf/1…
-#&gt; $ license                       &lt;chr&gt; "cc-by", "cc-by", NA, NA, NA, NA, "cc-by…
+#&gt; $ license                       &lt;chr&gt; "cc-by", "cc-by", NA, "cc-by", NA, NA, N…
 #&gt; $ version                       &lt;chr&gt; "publishedVersion", "publishedVersion", …
 #&gt; $ referenced_works              &lt;list&gt; &lt;"https://openalex.org/W1581511728", "h…
-#&gt; $ referenced_works_count        &lt;int&gt; 66, 74, 76, 63, 74, 72, 51, 64, 20, 52, …
+#&gt; $ referenced_works_count        &lt;int&gt; 66, 63, 45, 74, 76, 63, 74, 72, 51, 64, …
 #&gt; $ related_works                 &lt;list&gt; &lt;"https://openalex.org/W4226161467", "h…
-#&gt; $ concepts                      &lt;list&gt; [&lt;data.frame[10 x 5]&gt;], [&lt;data.frame[16…
+#&gt; $ concepts                      &lt;list&gt; [&lt;data.frame[10 x 5]&gt;], [&lt;data.frame[13…
 #&gt; $ topics                        &lt;list&gt; [&lt;tbl_df[12 x 5]&gt;], [&lt;tbl_df[12 x 5]&gt;],…
-#&gt; $ keywords                      &lt;list&gt; [&lt;data.frame[9 x 3]&gt;], [&lt;data.frame[14 …
+#&gt; $ keywords                      &lt;list&gt; [&lt;data.frame[9 x 3]&gt;], [&lt;data.frame[11 …
 #&gt; $ is_paratext                   &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
 #&gt; $ is_retracted                  &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
 #&gt; $ language                      &lt;chr&gt; "en", "en", "en", "en", "en", "en", "en"…
-#&gt; $ sustainable_development_goals &lt;list&gt; [&lt;data.frame[1 x 3]&gt;], [&lt;data.frame[1 x…
+#&gt; $ sustainable_development_goals &lt;list&gt; [&lt;data.frame[1 x 3]&gt;], NA, [&lt;data.frame…
 #&gt; $ awards                        &lt;list&gt; &lt;"https://openalex.org/G1419670400", "G…
-#&gt; $ funders                       &lt;list&gt; [&lt;data.frame[2 x 3]&gt;], [&lt;data.frame[1 x…
+#&gt; $ funders                       &lt;list&gt; [&lt;data.frame[2 x 3]&gt;], [&lt;data.frame[3 x…
 #&gt; $ apc                           &lt;list&gt; [&lt;data.frame[2 x 5]&gt;], [&lt;data.frame[2 x…
-#&gt; $ first_page                    &lt;chr&gt; "2871", "7917", "4611", "633", "4609", "…
-#&gt; $ last_page                     &lt;chr&gt; "2896", "7936", "4650", "661", "4638", "…
-#&gt; $ volume                        &lt;chr&gt; "127", "126", "128", "124", "126", "128"…
-#&gt; $ issue                         &lt;chr&gt; "5", "9", "8", "1", "6", "9", "7", "1", …</code></pre>
+#&gt; $ first_page                    &lt;chr&gt; "2871", "1077", "299", "7917", "4611", "…
+#&gt; $ last_page                     &lt;chr&gt; "2896", "1101", "319", "7936", "4650", "…
+#&gt; $ volume                        &lt;chr&gt; "127", "123", "123", "126", "128", "124"…
+#&gt; $ issue                         &lt;chr&gt; "5", "2", "1", "9", "8", "1", "6", "9", …</code></pre>
 <p>The result is a tibble where each row is a work and columns include <code>id</code>, <code>display_name</code>, <code>publication_date</code>, <code>cited_by_count</code>, <code>doi</code>, and nested list-columns for authors and concepts.</p>
 </div>
 <div id="inspecting-the-results" class="section level3" number="6.4.2">
@@ -286,16 +286,16 @@
 <pre><code>#&gt; # A tibble: 10 × 4
 #&gt;    display_name                            publication_date cited_by_count doi  
 #&gt;    &lt;chr&gt;                                   &lt;date&gt;                    &lt;int&gt; &lt;chr&gt;
-#&gt;  1 'Are principals instructional leaders … 2020-01-30                  227 http…
-#&gt;  2 Combining Web of Science and Scopus da… 2022-08-25                  210 http…
-#&gt;  3 Publication patterns’ changes due to t… 2021-06-23                  194 http…
-#&gt;  4 Link-based approach to study scientifi… 2021-07-10                  192 http…
-#&gt;  5 Sample size in bibliometric analysis    2020-07-31                  187 http…
-#&gt;  6 Open peer review: promoting transparen… 2020-05-26                  160 http…
-#&gt;  7 Preliminary analysis of COVID-19 acade… 2020-06-25                  156 http…
-#&gt;  8 Identifying interdisciplinary topics a… 2023-07-03                  133 http…
-#&gt;  9 A bibliometric review of research on i… 2021-04-26                   89 http…
-#&gt; 10 The impact of research output on econo… 2020-03-28                   71 http…</code></pre>
+#&gt;  1 Publication patterns’ changes due to t… 2021-06-23                  194 http…
+#&gt;  2 Link-based approach to study scientifi… 2021-07-10                  192 http…
+#&gt;  3 Sample size in bibliometric analysis    2020-07-31                  187 http…
+#&gt;  4 Open peer review: promoting transparen… 2020-05-26                  161 http…
+#&gt;  5 Identifying interdisciplinary topics a… 2023-07-03                  133 http…
+#&gt;  6 Visibility, impact, and applications o… 2023-06-01                  110 http…
+#&gt;  7 A bibliometric review of research on i… 2021-04-26                   89 http…
+#&gt;  8 Studying the accumulation velocity of … 2020-03-07                   74 http…
+#&gt;  9 The impact of research output on econo… 2020-03-28                   71 http…
+#&gt; 10 The role of Web of Science publication… 2020-01-02                   69 http…</code></pre>
 </div>
 <div id="querying-authors" class="section level3" number="6.4.3">
 <h3>
@@ -315,18 +315,18 @@
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">cited_by_count</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; # A tibble: 10 × 3
-#&gt;    display_name          works_count cited_by_count
-#&gt;    &lt;chr&gt;                       &lt;int&gt;          &lt;int&gt;
-#&gt;  1 Quan‐Hoang Vuong             1140          17233
-#&gt;  2 Katy Börner                   357          13592
-#&gt;  3 Nicholas Fraser                95           6347
-#&gt;  4 Patricia L. Mabry              57           6197
-#&gt;  5 Courtney K. Soderberg         163           5368
-#&gt;  6 Mark Oromaner                 105           4984
-#&gt;  7 Sean Grant                    239           4963
-#&gt;  8 James Wilsdon                 114           4815
-#&gt;  9 David Thomas Mellor           260           4612
-#&gt; 10 Giangiacomo Bravo             160           4446</code></pre>
+#&gt;    display_name        works_count cited_by_count
+#&gt;    &lt;chr&gt;                     &lt;int&gt;          &lt;int&gt;
+#&gt;  1 Matthew J. Page             334         210516
+#&gt;  2 Daniël Lakens               416          28704
+#&gt;  3 Simine Vazire               292          24588
+#&gt;  4 Michelle Richardson          93          13568
+#&gt;  5 Ernest H. O’Boyle           108          12040
+#&gt;  6 Hans‐Dieter Daniel          189           8118
+#&gt;  7 Charles Oppenheim           482           7539
+#&gt;  8 Jochen Gläser               262           6968
+#&gt;  9 Donna K. Ginther            143           6199
+#&gt; 10 Mark Oromaner               105           4984</code></pre>
 </div>
 <div id="deduplication-by-doi" class="section level3" number="6.4.4">
 <h3>
@@ -540,7 +540,7 @@ Figure 6.1: Annual publication counts for sampled Scientometrics articles (2020�
 #&gt; [57] stringi_1.8.7      gtable_0.3.6       later_1.4.8        downlit_0.4.5     
 #&gt; [61] pillar_1.11.1      htmltools_0.5.9    R6_2.6.1           rprojroot_2.1.1   
 #&gt; [65] evaluate_1.0.5     shiny_1.13.0       lattice_0.22-6     SnowballC_0.7.1   
-#&gt; [69] memoise_2.0.1      httpuv_1.6.17      bslib_0.10.0       Rcpp_1.1.1-1.1    
+#&gt; [69] memoise_2.0.1      httpuv_1.6.17      bslib_0.11.0       Rcpp_1.1.1-1.1    
 #&gt; [73] gridExtra_2.3      xfun_0.57          fs_2.1.0           pkgconfig_2.0.3</code></pre>
 
 </div>
@@ -684,7 +684,7 @@ Figure 6.1: Annual publication counts for sampled Scientometrics articles (2020�
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-12.</p>
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-17.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">

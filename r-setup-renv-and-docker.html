@@ -21,7 +21,7 @@
 <link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
 <script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
 <link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
-<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs3compat-0.11.0/transition.js"></script><script src="libs/bs3compat-0.11.0/tabs.js"></script><script src="libs/bs3compat-0.11.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
 <script src="libs/bs4_book-1.0.0/bs4_book.js"></script><script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><link href="libs/vis-9.1.0/vis-network.min.css" rel="stylesheet">
 <script src="libs/vis-9.1.0/vis-network.min.js"></script><script src="libs/visNetwork-binding-2.1.4/visNetwork.js"></script><link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
 <script src="libs/plotly-binding-4.12.0/plotly.js"></script><script src="libs/typedarray-0.1/typedarray.min.js"></script><link href="libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
@@ -182,11 +182,11 @@
 <span class="header-section-number">A.2</span> Package management with renv<a class="anchor" aria-label="anchor" href="#package-management-with-renv"><i class="fas fa-link"></i></a>
 </h2>
 <p>This project uses <strong>renv</strong> for reproducible package management. After cloning the repository:</p>
-<div class="sourceCode" id="cb572"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb574"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"renv"</span><span class="op">)</span></span>
 <span><span class="fu">renv</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/renv/reference/restore.html">restore</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>This installs the exact package versions recorded in <code>renv.lock</code>. To update the lockfile after adding a new package:</p>
-<div class="sourceCode" id="cb573"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb575"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">renv</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/renv/reference/install.html">install</a></span><span class="op">(</span><span class="st">"newpackage"</span><span class="op">)</span></span>
 <span><span class="fu">renv</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/renv/reference/snapshot.html">snapshot</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -285,8 +285,8 @@
 <span class="header-section-number">A.4</span> Docker environment<a class="anchor" aria-label="anchor" href="#docker-environment"><i class="fas fa-link"></i></a>
 </h2>
 <p>A <code>Dockerfile</code> is provided at the repository root. It builds on <code>rocker/verse:4.4.1</code> and installs all required system libraries and R packages.</p>
-<div class="sourceCode" id="cb574"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb574-1"><a href="r-setup-renv-and-docker.html#cb574-1" tabindex="-1"></a><span class="ex">docker</span> build <span class="at">-t</span> scientometrics-in-r .</span>
-<span id="cb574-2"><a href="r-setup-renv-and-docker.html#cb574-2" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--rm</span> <span class="at">-p</span> 8787:8787 <span class="at">-e</span> DISABLE_AUTH=true scientometrics-in-r</span></code></pre></div>
+<div class="sourceCode" id="cb576"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb576-1"><a href="r-setup-renv-and-docker.html#cb576-1" tabindex="-1"></a><span class="ex">docker</span> build <span class="at">-t</span> scientometrics-in-r .</span>
+<span id="cb576-2"><a href="r-setup-renv-and-docker.html#cb576-2" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--rm</span> <span class="at">-p</span> 8787:8787 <span class="at">-e</span> DISABLE_AUTH=true scientometrics-in-r</span></code></pre></div>
 <p>Then open <code>http://localhost:8787</code> in your browser to access RStudio Server with all dependencies pre-installed.</p>
 </div>
 <div id="quarto" class="section level2" number="44.5">
@@ -294,7 +294,7 @@
 <span class="header-section-number">A.5</span> Quarto<a class="anchor" aria-label="anchor" href="#quarto"><i class="fas fa-link"></i></a>
 </h2>
 <p>Install <a href="https://quarto.org/docs/get-started/">Quarto CLI</a> version 1.4 or later. To render the book locally:</p>
-<div class="sourceCode" id="cb575"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb575-1"><a href="r-setup-renv-and-docker.html#cb575-1" tabindex="-1"></a><span class="ex">quarto</span> render</span></code></pre></div>
+<div class="sourceCode" id="cb577"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb577-1"><a href="r-setup-renv-and-docker.html#cb577-1" tabindex="-1"></a><span class="ex">quarto</span> render</span></code></pre></div>
 <p>Rendered output appears in <code>_book/</code>. For iterative development, use <code>quarto preview</code> to get live-reloading in the browser.</p>
 
 </div>
@@ -420,7 +420,7 @@
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-12.</p>
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-17.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">

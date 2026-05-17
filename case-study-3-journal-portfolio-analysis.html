@@ -21,7 +21,7 @@
 <link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
 <script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
 <link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
-<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs3compat-0.11.0/transition.js"></script><script src="libs/bs3compat-0.11.0/tabs.js"></script><script src="libs/bs3compat-0.11.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
 <script src="libs/bs4_book-1.0.0/bs4_book.js"></script><script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><link href="libs/vis-9.1.0/vis-network.min.css" rel="stylesheet">
 <script src="libs/vis-9.1.0/vis-network.min.js"></script><script src="libs/visNetwork-binding-2.1.4/visNetwork.js"></script><link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
 <script src="libs/plotly-binding-4.12.0/plotly.js"></script><script src="libs/typedarray-0.1/typedarray.min.js"></script><link href="libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
@@ -178,7 +178,7 @@
 <h2>
 <span class="header-section-number">41.2</span> Setup<a class="anchor" aria-label="anchor" href="#setup-2"><i class="fas fa-link"></i></a>
 </h2>
-<div class="sourceCode" id="cb548"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb550"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/openalexR">openalexR</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://juliasilge.github.io/tidytext/">tidytext</a></span><span class="op">)</span></span>
@@ -195,14 +195,14 @@
 <h2>
 <span class="header-section-number">41.3</span> Data acquisition<a class="anchor" aria-label="anchor" href="#data-acquisition-2"><i class="fas fa-link"></i></a>
 </h2>
-<div class="sourceCode" id="cb549"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb551"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">journals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html">tribble</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span><span class="va">short_name</span>,        <span class="op">~</span><span class="va">source_id</span>,</span>
 <span>  <span class="st">"Scientometrics"</span>,   <span class="st">"S148561398"</span>,</span>
 <span>  <span class="st">"J. Informetrics"</span>,  <span class="st">"S205292342"</span>,</span>
 <span>  <span class="st">"JASIST"</span>,           <span class="st">"S4210197613"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb550"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb552"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fetch_journal</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">sid</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html">oa_fetch</a></span><span class="op">(</span></span>
 <span>    entity <span class="op">=</span> <span class="st">"works"</span>,</span>
@@ -221,7 +221,7 @@
 <h2>
 <span class="header-section-number">41.4</span> Citation impact comparison<a class="anchor" aria-label="anchor" href="#citation-impact-comparison"><i class="fas fa-link"></i></a>
 </h2>
-<div class="sourceCode" id="cb551"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb553"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_works</span> <span class="op">&lt;-</span> <span class="va">journal_data</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>works <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html">map2</a></span><span class="op">(</span><span class="va">works</span>, <span class="va">short_name</span>, \<span class="op">(</span><span class="va">w</span>, <span class="va">n</span><span class="op">)</span> <span class="va">w</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>journal <span class="op">=</span> <span class="va">n</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html">pull</a></span><span class="op">(</span><span class="va">works</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -238,7 +238,7 @@
 Figure 41.1: Citation count distributions by journal.
 </p>
 </div>
-<div class="sourceCode" id="cb552"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb554"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_works</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">journal</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span></span>
@@ -710,22 +710,22 @@ Figure 41.1: Citation count distributions by journal.
 <tr>
 <td headers="journal" class="gt_row gt_left">J. Informetrics</td>
 <td headers="n" class="gt_row gt_right">300</td>
-<td headers="mean_cites" class="gt_row gt_right">26.8</td>
-<td headers="median_cites" class="gt_row gt_right">15.5</td>
-<td headers="h_index" class="gt_row gt_right">42</td>
+<td headers="mean_cites" class="gt_row gt_right">27.6</td>
+<td headers="median_cites" class="gt_row gt_right">16</td>
+<td headers="h_index" class="gt_row gt_right">44</td>
 </tr>
 <tr>
 <td headers="journal" class="gt_row gt_left">JASIST</td>
 <td headers="n" class="gt_row gt_right">300</td>
-<td headers="mean_cites" class="gt_row gt_right">18.9</td>
-<td headers="median_cites" class="gt_row gt_right">13.0</td>
+<td headers="mean_cites" class="gt_row gt_right">21.5</td>
+<td headers="median_cites" class="gt_row gt_right">14</td>
 <td headers="h_index" class="gt_row gt_right">38</td>
 </tr>
 <tr>
 <td headers="journal" class="gt_row gt_left">Scientometrics</td>
 <td headers="n" class="gt_row gt_right">300</td>
-<td headers="mean_cites" class="gt_row gt_right">26.4</td>
-<td headers="median_cites" class="gt_row gt_right">13.5</td>
+<td headers="mean_cites" class="gt_row gt_right">24.6</td>
+<td headers="median_cites" class="gt_row gt_right">13</td>
 <td headers="h_index" class="gt_row gt_right">40</td>
 </tr>
 </tbody>
@@ -736,7 +736,7 @@ Figure 41.1: Citation count distributions by journal.
 <h2>
 <span class="header-section-number">41.5</span> Citation aging<a class="anchor" aria-label="anchor" href="#citation-aging"><i class="fas fa-link"></i></a>
 </h2>
-<div class="sourceCode" id="cb553"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb555"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">aging</span> <span class="op">&lt;-</span> <span class="va">all_works</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>age <span class="op">=</span> <span class="fl">2024</span> <span class="op">-</span> <span class="fu"><a href="https://lubridate.tidyverse.org/reference/year.html">year</a></span><span class="op">(</span><span class="va">publication_date</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">journal</span>, <span class="va">age</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -759,7 +759,7 @@ Figure 41.2: Mean citations by article age for each journal.
 <h2>
 <span class="header-section-number">41.6</span> Topical coverage<a class="anchor" aria-label="anchor" href="#topical-coverage"><i class="fas fa-link"></i></a>
 </h2>
-<div class="sourceCode" id="cb554"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb556"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">topic_data</span> <span class="op">&lt;-</span> <span class="va">all_works</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">journal</span>, <span class="va">topics</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html">unnest</a></span><span class="op">(</span><span class="va">topics</span>, names_sep <span class="op">=</span> <span class="st">"_"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -772,7 +772,7 @@ Figure 41.2: Mean citations by article age for each journal.
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">journal</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_max</a></span><span class="op">(</span><span class="va">n</span>, n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb555"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb557"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">top_topics</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>topic <span class="op">=</span> <span class="fu"><a href="https://juliasilge.github.io/tidytext/reference/reorder_within.html">reorder_within</a></span><span class="op">(</span><span class="va">topic</span>, <span class="va">n</span>, <span class="va">journal</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">n</span>, y <span class="op">=</span> <span class="va">topic</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -936,7 +936,7 @@ Figure 41.3: Top 10 topics by journal.
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-12.</p>
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-17.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">

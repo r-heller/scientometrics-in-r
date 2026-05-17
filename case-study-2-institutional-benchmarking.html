@@ -21,7 +21,7 @@
 <link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
 <script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
 <link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
-<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs3compat-0.11.0/transition.js"></script><script src="libs/bs3compat-0.11.0/tabs.js"></script><script src="libs/bs3compat-0.11.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
 <script src="libs/bs4_book-1.0.0/bs4_book.js"></script><script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><link href="libs/vis-9.1.0/vis-network.min.css" rel="stylesheet">
 <script src="libs/vis-9.1.0/vis-network.min.js"></script><script src="libs/visNetwork-binding-2.1.4/visNetwork.js"></script><link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
 <script src="libs/plotly-binding-4.12.0/plotly.js"></script><script src="libs/typedarray-0.1/typedarray.min.js"></script><link href="libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
@@ -178,7 +178,7 @@
 <h2>
 <span class="header-section-number">40.2</span> Setup<a class="anchor" aria-label="anchor" href="#setup-1"><i class="fas fa-link"></i></a>
 </h2>
-<div class="sourceCode" id="cb540"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb542"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/openalexR">openalexR</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://glue.tidyverse.org/">glue</a></span><span class="op">)</span></span>
@@ -194,7 +194,7 @@
 <h2>
 <span class="header-section-number">40.3</span> Data acquisition<a class="anchor" aria-label="anchor" href="#data-acquisition-1"><i class="fas fa-link"></i></a>
 </h2>
-<div class="sourceCode" id="cb541"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb543"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">institutions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html">tribble</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span><span class="va">short_name</span>,    <span class="op">~</span><span class="va">oa_id</span>,</span>
 <span>  <span class="st">"MIT"</span>,          <span class="st">"I63966007"</span>,</span>
@@ -203,7 +203,7 @@
 <span>  <span class="st">"U São Paulo"</span>,  <span class="st">"I66491032"</span>,</span>
 <span>  <span class="st">"U Cape Town"</span>,  <span class="st">"I173603587"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb542"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb544"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fetch_works</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">inst_id</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">res</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html">tryCatch</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html">oa_fetch</a></span><span class="op">(</span></span>
@@ -227,7 +227,7 @@
 <h2>
 <span class="header-section-number">40.4</span> Publication volume<a class="anchor" aria-label="anchor" href="#publication-volume"><i class="fas fa-link"></i></a>
 </h2>
-<div class="sourceCode" id="cb543"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb545"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">inst_data</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_int</a></span><span class="op">(</span><span class="va">works</span>, <span class="va">nrow</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">n</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/reorder.factor.html">reorder</a></span><span class="op">(</span><span class="va">short_name</span>, <span class="va">n</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -245,7 +245,7 @@ Figure 40.1: Sampled publication counts by institution.
 <h2>
 <span class="header-section-number">40.5</span> Citation impact<a class="anchor" aria-label="anchor" href="#citation-impact"><i class="fas fa-link"></i></a>
 </h2>
-<div class="sourceCode" id="cb544"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb546"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">impact</span> <span class="op">&lt;-</span> <span class="va">inst_data</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
 <span>    mean_cites <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_dbl</a></span><span class="op">(</span><span class="va">works</span>, \<span class="op">(</span><span class="va">w</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">w</span><span class="op">$</span><span class="va">cited_by_count</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -716,20 +716,20 @@ Figure 40.1: Sampled publication counts by institution.
     </tr></thead>
 <tbody class="gt_table_body">
 <tr>
-<td headers="short_name" class="gt_row gt_left">MIT</td>
-<td headers="mean_cites" class="gt_row gt_right">43.8</td>
-<td headers="median_cites" class="gt_row gt_right">17</td>
-<td headers="h_index" class="gt_row gt_right">54</td>
+<td headers="short_name" class="gt_row gt_left">Oxford</td>
+<td headers="mean_cites" class="gt_row gt_right">39.1</td>
+<td headers="median_cites" class="gt_row gt_right">14</td>
+<td headers="h_index" class="gt_row gt_right">52</td>
 </tr>
 <tr>
-<td headers="short_name" class="gt_row gt_left">Oxford</td>
-<td headers="mean_cites" class="gt_row gt_right">39.9</td>
-<td headers="median_cites" class="gt_row gt_right">15</td>
-<td headers="h_index" class="gt_row gt_right">49</td>
+<td headers="short_name" class="gt_row gt_left">MIT</td>
+<td headers="mean_cites" class="gt_row gt_right">38.9</td>
+<td headers="median_cites" class="gt_row gt_right">16</td>
+<td headers="h_index" class="gt_row gt_right">53</td>
 </tr>
 <tr>
 <td headers="short_name" class="gt_row gt_left">ETH Zurich</td>
-<td headers="mean_cites" class="gt_row gt_right">25.7</td>
+<td headers="mean_cites" class="gt_row gt_right">34.6</td>
 <td headers="median_cites" class="gt_row gt_right">12</td>
 <td headers="h_index" class="gt_row gt_right">44</td>
 </tr>
@@ -741,7 +741,7 @@ Figure 40.1: Sampled publication counts by institution.
 <h2>
 <span class="header-section-number">40.6</span> Full vs. fractional counting<a class="anchor" aria-label="anchor" href="#full-vs.-fractional-counting"><i class="fas fa-link"></i></a>
 </h2>
-<div class="sourceCode" id="cb545"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb547"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">counting</span> <span class="op">&lt;-</span> <span class="va">inst_data</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
 <span>    full_count <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_int</a></span><span class="op">(</span><span class="va">works</span>, <span class="va">nrow</span><span class="op">)</span>,</span>
@@ -1228,19 +1228,19 @@ Figure 40.1: Sampled publication counts by institution.
 <tr>
 <td headers="short_name" class="gt_row gt_left">Oxford</td>
 <td headers="full_count" class="gt_row gt_right">300</td>
-<td headers="frac_count" class="gt_row gt_right">105</td>
+<td headers="frac_count" class="gt_row gt_right">106</td>
 <td headers="ratio" class="gt_row gt_right">0.35</td>
 </tr>
 <tr>
 <td headers="short_name" class="gt_row gt_left">ETH Zurich</td>
 <td headers="full_count" class="gt_row gt_right">300</td>
-<td headers="frac_count" class="gt_row gt_right">111</td>
-<td headers="ratio" class="gt_row gt_right">0.37</td>
+<td headers="frac_count" class="gt_row gt_right">107</td>
+<td headers="ratio" class="gt_row gt_right">0.36</td>
 </tr>
 </tbody>
 </table></div>
 </div>
-<div class="sourceCode" id="cb546"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb548"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">counting</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">full_count</span>, <span class="va">frac_count</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"method"</span>, values_to <span class="op">=</span> <span class="st">"count"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>method <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/recode.html">recode</a></span><span class="op">(</span><span class="va">method</span>, full_count <span class="op">=</span> <span class="st">"Full"</span>, frac_count <span class="op">=</span> <span class="st">"Fractional"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -1260,7 +1260,7 @@ Figure 40.2: Full vs. fractional publication counts.
 <h2>
 <span class="header-section-number">40.7</span> OA rates<a class="anchor" aria-label="anchor" href="#oa-rates"><i class="fas fa-link"></i></a>
 </h2>
-<div class="sourceCode" id="cb547"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb549"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">inst_data</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>oa_rate <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_dbl</a></span><span class="op">(</span><span class="va">works</span>, \<span class="op">(</span><span class="va">w</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">w</span><span class="op">$</span><span class="va">oa_status</span> <span class="op">!=</span> <span class="st">"closed"</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">oa_rate</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/reorder.factor.html">reorder</a></span><span class="op">(</span><span class="va">short_name</span>, <span class="va">oa_rate</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -1426,7 +1426,7 @@ Figure 40.3: Open access rate by institution.
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-12.</p>
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-17.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">
