@@ -275,7 +275,7 @@
 #&gt; $ source       &lt;chr&gt; "OpenAlex", "OpenAlex", "OpenAlex", "OpenAlex", "OpenAlex…
 #&gt; $ title        &lt;chr&gt; "bibliometrix : An R-tool for comprehensive science mappi…
 #&gt; $ year         &lt;int&gt; 2017, 2005, 2015, 2006, 1955, 2021, 2021, 2022, 1970
-#&gt; $ cited_by     &lt;int&gt; 13801, 11461, 2576, 2282, 2272, 1579, 735, 275, 4
+#&gt; $ cited_by     &lt;int&gt; 13883, 11471, 2585, 2288, 2273, 1587, 739, 276, 4
 #&gt; $ has_abstract &lt;lgl&gt; FALSE, TRUE, FALSE, FALSE, TRUE, FALSE, TRUE, TRUE, FALSE
 #&gt; $ type         &lt;chr&gt; "article", "article", "article", "article", "article", "a…</code></pre>
 </div>
@@ -303,14 +303,14 @@
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html">glimpse</a></span><span class="op">(</span><span class="va">cr_meta</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Rows: 7
+<pre><code>#&gt; Rows: 6
 #&gt; Columns: 7
 #&gt; $ doi          &lt;chr&gt; "10.1038/520429a", "10.1073/pnas.0507655102", "10.1007/s1…
 #&gt; $ source       &lt;chr&gt; "Crossref", "Crossref", "Crossref", "Crossref", "Crossref…
 #&gt; $ title        &lt;chr&gt; "Bibliometrics: The Leiden Manifesto for research metrics…
-#&gt; $ year         &lt;int&gt; 2015, 2005, 2006, 2017, 1955, 2021, 2021
-#&gt; $ cited_by     &lt;int&gt; 1935, 8495, 1814, 11698, 1750, 653, 1569
-#&gt; $ has_abstract &lt;lgl&gt; FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE
+#&gt; $ year         &lt;int&gt; 2015, 2005, 2006, 2017, 1955, 2021
+#&gt; $ cited_by     &lt;int&gt; 1941, 8500, 1818, 11758, 1750, 656
+#&gt; $ has_abstract &lt;lgl&gt; FALSE, TRUE, FALSE, FALSE, FALSE, TRUE
 #&gt; $ type         &lt;chr&gt; "journal-article", "journal-article", "journal-article", …</code></pre>
 </div>
 <div id="comparing-metadata-completeness" class="section level3" number="5.4.4">
@@ -820,8 +820,8 @@
 <td headers="short_doi" class="gt_row gt_left">10.1016/j.joi.2017.08.007</td>
 <td headers="OpenAlex_year" class="gt_row gt_center">2017</td>
 <td headers="Crossref_year" class="gt_row gt_center">2017</td>
-<td headers="OpenAlex_cited_by" class="gt_row gt_center">13801</td>
-<td headers="Crossref_cited_by" class="gt_row gt_center">11698</td>
+<td headers="OpenAlex_cited_by" class="gt_row gt_center">13883</td>
+<td headers="Crossref_cited_by" class="gt_row gt_center">11758</td>
 <td headers="OpenAlex_has_abstract" class="gt_row gt_center">FALSE</td>
 <td headers="Crossref_has_abstract" class="gt_row gt_center">FALSE</td>
 <td headers="OpenAlex_type" class="gt_row gt_center">article</td>
@@ -831,8 +831,8 @@
 <td headers="short_doi" class="gt_row gt_left">10.1073/pnas.0507655102</td>
 <td headers="OpenAlex_year" class="gt_row gt_center">2005</td>
 <td headers="Crossref_year" class="gt_row gt_center">2005</td>
-<td headers="OpenAlex_cited_by" class="gt_row gt_center">11461</td>
-<td headers="Crossref_cited_by" class="gt_row gt_center">8495</td>
+<td headers="OpenAlex_cited_by" class="gt_row gt_center">11471</td>
+<td headers="Crossref_cited_by" class="gt_row gt_center">8500</td>
 <td headers="OpenAlex_has_abstract" class="gt_row gt_center">TRUE</td>
 <td headers="Crossref_has_abstract" class="gt_row gt_center">TRUE</td>
 <td headers="OpenAlex_type" class="gt_row gt_center">article</td>
@@ -842,8 +842,8 @@
 <td headers="short_doi" class="gt_row gt_left">10.1038/520429a</td>
 <td headers="OpenAlex_year" class="gt_row gt_center">2015, 1970</td>
 <td headers="Crossref_year" class="gt_row gt_center">2015</td>
-<td headers="OpenAlex_cited_by" class="gt_row gt_center">2576, 4</td>
-<td headers="Crossref_cited_by" class="gt_row gt_center">1935</td>
+<td headers="OpenAlex_cited_by" class="gt_row gt_center">2585, 4</td>
+<td headers="Crossref_cited_by" class="gt_row gt_center">1941</td>
 <td headers="OpenAlex_has_abstract" class="gt_row gt_center">FALSE, FALSE</td>
 <td headers="Crossref_has_abstract" class="gt_row gt_center">FALSE</td>
 <td headers="OpenAlex_type" class="gt_row gt_center">article, article</td>
@@ -853,8 +853,8 @@
 <td headers="short_doi" class="gt_row gt_left">10.1007/s11192-006-0144-7</td>
 <td headers="OpenAlex_year" class="gt_row gt_center">2006</td>
 <td headers="Crossref_year" class="gt_row gt_center">2006</td>
-<td headers="OpenAlex_cited_by" class="gt_row gt_center">2282</td>
-<td headers="Crossref_cited_by" class="gt_row gt_center">1814</td>
+<td headers="OpenAlex_cited_by" class="gt_row gt_center">2288</td>
+<td headers="Crossref_cited_by" class="gt_row gt_center">1818</td>
 <td headers="OpenAlex_has_abstract" class="gt_row gt_center">FALSE</td>
 <td headers="Crossref_has_abstract" class="gt_row gt_center">FALSE</td>
 <td headers="OpenAlex_type" class="gt_row gt_center">article</td>
@@ -864,7 +864,7 @@
 <td headers="short_doi" class="gt_row gt_left">10.1126/science.122.3159.108</td>
 <td headers="OpenAlex_year" class="gt_row gt_center">1955</td>
 <td headers="Crossref_year" class="gt_row gt_center">1955</td>
-<td headers="OpenAlex_cited_by" class="gt_row gt_center">2272</td>
+<td headers="OpenAlex_cited_by" class="gt_row gt_center">2273</td>
 <td headers="Crossref_cited_by" class="gt_row gt_center">1750</td>
 <td headers="OpenAlex_has_abstract" class="gt_row gt_center">TRUE</td>
 <td headers="Crossref_has_abstract" class="gt_row gt_center">FALSE</td>
@@ -874,20 +874,20 @@
 <tr>
 <td headers="short_doi" class="gt_row gt_left">10.1007/s11192-021-03948-5</td>
 <td headers="OpenAlex_year" class="gt_row gt_center">2021</td>
-<td headers="Crossref_year" class="gt_row gt_center">2021</td>
-<td headers="OpenAlex_cited_by" class="gt_row gt_center">1579</td>
-<td headers="Crossref_cited_by" class="gt_row gt_center">1569</td>
+<td headers="Crossref_year" class="gt_row gt_center"></td>
+<td headers="OpenAlex_cited_by" class="gt_row gt_center">1587</td>
+<td headers="Crossref_cited_by" class="gt_row gt_center"></td>
 <td headers="OpenAlex_has_abstract" class="gt_row gt_center">FALSE</td>
-<td headers="Crossref_has_abstract" class="gt_row gt_center">FALSE</td>
+<td headers="Crossref_has_abstract" class="gt_row gt_center"></td>
 <td headers="OpenAlex_type" class="gt_row gt_center">article</td>
-<td headers="Crossref_type" class="gt_row gt_center">journal-article</td>
+<td headers="Crossref_type" class="gt_row gt_center"></td>
 </tr>
 <tr>
 <td headers="short_doi" class="gt_row gt_left">10.1162/qss_a_00112</td>
 <td headers="OpenAlex_year" class="gt_row gt_center">2021</td>
 <td headers="Crossref_year" class="gt_row gt_center">2021</td>
-<td headers="OpenAlex_cited_by" class="gt_row gt_center">735</td>
-<td headers="Crossref_cited_by" class="gt_row gt_center">653</td>
+<td headers="OpenAlex_cited_by" class="gt_row gt_center">739</td>
+<td headers="Crossref_cited_by" class="gt_row gt_center">656</td>
 <td headers="OpenAlex_has_abstract" class="gt_row gt_center">TRUE</td>
 <td headers="Crossref_has_abstract" class="gt_row gt_center">TRUE</td>
 <td headers="OpenAlex_type" class="gt_row gt_center">article</td>
@@ -897,7 +897,7 @@
 <td headers="short_doi" class="gt_row gt_left">10.48550/arxiv.2205.01833</td>
 <td headers="OpenAlex_year" class="gt_row gt_center">2022</td>
 <td headers="Crossref_year" class="gt_row gt_center"></td>
-<td headers="OpenAlex_cited_by" class="gt_row gt_center">275</td>
+<td headers="OpenAlex_cited_by" class="gt_row gt_center">276</td>
 <td headers="Crossref_cited_by" class="gt_row gt_center"></td>
 <td headers="OpenAlex_has_abstract" class="gt_row gt_center">TRUE</td>
 <td headers="Crossref_has_abstract" class="gt_row gt_center"></td>
@@ -1851,7 +1851,7 @@ Figure 5.1: Citation counts reported by OpenAlex vs. Crossref for the same set 
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-17.</p>
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-24.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">
