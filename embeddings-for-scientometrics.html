@@ -247,7 +247,7 @@
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Documents for embedding: {nrow(text_df)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Documents for embedding: 91</code></pre>
+<pre><code>#&gt; Documents for embedding: 87</code></pre>
 </div>
 <div id="training-word2vec-embeddings" class="section level3" number="25.4.2">
 <h3>
@@ -263,7 +263,7 @@
 <span>                  type <span class="op">=</span> <span class="st">"skip-gram"</span>, threads <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Vocabulary size: {nrow(as.matrix(model))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Vocabulary size: 1230</code></pre>
+<pre><code>#&gt; Vocabulary size: 1158</code></pre>
 <div class="sourceCode" id="cb375"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="st">"citation"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">nn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">model</span>, newdata <span class="op">=</span> <span class="st">"citation"</span>, type <span class="op">=</span> <span class="st">"nearest"</span>, top_n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
@@ -273,16 +273,16 @@
 <pre><code>#&gt; Nearest neighbours of 'citation':
 #&gt; $citation
 #&gt;       term1           term2 similarity rank
-#&gt; 1  citation         compare      0.777    1
-#&gt; 2  citation       sentiment      0.734    2
-#&gt; 3  citation        meanings      0.734    3
-#&gt; 4  citation         periods      0.720    4
-#&gt; 5  citation classifications      0.715    5
-#&gt; 6  citation           ratio      0.711    6
-#&gt; 7  citation           prime      0.700    7
-#&gt; 8  citation       citations      0.698    8
-#&gt; 9  citation       advantage      0.695    9
-#&gt; 10 citation      calculated      0.695   10</code></pre>
+#&gt; 1  citation      normalised      0.760    1
+#&gt; 2  citation classifications      0.752    2
+#&gt; 3  citation        function      0.749    3
+#&gt; 4  citation        meanings      0.748    4
+#&gt; 5  citation       sentiment      0.745    5
+#&gt; 6  citation           pptop      0.745    6
+#&gt; 7  citation   normalisation      0.729    7
+#&gt; 8  citation      calculated      0.725    8
+#&gt; 9  citation           score      0.721    9
+#&gt; 10 citation     evaluations      0.719   10</code></pre>
 </div>
 <div id="computing-document-embeddings-via-mean-pooling" class="section level3" number="25.4.3">
 <h3>
@@ -307,7 +307,7 @@
 <span><span class="va">text_df_valid</span> <span class="op">&lt;-</span> <span class="va">text_df</span><span class="op">[</span><span class="va">valid</span>, <span class="op">]</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Valid document embeddings: {nrow(embed_mat)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Valid document embeddings: 91</code></pre>
+<pre><code>#&gt; Valid document embeddings: 87</code></pre>
 </div>
 <div id="dimensionality-reduction-with-umap" class="section level3" number="25.4.4">
 <h3>
@@ -347,7 +347,7 @@ Figure 25.1: UMAP projection of document embeddings, coloured by publication yea
 <span><span class="va">top_similar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/order.html">order</a></span><span class="op">(</span><span class="va">sims</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[</span><span class="fl">2</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Query: {text_df_valid$title[query_idx]}\n\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Query: Towards medical knowmetrics: representing and computing medical knowledge using semantic predications as the knowledge unit and the uncertainty as the knowledge context</code></pre>
+<pre><code>#&gt; Query: How to catch trends using MeSH terms analysis?</code></pre>
 <div class="sourceCode" id="cb383"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Most similar documents:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Most similar documents:</code></pre>
@@ -355,7 +355,7 @@ Figure 25.1: UMAP projection of document embeddings, coloured by publication yea
 <code class="sourceCode R"><span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">walk</a></span><span class="op">(</span><span class="va">top_similar</span>, \<span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"  [{round(sims[i], 3)}] {text_df_valid$title[i]}\n"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; [0.898] Draw me Science[0.898] Linking the dimensions of policy-related research on obesity: a hybrid mapping with multicluster topics and interdisciplinarity maps[0.894] The role of South African researchers in intercontinental collaboration[0.893] Combining Web of Science and Scopus datasets in citation-based literature study[0.892] Analysing the evolution of computer science events leveraging a scholarly knowledge graph: a scientometrics study of top-ranked events in the past decade</code></pre>
+<pre><code>#&gt; [0.944] Forecasting the future of library and information science and its sub-fields[0.944] COVID-19 enabled co-authoring networks: a country-case analysis[0.938] Linking the dimensions of policy-related research on obesity: a hybrid mapping with multicluster topics and interdisciplinarity maps[0.937] COVID-19 and the scientific publishing system: growth, open access and scientific fields[0.936] Evaluating semantometrics from computer science publications</code></pre>
 </div>
 <div id="embedding-clusters-vs.-citation-impact" class="section level3" number="25.4.6">
 <h3>
@@ -690,7 +690,7 @@ Figure 25.2: UMAP embedding coloured by citation impact (log scale).
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-31.</p>
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-06-07.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">

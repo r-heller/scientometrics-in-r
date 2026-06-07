@@ -236,10 +236,10 @@
 <span>         <span class="va">cited_by_count</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Funder-work pairs: {nrow(funder_data)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Funder-work pairs: 572</code></pre>
+<pre><code>#&gt; Funder-work pairs: 549</code></pre>
 <div class="sourceCode" id="cb451"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Unique funders: {n_distinct(funder_data$funder)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Unique funders: 220</code></pre>
+<pre><code>#&gt; Unique funders: 206</code></pre>
 </div>
 <div id="top-funders-by-publication-count" class="section level3" number="31.4.2">
 <h3>
@@ -738,39 +738,45 @@ Figure 31.1: Top 15 funders by number of supported publications.
     </tr></thead>
 <tbody class="gt_table_body">
 <tr>
-<td headers="funder" class="gt_row gt_left">National Science Foundation</td>
+<td headers="funder" class="gt_row gt_left">National Social Science Fund of China</td>
 <td headers="n_pubs" class="gt_row gt_right">5</td>
-<td headers="mean_cites" class="gt_row gt_right">32.8</td>
-<td headers="median_cites" class="gt_row gt_right">22.0</td>
+<td headers="mean_cites" class="gt_row gt_right">37.4</td>
+<td headers="median_cites" class="gt_row gt_right">16.0</td>
 </tr>
 <tr>
 <td headers="funder" class="gt_row gt_left">Bundesministerium für Bildung und Forschung</td>
-<td headers="n_pubs" class="gt_row gt_right">7</td>
-<td headers="mean_cites" class="gt_row gt_right">28.1</td>
-<td headers="median_cites" class="gt_row gt_right">22.0</td>
+<td headers="n_pubs" class="gt_row gt_right">6</td>
+<td headers="mean_cites" class="gt_row gt_right">32.3</td>
+<td headers="median_cites" class="gt_row gt_right">26.0</td>
+</tr>
+<tr>
+<td headers="funder" class="gt_row gt_left">Coordenação de Aperfeiçoamento de Pessoal de Nível Superior</td>
+<td headers="n_pubs" class="gt_row gt_right">6</td>
+<td headers="mean_cites" class="gt_row gt_right">25.0</td>
+<td headers="median_cites" class="gt_row gt_right">12.5</td>
 </tr>
 <tr>
 <td headers="funder" class="gt_row gt_left">NA</td>
-<td headers="n_pubs" class="gt_row gt_right">205</td>
+<td headers="n_pubs" class="gt_row gt_right">209</td>
 <td headers="mean_cites" class="gt_row gt_right">24.2</td>
 <td headers="median_cites" class="gt_row gt_right">9.0</td>
 </tr>
 <tr>
+<td headers="funder" class="gt_row gt_left">Fundamental Research Funds for the Central Universities</td>
+<td headers="n_pubs" class="gt_row gt_right">5</td>
+<td headers="mean_cites" class="gt_row gt_right">22.8</td>
+<td headers="median_cites" class="gt_row gt_right">22.0</td>
+</tr>
+<tr>
 <td headers="funder" class="gt_row gt_left">National Natural Science Foundation of China</td>
 <td headers="n_pubs" class="gt_row gt_right">54</td>
-<td headers="mean_cites" class="gt_row gt_right">20.7</td>
-<td headers="median_cites" class="gt_row gt_right">15.5</td>
+<td headers="mean_cites" class="gt_row gt_right">21.4</td>
+<td headers="median_cites" class="gt_row gt_right">13.5</td>
 </tr>
 <tr>
-<td headers="funder" class="gt_row gt_left">National Social Science Fund of China</td>
-<td headers="n_pubs" class="gt_row gt_right">5</td>
-<td headers="mean_cites" class="gt_row gt_right">15.0</td>
-<td headers="median_cites" class="gt_row gt_right">16.0</td>
-</tr>
-<tr>
-<td headers="funder" class="gt_row gt_left">Fundamental Research Funds for the Central Universities</td>
-<td headers="n_pubs" class="gt_row gt_right">6</td>
-<td headers="mean_cites" class="gt_row gt_right">14.5</td>
+<td headers="funder" class="gt_row gt_left">European Commission</td>
+<td headers="n_pubs" class="gt_row gt_right">8</td>
+<td headers="mean_cites" class="gt_row gt_right">19.9</td>
 <td headers="median_cites" class="gt_row gt_right">11.0</td>
 </tr>
 <tr>
@@ -778,18 +784,6 @@ Figure 31.1: Top 15 funders by number of supported publications.
 <td headers="n_pubs" class="gt_row gt_right">5</td>
 <td headers="mean_cites" class="gt_row gt_right">14.4</td>
 <td headers="median_cites" class="gt_row gt_right">9.0</td>
-</tr>
-<tr>
-<td headers="funder" class="gt_row gt_left">European Commission</td>
-<td headers="n_pubs" class="gt_row gt_right">7</td>
-<td headers="mean_cites" class="gt_row gt_right">13.1</td>
-<td headers="median_cites" class="gt_row gt_right">11.0</td>
-</tr>
-<tr>
-<td headers="funder" class="gt_row gt_left">Coordenação de Aperfeiçoamento de Pessoal de Nível Superior</td>
-<td headers="n_pubs" class="gt_row gt_right">6</td>
-<td headers="mean_cites" class="gt_row gt_right">12.8</td>
-<td headers="median_cites" class="gt_row gt_right">10.5</td>
 </tr>
 </tbody>
 </table></div>
@@ -1126,7 +1120,7 @@ Figure 31.2: Citation distribution for funded vs. unfunded papers.
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-31.</p>
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-06-07.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">

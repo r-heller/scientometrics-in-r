@@ -236,7 +236,7 @@
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Documents: {nrow(text_df)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Documents: 111</code></pre>
+<pre><code>#&gt; Documents: 108</code></pre>
 <div class="sourceCode" id="cb393"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Year range: {min(text_df$year)}--{max(text_df$year)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Year range: 2015--2023</code></pre>
@@ -259,7 +259,7 @@
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Terms tracked: {n_distinct(kw_by_year$term)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Terms tracked: 254</code></pre>
+<pre><code>#&gt; Terms tracked: 247</code></pre>
 </div>
 <div id="growth-rate-detection" class="section level3" number="26.4.2">
 <h3>
@@ -745,79 +745,79 @@
     </tr></thead>
 <tbody class="gt_table_body">
 <tr>
-<td headers="term" class="gt_row gt_left">collaboration</td>
-<td headers="mean_growth" class="gt_row gt_right">638%</td>
-<td headers="total" class="gt_row gt_right">43</td>
-</tr>
-<tr>
-<td headers="term" class="gt_row gt_left">covid-19</td>
-<td headers="mean_growth" class="gt_row gt_right">561%</td>
-<td headers="total" class="gt_row gt_right">25</td>
-</tr>
-<tr>
 <td headers="term" class="gt_row gt_left">gender</td>
 <td headers="mean_growth" class="gt_row gt_right">433%</td>
-<td headers="total" class="gt_row gt_right">22</td>
+<td headers="total" class="gt_row gt_right">27</td>
 </tr>
 <tr>
-<td headers="term" class="gt_row gt_left">knowledge</td>
-<td headers="mean_growth" class="gt_row gt_right">390%</td>
-<td headers="total" class="gt_row gt_right">52</td>
+<td headers="term" class="gt_row gt_left">model</td>
+<td headers="mean_growth" class="gt_row gt_right">433%</td>
+<td headers="total" class="gt_row gt_right">23</td>
 </tr>
 <tr>
-<td headers="term" class="gt_row gt_left">universities</td>
-<td headers="mean_growth" class="gt_row gt_right">372%</td>
-<td headers="total" class="gt_row gt_right">34</td>
-</tr>
-<tr>
-<td headers="term" class="gt_row gt_left">international</td>
-<td headers="mean_growth" class="gt_row gt_right">311%</td>
+<td headers="term" class="gt_row gt_left">collaboration</td>
+<td headers="mean_growth" class="gt_row gt_right">325%</td>
 <td headers="total" class="gt_row gt_right">45</td>
 </tr>
 <tr>
 <td headers="term" class="gt_row gt_left">search</td>
-<td headers="mean_growth" class="gt_row gt_right">303%</td>
-<td headers="total" class="gt_row gt_right">23</td>
+<td headers="mean_growth" class="gt_row gt_right">300%</td>
+<td headers="total" class="gt_row gt_right">22</td>
 </tr>
 <tr>
 <td headers="term" class="gt_row gt_left">social</td>
-<td headers="mean_growth" class="gt_row gt_right">272%</td>
-<td headers="total" class="gt_row gt_right">41</td>
+<td headers="mean_growth" class="gt_row gt_right">297%</td>
+<td headers="total" class="gt_row gt_right">39</td>
 </tr>
 <tr>
-<td headers="term" class="gt_row gt_left">networks</td>
-<td headers="mean_growth" class="gt_row gt_right">267%</td>
-<td headers="total" class="gt_row gt_right">22</td>
-</tr>
-<tr>
-<td headers="term" class="gt_row gt_left">authors</td>
-<td headers="mean_growth" class="gt_row gt_right">239%</td>
-<td headers="total" class="gt_row gt_right">31</td>
-</tr>
-<tr>
-<td headers="term" class="gt_row gt_left">policy</td>
-<td headers="mean_growth" class="gt_row gt_right">238%</td>
-<td headers="total" class="gt_row gt_right">24</td>
-</tr>
-<tr>
-<td headers="term" class="gt_row gt_left">first</td>
-<td headers="mean_growth" class="gt_row gt_right">200%</td>
+<td headers="term" class="gt_row gt_left">universities</td>
+<td headers="mean_growth" class="gt_row gt_right">285%</td>
 <td headers="total" class="gt_row gt_right">27</td>
 </tr>
 <tr>
-<td headers="term" class="gt_row gt_left">higher</td>
-<td headers="mean_growth" class="gt_row gt_right">194%</td>
-<td headers="total" class="gt_row gt_right">22</td>
+<td headers="term" class="gt_row gt_left">networks</td>
+<td headers="mean_growth" class="gt_row gt_right">283%</td>
+<td headers="total" class="gt_row gt_right">23</td>
 </tr>
 <tr>
-<td headers="term" class="gt_row gt_left">funding</td>
-<td headers="mean_growth" class="gt_row gt_right">191%</td>
-<td headers="total" class="gt_row gt_right">20</td>
+<td headers="term" class="gt_row gt_left">impact</td>
+<td headers="mean_growth" class="gt_row gt_right">266%</td>
+<td headers="total" class="gt_row gt_right">53</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">knowledge</td>
+<td headers="mean_growth" class="gt_row gt_right">261%</td>
+<td headers="total" class="gt_row gt_right">27</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">authors</td>
+<td headers="mean_growth" class="gt_row gt_right">247%</td>
+<td headers="total" class="gt_row gt_right">31</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">time</td>
+<td headers="mean_growth" class="gt_row gt_right">212%</td>
+<td headers="total" class="gt_row gt_right">25</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">studies</td>
+<td headers="mean_growth" class="gt_row gt_right">206%</td>
+<td headers="total" class="gt_row gt_right">61</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">policy</td>
+<td headers="mean_growth" class="gt_row gt_right">204%</td>
+<td headers="total" class="gt_row gt_right">23</td>
 </tr>
 <tr>
 <td headers="term" class="gt_row gt_left">countries</td>
-<td headers="mean_growth" class="gt_row gt_right">189%</td>
-<td headers="total" class="gt_row gt_right">44</td>
+<td headers="mean_growth" class="gt_row gt_right">179%</td>
+<td headers="total" class="gt_row gt_right">41</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">quality</td>
+<td headers="mean_growth" class="gt_row gt_right">173%</td>
+<td headers="total" class="gt_row gt_right">28</td>
 </tr>
 </tbody>
 </table></div>
@@ -1316,39 +1316,19 @@
 <td headers="max_count" class="gt_row gt_right">34</td>
 </tr>
 <tr>
+<td headers="term" class="gt_row gt_left">science</td>
+<td headers="burst_years" class="gt_row gt_right">2021</td>
+<td headers="max_count" class="gt_row gt_right">21</td>
+</tr>
+<tr>
 <td headers="term" class="gt_row gt_left">data</td>
 <td headers="burst_years" class="gt_row gt_right">2022</td>
-<td headers="max_count" class="gt_row gt_right">33</td>
-</tr>
-<tr>
-<td headers="term" class="gt_row gt_left">knowledge</td>
-<td headers="burst_years" class="gt_row gt_right">2021</td>
-<td headers="max_count" class="gt_row gt_right">26</td>
-</tr>
-<tr>
-<td headers="term" class="gt_row gt_left">scientific</td>
-<td headers="burst_years" class="gt_row gt_right">2023</td>
-<td headers="max_count" class="gt_row gt_right">25</td>
-</tr>
-<tr>
-<td headers="term" class="gt_row gt_left">international</td>
-<td headers="burst_years" class="gt_row gt_right">2016</td>
-<td headers="max_count" class="gt_row gt_right">23</td>
+<td headers="max_count" class="gt_row gt_right">20</td>
 </tr>
 <tr>
 <td headers="term" class="gt_row gt_left">studies</td>
 <td headers="burst_years" class="gt_row gt_right">2017</td>
-<td headers="max_count" class="gt_row gt_right">23</td>
-</tr>
-<tr>
-<td headers="term" class="gt_row gt_left">impact</td>
-<td headers="burst_years" class="gt_row gt_right">2016</td>
-<td headers="max_count" class="gt_row gt_right">22</td>
-</tr>
-<tr>
-<td headers="term" class="gt_row gt_left">number</td>
-<td headers="burst_years" class="gt_row gt_right">2022</td>
-<td headers="max_count" class="gt_row gt_right">19</td>
+<td headers="max_count" class="gt_row gt_right">20</td>
 </tr>
 <tr>
 <td headers="term" class="gt_row gt_left">open</td>
@@ -1361,14 +1341,14 @@
 <td headers="max_count" class="gt_row gt_right">18</td>
 </tr>
 <tr>
-<td headers="term" class="gt_row gt_left">publication</td>
-<td headers="burst_years" class="gt_row gt_right">2022</td>
+<td headers="term" class="gt_row gt_left">impact</td>
+<td headers="burst_years" class="gt_row gt_right">2016</td>
 <td headers="max_count" class="gt_row gt_right">18</td>
 </tr>
 <tr>
-<td headers="term" class="gt_row gt_left">citations</td>
-<td headers="burst_years" class="gt_row gt_right">2016</td>
-<td headers="max_count" class="gt_row gt_right">17</td>
+<td headers="term" class="gt_row gt_left">publication</td>
+<td headers="burst_years" class="gt_row gt_right">2022</td>
+<td headers="max_count" class="gt_row gt_right">18</td>
 </tr>
 <tr>
 <td headers="term" class="gt_row gt_left">cited</td>
@@ -1376,14 +1356,34 @@
 <td headers="max_count" class="gt_row gt_right">17</td>
 </tr>
 <tr>
-<td headers="term" class="gt_row gt_left">covid-19</td>
+<td headers="term" class="gt_row gt_left">new</td>
 <td headers="burst_years" class="gt_row gt_right">2021</td>
-<td headers="max_count" class="gt_row gt_right">17</td>
+<td headers="max_count" class="gt_row gt_right">16</td>
 </tr>
 <tr>
-<td headers="term" class="gt_row gt_left">journal</td>
-<td headers="burst_years" class="gt_row gt_right">2021</td>
-<td headers="max_count" class="gt_row gt_right">17</td>
+<td headers="term" class="gt_row gt_left">papers</td>
+<td headers="burst_years" class="gt_row gt_right">2016</td>
+<td headers="max_count" class="gt_row gt_right">16</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">countries</td>
+<td headers="burst_years" class="gt_row gt_right">2016, 2021</td>
+<td headers="max_count" class="gt_row gt_right">15</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">model</td>
+<td headers="burst_years" class="gt_row gt_right">2022</td>
+<td headers="max_count" class="gt_row gt_right">15</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">disciplines</td>
+<td headers="burst_years" class="gt_row gt_right">2020</td>
+<td headers="max_count" class="gt_row gt_right">14</td>
+</tr>
+<tr>
+<td headers="term" class="gt_row gt_left">universities</td>
+<td headers="burst_years" class="gt_row gt_right">2022</td>
+<td headers="max_count" class="gt_row gt_right">14</td>
 </tr>
 </tbody>
 </table></div>
@@ -1776,7 +1776,7 @@ Figure 26.2: Top terms in each 3-year rolling window, showing vocabulary evoluti
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-31.</p>
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-06-07.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">

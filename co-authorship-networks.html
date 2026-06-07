@@ -251,10 +251,10 @@
 <span>        name <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Authors: {n_distinct(c(edges$author_id_1, edges$author_id_2))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Authors: 808</code></pre>
+<pre><code>#&gt; Authors: 804</code></pre>
 <div class="sourceCode" id="cb205"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Edges: {nrow(edges)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Edges: 1956</code></pre>
+<pre><code>#&gt; Edges: 1638</code></pre>
 </div>
 <div id="building-the-network" class="section level3" number="16.4.3">
 <h3>
@@ -269,13 +269,13 @@
 <span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/simplify.html">simplify</a></span><span class="op">(</span><span class="va">g</span>, edge.attr.comb <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>weight <span class="op">=</span> <span class="st">"sum"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Nodes: {vcount(g)}, Edges: {ecount(g)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Nodes: 808, Edges: 1956</code></pre>
+<pre><code>#&gt; Nodes: 804, Edges: 1638</code></pre>
 <div class="sourceCode" id="cb209"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Components: {components(g)$no}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Components: 191</code></pre>
+<pre><code>#&gt; Components: 199</code></pre>
 <div class="sourceCode" id="cb211"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Density: {round(graph.density(g), 4)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Density: 0.006</code></pre>
+<pre><code>#&gt; Density: 0.0051</code></pre>
 </div>
 <div id="network-metrics" class="section level3" number="16.4.4">
 <h3>
@@ -302,18 +302,18 @@
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">author_name</span>, <span class="va">degree</span>, <span class="va">betweenness</span>, <span class="va">clustering</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; # A tibble: 10 × 4
-#&gt;    author_name             degree betweenness clustering
-#&gt;    &lt;chr&gt;                    &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;
-#&gt;  1 Torben Schubert             30    0.000984      0.761
-#&gt;  2 Nicolás Robinson‐García     29    0.000747      0.808
-#&gt;  3 Min Song                    29    0.000320      0.798
-#&gt;  4 Loet Leydesdorff            28    0.00542       0.862
-#&gt;  5 Mike Thelwall               28    0.000504      0.862
-#&gt;  6 Vincent Larivière           28    0.000504      0.862
-#&gt;  7 Dag W. Aksnes               28    0.000504      0.862
-#&gt;  8 Ciriaco Andrea D’Angelo     27    0.000126      0.929
-#&gt;  9 Giovanni Abramo             27    0.000126      0.929
-#&gt; 10 Rodrigo Costas              27    0.000255      0.926</code></pre>
+#&gt;    author_name      degree betweenness clustering
+#&gt;    &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;
+#&gt;  1 Min Song             27    0.000298      0.795
+#&gt;  2 Hyeyoung Ryu         24    0             1    
+#&gt;  3 Chongyan Chen        24    0             1    
+#&gt;  4 Islam Akef Ebeid     24    0             1    
+#&gt;  5 Yi Bu                24    0             1    
+#&gt;  6 Keyuan Li            24    0             1    
+#&gt;  7 Chenwei Zhang        24    0             1    
+#&gt;  8 Yujia Zhai           24    0             1    
+#&gt;  9 Jian Xu              24    0             1    
+#&gt; 10 Chao Lu              24    0             1</code></pre>
 </div>
 <div id="community-detection" class="section level3" number="16.4.5">
 <h3>
@@ -328,20 +328,20 @@
 <span><span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">community_louvain</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/communities.html">membership</a></span><span class="op">(</span><span class="va">louvain</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Louvain communities: {length(unique(membership(louvain)))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Louvain communities: 8</code></pre>
+<pre><code>#&gt; Louvain communities: 5</code></pre>
 <div class="sourceCode" id="cb217"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Louvain modularity: {round(modularity(louvain), 3)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Louvain modularity: 0.378</code></pre>
+<pre><code>#&gt; Louvain modularity: 0.695</code></pre>
 <div class="sourceCode" id="cb219"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">leiden_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/cluster_leiden.html">cluster_leiden</a></span><span class="op">(</span><span class="va">giant</span>, resolution_parameter <span class="op">=</span> <span class="fl">1.0</span>,</span>
 <span>                                objective_function <span class="op">=</span> <span class="st">"modularity"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span><span class="op">$</span><span class="va">community_leiden</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/communities.html">membership</a></span><span class="op">(</span><span class="va">leiden_result</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Leiden communities: {length(unique(membership(leiden_result)))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Leiden communities: 8</code></pre>
+<pre><code>#&gt; Leiden communities: 5</code></pre>
 <div class="sourceCode" id="cb221"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Leiden modularity: {round(modularity(giant, membership(leiden_result)), 3)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Leiden modularity: 0.378</code></pre>
+<pre><code>#&gt; Leiden modularity: 0.695</code></pre>
 </div>
 <div id="comparing-community-assignments" class="section level3" number="16.4.6">
 <h3>
@@ -428,13 +428,13 @@ Figure 16.2: Degree distribution of the co-authorship network.
 <div class="sourceCode" id="cb227"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">giant_ratio</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/gorder.html">vcount</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://r.igraph.org/reference/gorder.html">vcount</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Giant component: {vcount(giant)}/{vcount(g)} nodes ({scales::percent(giant_ratio)})\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Giant component: 85/808 nodes (11%)</code></pre>
+<pre><code>#&gt; Giant component: 51/804 nodes (6%)</code></pre>
 <div class="sourceCode" id="cb229"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Mean degree: {round(mean(degree(giant)), 1)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Mean degree: 11.3</code></pre>
+<pre><code>#&gt; Mean degree: 5.6</code></pre>
 <div class="sourceCode" id="cb231"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Transitivity (global): {round(transitivity(giant, type = 'global'), 3)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Transitivity (global): 0.926</code></pre>
+<pre><code>#&gt; Transitivity (global): 0.659</code></pre>
 </div>
 <div id="coauth-limitations" class="section level2" number="16.6">
 <h2>
@@ -731,7 +731,7 @@ Figure 16.2: Degree distribution of the co-authorship network.
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-05-31.</p>
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-06-07.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">
