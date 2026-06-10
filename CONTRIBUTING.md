@@ -54,4 +54,4 @@ Every entry with a DOI must resolve via Crossref. CI enforces this.
 ## License
 
 By contributing, you agree that your text contributions are licensed under
-CC-BY-SA 4.0 and your code contributions under the MIT License.
+CC-BY 4.0 and your code contributions under the MIT License.

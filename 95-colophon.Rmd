@@ -10,9 +10,9 @@ cat("\nAttached packages:\n")
 print(sessioninfo::session_info(pkgs = "attached"))
 ```
 
-LLM assistance (self-hosted Mistral Le Chat via Ollama/`ollamar`, plus
-GitHub Copilot in RStudio) was used for copyediting, formatting, and
-scaffolding tasks only — see Acknowledgments.
+LLM assistance (KISSKI's Chat AI service, plus a self-hosted Mistral
+Small 24B via Ollama/`ollamar`) was used for copyediting, formatting,
+and scaffolding tasks only — see Acknowledgments.
 
 ```{r packages-bib, echo=FALSE, results="hide"}
 knitr::write_bib(

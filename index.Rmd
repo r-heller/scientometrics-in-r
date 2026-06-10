@@ -38,7 +38,7 @@ All examples run against free, open data; no Web of Science or Scopus subscripti
 
 ---
 
-This book has been built using [**{rmarkdown}**](https://rmarkdown.rstudio.com/docs/) and [**{bookdown}**](https://bookdown.org/). Formulas are rendered using [MathJax](http://docs.mathjax.org/en/latest/index.html). All source files are available on **GitHub** at <https://github.com/r-heller/scientometrics-in-r>. You are free to fork, share, and reuse contents under the project's [CC BY-SA 4.0 license](LICENSE).
+This book has been built using [**{rmarkdown}**](https://rmarkdown.rstudio.com/docs/) and [**{bookdown}**](https://bookdown.org/). Formulas are rendered using [MathJax](http://docs.mathjax.org/en/latest/index.html). All source files are available on **GitHub** at <https://github.com/r-heller/scientometrics-in-r>. You are free to fork, share, and reuse contents under the project's [CC BY 4.0 license](LICENSE).
 
 <br></br>
 
