@@ -247,7 +247,7 @@
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Documents for embedding: {nrow(text_df)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Documents for embedding: 87</code></pre>
+<pre><code>#&gt; Documents for embedding: 86</code></pre>
 </div>
 <div id="training-word2vec-embeddings" class="section level3" number="25.4.2">
 <h3>
@@ -263,7 +263,7 @@
 <span>                  type <span class="op">=</span> <span class="st">"skip-gram"</span>, threads <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Vocabulary size: {nrow(as.matrix(model))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Vocabulary size: 1158</code></pre>
+<pre><code>#&gt; Vocabulary size: 1142</code></pre>
 <div class="sourceCode" id="cb375"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="st">"citation"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">nn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">model</span>, newdata <span class="op">=</span> <span class="st">"citation"</span>, type <span class="op">=</span> <span class="st">"nearest"</span>, top_n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
@@ -273,16 +273,16 @@
 <pre><code>#&gt; Nearest neighbours of 'citation':
 #&gt; $citation
 #&gt;       term1           term2 similarity rank
-#&gt; 1  citation      normalised      0.760    1
-#&gt; 2  citation classifications      0.752    2
-#&gt; 3  citation        function      0.749    3
-#&gt; 4  citation        meanings      0.748    4
-#&gt; 5  citation       sentiment      0.745    5
-#&gt; 6  citation           pptop      0.745    6
-#&gt; 7  citation   normalisation      0.729    7
-#&gt; 8  citation      calculated      0.725    8
-#&gt; 9  citation           score      0.721    9
-#&gt; 10 citation     evaluations      0.719   10</code></pre>
+#&gt; 1  citation      normalised      0.783    1
+#&gt; 2  citation        function      0.772    2
+#&gt; 3  citation           pptop      0.771    3
+#&gt; 4  citation       sentiment      0.759    4
+#&gt; 5  citation        meanings      0.750    5
+#&gt; 6  citation              de      0.739    6
+#&gt; 7  citation     comparisons      0.738    7
+#&gt; 8  citation          scores      0.737    8
+#&gt; 9  citation classifications      0.734    9
+#&gt; 10 citation       citations      0.730   10</code></pre>
 </div>
 <div id="computing-document-embeddings-via-mean-pooling" class="section level3" number="25.4.3">
 <h3>
@@ -307,7 +307,7 @@
 <span><span class="va">text_df_valid</span> <span class="op">&lt;-</span> <span class="va">text_df</span><span class="op">[</span><span class="va">valid</span>, <span class="op">]</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Valid document embeddings: {nrow(embed_mat)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Valid document embeddings: 87</code></pre>
+<pre><code>#&gt; Valid document embeddings: 86</code></pre>
 </div>
 <div id="dimensionality-reduction-with-umap" class="section level3" number="25.4.4">
 <h3>
@@ -355,7 +355,7 @@ Figure 25.1: UMAP projection of document embeddings, coloured by publication yea
 <code class="sourceCode R"><span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">walk</a></span><span class="op">(</span><span class="va">top_similar</span>, \<span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"  [{round(sims[i], 3)}] {text_df_valid$title[i]}\n"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; [0.944] Forecasting the future of library and information science and its sub-fields[0.944] COVID-19 enabled co-authoring networks: a country-case analysis[0.938] Linking the dimensions of policy-related research on obesity: a hybrid mapping with multicluster topics and interdisciplinarity maps[0.937] COVID-19 and the scientific publishing system: growth, open access and scientific fields[0.936] Evaluating semantometrics from computer science publications</code></pre>
+<pre><code>#&gt; [0.947] COVID-19 enabled co-authoring networks: a country-case analysis[0.942] Forecasting the future of library and information science and its sub-fields[0.939] A diachronic perspective on citation latency in Wikipedia articles on CRISPR/Cas-9: an exploratory case study[0.938] Linking the dimensions of policy-related research on obesity: a hybrid mapping with multicluster topics and interdisciplinarity maps[0.936] Evaluating semantometrics from computer science publications</code></pre>
 </div>
 <div id="embedding-clusters-vs.-citation-impact" class="section level3" number="25.4.6">
 <h3>
@@ -690,7 +690,7 @@ Figure 25.2: UMAP embedding coloured by citation impact (log scale).
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-06-07.</p>
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-06-10.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">

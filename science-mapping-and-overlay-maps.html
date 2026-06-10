@@ -238,7 +238,7 @@
 <pre><code>#&gt; Citing papers with journal info: 477</code></pre>
 <div class="sourceCode" id="cb297"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Unique source journals: {n_distinct(journal_data$source_display_name)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Unique source journals: 404</code></pre>
+<pre><code>#&gt; Unique source journals: 405</code></pre>
 <div class="sourceCode" id="cb299"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">journal_cited</span> <span class="op">&lt;-</span> <span class="va">journal_data</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span>citing_journal <span class="op">=</span> <span class="va">source_display_name</span>, <span class="va">cited_id</span><span class="op">)</span></span>
@@ -260,7 +260,7 @@
 <span>  <span class="fu"><a href="https://r.igraph.org/reference/simplify.html">simplify</a></span><span class="op">(</span>edge.attr.comb <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>weight <span class="op">=</span> <span class="st">"sum"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Journal base map: {vcount(g_journals)} journals, {ecount(g_journals)} edges\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Journal base map: 130 journals, 1007 edges</code></pre>
+<pre><code>#&gt; Journal base map: 131 journals, 1015 edges</code></pre>
 </div>
 <div id="clustering-journals-into-disciplines" class="section level3" number="20.4.2">
 <h3>
@@ -285,23 +285,23 @@
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">n_journals</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cluster_table</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="fl">8</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div id="ulepkvfvge" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ulepkvfvge table {
+<div id="oqlxczvvat" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#oqlxczvvat table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#ulepkvfvge thead, #ulepkvfvge tbody, #ulepkvfvge tfoot, #ulepkvfvge tr, #ulepkvfvge td, #ulepkvfvge th {
+#oqlxczvvat thead, #oqlxczvvat tbody, #oqlxczvvat tfoot, #oqlxczvvat tr, #oqlxczvvat td, #oqlxczvvat th {
   border-style: none;
 }
 
-#ulepkvfvge p {
+#oqlxczvvat p {
   margin: 0;
   padding: 0;
 }
 
-#ulepkvfvge .gt_table {
+#oqlxczvvat .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -327,12 +327,12 @@
   border-left-color: #D3D3D3;
 }
 
-#ulepkvfvge .gt_caption {
+#oqlxczvvat .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#ulepkvfvge .gt_title {
+#oqlxczvvat .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -344,7 +344,7 @@
   border-bottom-width: 0;
 }
 
-#ulepkvfvge .gt_subtitle {
+#oqlxczvvat .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -356,7 +356,7 @@
   border-top-width: 0;
 }
 
-#ulepkvfvge .gt_heading {
+#oqlxczvvat .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -368,13 +368,13 @@
   border-right-color: #D3D3D3;
 }
 
-#ulepkvfvge .gt_bottom_border {
+#oqlxczvvat .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ulepkvfvge .gt_col_headings {
+#oqlxczvvat .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -389,7 +389,7 @@
   border-right-color: #D3D3D3;
 }
 
-#ulepkvfvge .gt_col_heading {
+#oqlxczvvat .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -409,7 +409,7 @@
   overflow-x: hidden;
 }
 
-#ulepkvfvge .gt_column_spanner_outer {
+#oqlxczvvat .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -421,15 +421,15 @@
   padding-right: 4px;
 }
 
-#ulepkvfvge .gt_column_spanner_outer:first-child {
+#oqlxczvvat .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ulepkvfvge .gt_column_spanner_outer:last-child {
+#oqlxczvvat .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ulepkvfvge .gt_column_spanner {
+#oqlxczvvat .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -441,11 +441,11 @@
   width: 100%;
 }
 
-#ulepkvfvge .gt_spanner_row {
+#oqlxczvvat .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#ulepkvfvge .gt_group_heading {
+#oqlxczvvat .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -471,7 +471,7 @@
   text-align: left;
 }
 
-#ulepkvfvge .gt_empty_group_heading {
+#oqlxczvvat .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -486,15 +486,15 @@
   vertical-align: middle;
 }
 
-#ulepkvfvge .gt_from_md > :first-child {
+#oqlxczvvat .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ulepkvfvge .gt_from_md > :last-child {
+#oqlxczvvat .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ulepkvfvge .gt_row {
+#oqlxczvvat .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -513,7 +513,7 @@
   overflow-x: hidden;
 }
 
-#ulepkvfvge .gt_stub {
+#oqlxczvvat .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -526,7 +526,7 @@
   padding-right: 5px;
 }
 
-#ulepkvfvge .gt_stub_row_group {
+#oqlxczvvat .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -540,15 +540,15 @@
   vertical-align: top;
 }
 
-#ulepkvfvge .gt_row_group_first td {
+#oqlxczvvat .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ulepkvfvge .gt_row_group_first th {
+#oqlxczvvat .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ulepkvfvge .gt_summary_row {
+#oqlxczvvat .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -558,16 +558,16 @@
   padding-right: 5px;
 }
 
-#ulepkvfvge .gt_first_summary_row {
+#oqlxczvvat .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ulepkvfvge .gt_first_summary_row.thick {
+#oqlxczvvat .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ulepkvfvge .gt_last_summary_row {
+#oqlxczvvat .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -577,7 +577,7 @@
   border-bottom-color: #D3D3D3;
 }
 
-#ulepkvfvge .gt_grand_summary_row {
+#oqlxczvvat .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -587,7 +587,7 @@
   padding-right: 5px;
 }
 
-#ulepkvfvge .gt_first_grand_summary_row {
+#oqlxczvvat .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -597,7 +597,7 @@
   border-top-color: #D3D3D3;
 }
 
-#ulepkvfvge .gt_last_grand_summary_row_top {
+#oqlxczvvat .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -607,11 +607,11 @@
   border-bottom-color: #D3D3D3;
 }
 
-#ulepkvfvge .gt_striped {
+#oqlxczvvat .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ulepkvfvge .gt_table_body {
+#oqlxczvvat .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -620,7 +620,7 @@
   border-bottom-color: #D3D3D3;
 }
 
-#ulepkvfvge .gt_footnotes {
+#oqlxczvvat .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -634,7 +634,7 @@
   border-right-color: #D3D3D3;
 }
 
-#ulepkvfvge .gt_footnote {
+#oqlxczvvat .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -643,7 +643,7 @@
   padding-right: 5px;
 }
 
-#ulepkvfvge .gt_sourcenotes {
+#oqlxczvvat .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -657,7 +657,7 @@
   border-right-color: #D3D3D3;
 }
 
-#ulepkvfvge .gt_sourcenote {
+#oqlxczvvat .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -665,72 +665,72 @@
   padding-right: 5px;
 }
 
-#ulepkvfvge .gt_left {
+#oqlxczvvat .gt_left {
   text-align: left;
 }
 
-#ulepkvfvge .gt_center {
+#oqlxczvvat .gt_center {
   text-align: center;
 }
 
-#ulepkvfvge .gt_right {
+#oqlxczvvat .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ulepkvfvge .gt_font_normal {
+#oqlxczvvat .gt_font_normal {
   font-weight: normal;
 }
 
-#ulepkvfvge .gt_font_bold {
+#oqlxczvvat .gt_font_bold {
   font-weight: bold;
 }
 
-#ulepkvfvge .gt_font_italic {
+#oqlxczvvat .gt_font_italic {
   font-style: italic;
 }
 
-#ulepkvfvge .gt_super {
+#oqlxczvvat .gt_super {
   font-size: 65%;
 }
 
-#ulepkvfvge .gt_footnote_marks {
+#oqlxczvvat .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ulepkvfvge .gt_asterisk {
+#oqlxczvvat .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ulepkvfvge .gt_indent_1 {
+#oqlxczvvat .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ulepkvfvge .gt_indent_2 {
+#oqlxczvvat .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ulepkvfvge .gt_indent_3 {
+#oqlxczvvat .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ulepkvfvge .gt_indent_4 {
+#oqlxczvvat .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ulepkvfvge .gt_indent_5 {
+#oqlxczvvat .gt_indent_5 {
   text-indent: 25px;
 }
 
-#ulepkvfvge .katex-display {
+#oqlxczvvat .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#ulepkvfvge div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#oqlxczvvat div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -742,7 +742,7 @@
     </tr></thead>
 <tbody class="gt_table_body"><tr>
 <td headers="cluster" class="gt_row gt_center">1</td>
-<td headers="n_journals" class="gt_row gt_right">130</td>
+<td headers="n_journals" class="gt_row gt_right">131</td>
 <td headers="top_journals" class="gt_row gt_left">DOAJ (DOAJ: Directory of Open Access Journals); HAL (Le Centre pour la Communication Scientifique Directe); Institutional Repositories DataBase (IRDB)</td>
 </tr></tbody>
 </table></div>
@@ -797,7 +797,7 @@ Figure 20.1: Journal co-citation base map coloured by discipline cluster.
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">source_display_name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="va">basemap_journals</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Institution journals matched to base map: {nrow(inst_journals_matched)} / {nrow(inst_journals)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Institution journals matched to base map: 5 / 262</code></pre>
+<pre><code>#&gt; Institution journals matched to base map: 5 / 263</code></pre>
 <div class="sourceCode" id="cb305"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">overlay_sizes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>journal <span class="op">=</span> <span class="fu"><a href="https://r.igraph.org/reference/V.html">V</a></span><span class="op">(</span><span class="va">g_journals</span><span class="op">)</span><span class="op">$</span><span class="va">name</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">left_join</a></span><span class="op">(</span><span class="va">inst_journals_matched</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"journal"</span> <span class="op">=</span> <span class="st">"source_display_name"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -1129,7 +1129,7 @@ Figure 20.2: Overlay map showing Oxford’s 2022 publication profile on the jour
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-06-07.</p>
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-06-10.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">

@@ -244,7 +244,7 @@
 <pre><code>#&gt; Corpus size: 115 documents</code></pre>
 <div class="sourceCode" id="cb331"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Total tokens: {sum(ntoken(corp))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Total tokens: 28100</code></pre>
+<pre><code>#&gt; Total tokens: 28111</code></pre>
 </div>
 <div id="tokenisation-and-preprocessing" class="section level3" number="22.4.2">
 <h3>
@@ -262,7 +262,7 @@
 <span>  <span class="fu"><a href="https://quanteda.io/reference/tokens_wordstem.html">tokens_wordstem</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Tokens after preprocessing: {sum(ntoken(toks))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Tokens after preprocessing: 14185</code></pre>
+<pre><code>#&gt; Tokens after preprocessing: 14145</code></pre>
 </div>
 <div id="document-feature-matrix" class="section level3" number="22.4.3">
 <h3>
@@ -273,7 +273,7 @@
 <span>  <span class="fu"><a href="https://quanteda.io/reference/dfm_trim.html">dfm_trim</a></span><span class="op">(</span>min_termfreq <span class="op">=</span> <span class="fl">5</span>, min_docfreq <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"DFM dimensions: {nrow(dfmat)} docs x {ncol(dfmat)} features\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; DFM dimensions: 115 docs x 632 features</code></pre>
+<pre><code>#&gt; DFM dimensions: 115 docs x 625 features</code></pre>
 <div class="sourceCode" id="cb337"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Sparsity: {scales::percent(sparsity(dfmat))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Sparsity: 91%</code></pre>
@@ -776,7 +776,7 @@ Figure 22.1: Top 20 most frequent terms in the Scientometrics corpus.
     </tr>
 <tr class="gt_row_group_first">
 <td headers="2019  term" class="gt_row gt_left">collabor</td>
-<td headers="2019  tfidf" class="gt_row gt_right">19.0</td>
+<td headers="2019  tfidf" class="gt_row gt_right">18.0</td>
 </tr>
 <tr>
 <td headers="2019  term" class="gt_row gt_left">usag</td>
@@ -788,34 +788,34 @@ Figure 22.1: Top 20 most frequent terms in the Scientometrics corpus.
 </tr>
 <tr>
 <td headers="2019  term" class="gt_row gt_left">citat</td>
-<td headers="2019  tfidf" class="gt_row gt_right">14.1</td>
+<td headers="2019  tfidf" class="gt_row gt_right">13.8</td>
 </tr>
 <tr>
-<td headers="2019  term" class="gt_row gt_left">journal</td>
-<td headers="2019  tfidf" class="gt_row gt_right">13.1</td>
+<td headers="2019  term" class="gt_row gt_left">measur</td>
+<td headers="2019  tfidf" class="gt_row gt_right">12.9</td>
 </tr>
 <tr class="gt_group_heading_row">
 <th colspan="2" class="gt_group_heading" scope="colgroup" id="2020">2020</th>
     </tr>
 <tr class="gt_row_group_first">
 <td headers="2020  term" class="gt_row gt_left">citat</td>
-<td headers="2020  tfidf" class="gt_row gt_right">23.1</td>
+<td headers="2020  tfidf" class="gt_row gt_right">28.8</td>
 </tr>
 <tr>
 <td headers="2020  term" class="gt_row gt_left">clinic</td>
 <td headers="2020  tfidf" class="gt_row gt_right">19.1</td>
 </tr>
 <tr>
-<td headers="2020  term" class="gt_row gt_left">open</td>
-<td headers="2020  tfidf" class="gt_row gt_right">16.3</td>
+<td headers="2020  term" class="gt_row gt_left">wos</td>
+<td headers="2020  tfidf" class="gt_row gt_right">17.5</td>
 </tr>
 <tr>
 <td headers="2020  term" class="gt_row gt_left">self-cit</td>
 <td headers="2020  tfidf" class="gt_row gt_right">15.8</td>
 </tr>
 <tr>
-<td headers="2020  term" class="gt_row gt_left">disciplin</td>
-<td headers="2020  tfidf" class="gt_row gt_right">12.5</td>
+<td headers="2020  term" class="gt_row gt_left">innov</td>
+<td headers="2020  tfidf" class="gt_row gt_right">12.8</td>
 </tr>
 <tr class="gt_group_heading_row">
 <th colspan="2" class="gt_group_heading" scope="colgroup" id="2021">2021</th>
@@ -825,35 +825,31 @@ Figure 22.1: Top 20 most frequent terms in the Scientometrics corpus.
 <td headers="2021  tfidf" class="gt_row gt_right">31.7</td>
 </tr>
 <tr>
+<td headers="2021  term" class="gt_row gt_left">retract</td>
+<td headers="2021  tfidf" class="gt_row gt_right">28.5</td>
+</tr>
+<tr>
 <td headers="2021  term" class="gt_row gt_left">hold</td>
-<td headers="2021  tfidf" class="gt_row gt_right">23.8</td>
+<td headers="2021  tfidf" class="gt_row gt_right">21.9</td>
 </tr>
 <tr>
 <td headers="2021  term" class="gt_row gt_left">countri</td>
-<td headers="2021  tfidf" class="gt_row gt_right">21.4</td>
+<td headers="2021  tfidf" class="gt_row gt_right">20.8</td>
 </tr>
 <tr>
 <td headers="2021  term" class="gt_row gt_left">covid-19</td>
-<td headers="2021  tfidf" class="gt_row gt_right">19.9</td>
-</tr>
-<tr>
-<td headers="2021  term" class="gt_row gt_left">preprint</td>
-<td headers="2021  tfidf" class="gt_row gt_right">17.4</td>
-</tr>
-<tr>
-<td headers="2021  term" class="gt_row gt_left">oa</td>
-<td headers="2021  tfidf" class="gt_row gt_right">17.4</td>
+<td headers="2021  tfidf" class="gt_row gt_right">19.7</td>
 </tr>
 <tr class="gt_group_heading_row">
 <th colspan="2" class="gt_group_heading" scope="colgroup" id="2022">2022</th>
     </tr>
 <tr class="gt_row_group_first">
 <td headers="2022  term" class="gt_row gt_left">citat</td>
-<td headers="2022  tfidf" class="gt_row gt_right">24.4</td>
+<td headers="2022  tfidf" class="gt_row gt_right">23.8</td>
 </tr>
 <tr>
 <td headers="2022  term" class="gt_row gt_left">model</td>
-<td headers="2022  tfidf" class="gt_row gt_right">22.8</td>
+<td headers="2022  tfidf" class="gt_row gt_right">23.5</td>
 </tr>
 <tr>
 <td headers="2022  term" class="gt_row gt_left">univers</td>
@@ -865,7 +861,7 @@ Figure 22.1: Top 20 most frequent terms in the Scientometrics corpus.
 </tr>
 <tr>
 <td headers="2022  term" class="gt_row gt_left">network</td>
-<td headers="2022  tfidf" class="gt_row gt_right">18.4</td>
+<td headers="2022  tfidf" class="gt_row gt_right">18.6</td>
 </tr>
 <tr class="gt_group_heading_row">
 <th colspan="2" class="gt_group_heading" scope="colgroup" id="2023">2023</th>
@@ -875,16 +871,16 @@ Figure 22.1: Top 20 most frequent terms in the Scientometrics corpus.
 <td headers="2023  tfidf" class="gt_row gt_right">27.2</td>
 </tr>
 <tr>
+<td headers="2023  term" class="gt_row gt_left">polici</td>
+<td headers="2023  tfidf" class="gt_row gt_right">19.7</td>
+</tr>
+<tr>
 <td headers="2023  term" class="gt_row gt_left">author</td>
 <td headers="2023  tfidf" class="gt_row gt_right">19.4</td>
 </tr>
 <tr>
-<td headers="2023  term" class="gt_row gt_left">polici</td>
-<td headers="2023  tfidf" class="gt_row gt_right">19.1</td>
-</tr>
-<tr>
 <td headers="2023  term" class="gt_row gt_left">femal</td>
-<td headers="2023  tfidf" class="gt_row gt_right">18.2</td>
+<td headers="2023  tfidf" class="gt_row gt_right">19.2</td>
 </tr>
 <tr>
 <td headers="2023  term" class="gt_row gt_left">inventor</td>
@@ -1233,7 +1229,7 @@ Figure 22.2: Relative frequency of selected terms over time.
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-06-07.</p>
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-06-10.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">

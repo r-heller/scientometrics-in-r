@@ -251,10 +251,10 @@
 <span>        name <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Authors: {n_distinct(c(edges$author_id_1, edges$author_id_2))}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Authors: 804</code></pre>
+<pre><code>#&gt; Authors: 805</code></pre>
 <div class="sourceCode" id="cb205"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Edges: {nrow(edges)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Edges: 1638</code></pre>
+<pre><code>#&gt; Edges: 1646</code></pre>
 </div>
 <div id="building-the-network" class="section level3" number="16.4.3">
 <h3>
@@ -269,7 +269,7 @@
 <span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/simplify.html">simplify</a></span><span class="op">(</span><span class="va">g</span>, edge.attr.comb <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>weight <span class="op">=</span> <span class="st">"sum"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Nodes: {vcount(g)}, Edges: {ecount(g)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Nodes: 804, Edges: 1638</code></pre>
+<pre><code>#&gt; Nodes: 805, Edges: 1646</code></pre>
 <div class="sourceCode" id="cb209"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Components: {components(g)$no}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Components: 199</code></pre>
@@ -304,7 +304,7 @@
 <pre><code>#&gt; # A tibble: 10 × 4
 #&gt;    author_name      degree betweenness clustering
 #&gt;    &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;
-#&gt;  1 Min Song             27    0.000298      0.795
+#&gt;  1 Min Song             27    0.000297      0.795
 #&gt;  2 Hyeyoung Ryu         24    0             1    
 #&gt;  3 Chongyan Chen        24    0             1    
 #&gt;  4 Islam Akef Ebeid     24    0             1    
@@ -428,7 +428,7 @@ Figure 16.2: Degree distribution of the co-authorship network.
 <div class="sourceCode" id="cb227"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">giant_ratio</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r.igraph.org/reference/gorder.html">vcount</a></span><span class="op">(</span><span class="va">giant</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://r.igraph.org/reference/gorder.html">vcount</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Giant component: {vcount(giant)}/{vcount(g)} nodes ({scales::percent(giant_ratio)})\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Giant component: 51/804 nodes (6%)</code></pre>
+<pre><code>#&gt; Giant component: 51/805 nodes (6%)</code></pre>
 <div class="sourceCode" id="cb229"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Mean degree: {round(mean(degree(giant)), 1)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Mean degree: 5.6</code></pre>
@@ -731,7 +731,7 @@ Figure 16.2: Degree distribution of the co-authorship network.
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-06-07.</p>
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-06-10.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">
