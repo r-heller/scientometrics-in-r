@@ -236,10 +236,10 @@
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">first_name</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nchar.html">nchar</a></span><span class="op">(</span><span class="va">first_name</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Author records: {nrow(authors)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Author records: 933</code></pre>
+<pre><code>#&gt; Author records: 914</code></pre>
 <div class="sourceCode" id="cb427"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Unique first names: {n_distinct(authors$first_name)}\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Unique first names: 729</code></pre>
+<pre><code>#&gt; Unique first names: 709</code></pre>
 </div>
 <div id="simple-name-based-gender-proxy" class="section level3" number="29.4.2">
 <h3>
@@ -263,7 +263,7 @@
 <span></span>
 <span><span class="va">classified</span> <span class="op">&lt;-</span> <span class="va">authors</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">gender_proxy</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Classified: {nrow(classified)} / {nrow(authors)} ({scales::percent(nrow(classified)/nrow(authors))})\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code>#&gt; Classified: 43 / 933 (5%)</code></pre>
+<pre><code>#&gt; Classified: 47 / 914 (5%)</code></pre>
 </div>
 <div id="gender-representation" class="section level3" number="29.4.3">
 <h3>
@@ -781,38 +781,38 @@ Figure 29.1: Gender representation among classifiable author names.
 <tr>
 <td headers="author_position" class="gt_row gt_left">first</td>
 <td headers="gender_proxy" class="gt_row gt_left">female</td>
-<td headers="n" class="gt_row gt_right">2</td>
-<td headers="pct" class="gt_row gt_right">0.167</td>
+<td headers="n" class="gt_row gt_right">3</td>
+<td headers="pct" class="gt_row gt_right">0.188</td>
 </tr>
 <tr>
 <td headers="author_position" class="gt_row gt_left">first</td>
 <td headers="gender_proxy" class="gt_row gt_left">male</td>
+<td headers="n" class="gt_row gt_right">13</td>
+<td headers="pct" class="gt_row gt_right">0.812</td>
+</tr>
+<tr>
+<td headers="author_position" class="gt_row gt_left">last</td>
+<td headers="gender_proxy" class="gt_row gt_left">female</td>
+<td headers="n" class="gt_row gt_right">6</td>
+<td headers="pct" class="gt_row gt_right">0.375</td>
+</tr>
+<tr>
+<td headers="author_position" class="gt_row gt_left">last</td>
+<td headers="gender_proxy" class="gt_row gt_left">male</td>
 <td headers="n" class="gt_row gt_right">10</td>
-<td headers="pct" class="gt_row gt_right">0.833</td>
-</tr>
-<tr>
-<td headers="author_position" class="gt_row gt_left">last</td>
-<td headers="gender_proxy" class="gt_row gt_left">female</td>
-<td headers="n" class="gt_row gt_right">5</td>
-<td headers="pct" class="gt_row gt_right">0.294</td>
-</tr>
-<tr>
-<td headers="author_position" class="gt_row gt_left">last</td>
-<td headers="gender_proxy" class="gt_row gt_left">male</td>
-<td headers="n" class="gt_row gt_right">12</td>
-<td headers="pct" class="gt_row gt_right">0.706</td>
+<td headers="pct" class="gt_row gt_right">0.625</td>
 </tr>
 <tr>
 <td headers="author_position" class="gt_row gt_left">middle</td>
 <td headers="gender_proxy" class="gt_row gt_left">female</td>
-<td headers="n" class="gt_row gt_right">5</td>
-<td headers="pct" class="gt_row gt_right">0.357</td>
+<td headers="n" class="gt_row gt_right">7</td>
+<td headers="pct" class="gt_row gt_right">0.467</td>
 </tr>
 <tr>
 <td headers="author_position" class="gt_row gt_left">middle</td>
 <td headers="gender_proxy" class="gt_row gt_left">male</td>
-<td headers="n" class="gt_row gt_right">9</td>
-<td headers="pct" class="gt_row gt_right">0.643</td>
+<td headers="n" class="gt_row gt_right">8</td>
+<td headers="pct" class="gt_row gt_right">0.533</td>
 </tr>
 </tbody>
 </table></div>
@@ -1145,7 +1145,7 @@ Figure 29.2: Gender representation by authorship position.
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-06-10.</p>
+    <p>"<strong>Scientometrics in R</strong>: Bibliometrics, Network Science, and Research Evaluation" was written by R. Heller. It was last built on 2026-06-14.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">
