@@ -56,3 +56,8 @@ _freeze/openalex_cache/
 # bookdown output (deployed to gh-pages by CI)
 docs/
 render-test.log
+*.tmp
+*.bak
+*.orig
+.Rproj.user
+*.Rcheck/
