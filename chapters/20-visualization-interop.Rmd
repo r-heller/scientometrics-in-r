@@ -128,7 +128,7 @@ patchwork::wrap_plots(plots, ncol = 2)
 
 ```{r}
 #| label: 20-export-graphml
-out_dir <- here::here("data")
+out_dir <- here::here("inst", "extdata")
 graphml_path <- file.path(out_dir, "coauth_network.graphml")
 write_graph(giant, graphml_path, format = "graphml")
 cat(glue("Exported GraphML: {graphml_path}\n"))

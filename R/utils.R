@@ -55,6 +55,7 @@ field_normalize <- function(citations, field_means) {
 #'
 #' @param df A data frame with columns `cited_by_count`, `field`, and `year`.
 #' @return The input data frame with an added `mncs` column.
+#' @importFrom rlang .data
 #' @export
 compute_mncs <- function(df) {
   required <- c("cited_by_count", "field", "year")
