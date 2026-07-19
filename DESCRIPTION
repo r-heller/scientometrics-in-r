@@ -19,12 +19,14 @@ Depends:
 Imports:
     bursts,
     dplyr,
+    ggplot2,
     igraph,
     openalexR,
     rlang,
     tibble,
     tidyr,
-    utils
+    utils,
+    viridis
 Suggests:
     ggraph,
     testthat (>= 3.0.0),
