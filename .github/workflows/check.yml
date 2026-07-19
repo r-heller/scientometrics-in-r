@@ -60,7 +60,7 @@ jobs:
 
       - name: Build pkgdown site
         run: |
-          pkgdown::build_site(override = list(destination = "../_book/pkg"))
+          pkgdown::build_site(override = list(destination = "_book/pkg"))
         shell: Rscript {0}
 
       - name: Deploy pkgdown to GitHub Pages
