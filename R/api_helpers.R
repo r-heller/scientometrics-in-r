@@ -24,8 +24,28 @@ fetch_openalex <- function(..., cache_dir = "_freeze/openalex_cache",
   }
 
   sci_rate_limit()
-  result <- openalexR::oa_fetch(...)
-  saveRDS(result, cache_file)
+
+  # Light retry to smooth over transient OpenAlex/network hiccups (e.g. in
+  # CI). Re-raise the error only after the final attempt fails.
+  max_tries <- 3L
+  result <- NULL
+  for (attempt in seq_len(max_tries)) {
+    result <- tryCatch(
+      openalexR::oa_fetch(...),
+      error = function(e) {
+        if (attempt == max_tries) stop(e)
+        NULL
+      }
+    )
+    if (!is.null(result) && NROW(result) > 0) break
+    if (attempt < max_tries) Sys.sleep(2 * attempt)
+  }
+
+  # Empty-result guard: only cache a non-empty response so a transient miss
+  # is not frozen for `cache_days`.
+  if (!is.null(result) && NROW(result) > 0) {
+    saveRDS(result, cache_file)
+  }
   result
 }
 

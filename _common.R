@@ -16,7 +16,10 @@ knitr::opts_chunk$set(
 options(
   scipen = 999,
   digits = 3,
-  knitr.kable.NA = "—"
+  knitr.kable.NA = "—",
+  # Identify to OpenAlex to join the polite pool (faster, more reliable
+  # responses and fewer transient failures during CI renders).
+  openalexR.mailto = "raban.heller@outlook.com"
 )
 
 set.seed(42)

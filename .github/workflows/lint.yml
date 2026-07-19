@@ -35,6 +35,9 @@ jobs:
           r-version: "4.4.1"
           use-public-rspm: true
 
+      - name: Disable renv autoloader in CI
+        run: rm -f .Rprofile
+
       - name: Install R dependencies
         run: |
           install.packages(c("lintr", "styler"))
