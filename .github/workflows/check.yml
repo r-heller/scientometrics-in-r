@@ -39,7 +39,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            libcurl4-openssl-dev libssl-dev libxml2-dev libgit2-dev
+            libcurl4-openssl-dev libssl-dev libxml2-dev libgit2-dev libglpk-dev
 
       - name: Disable renv autoloader in CI
         run: rm -f .Rprofile

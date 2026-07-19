@@ -24,7 +24,9 @@ compute_h_index <- function(citations) {
   stopifnot(is.numeric(citations))
   citations <- sort(citations, decreasing = TRUE)
   n <- length(citations)
-  if (n == 0L) return(0L)
+  if (n == 0L) {
+    return(0L)
+  }
   h <- sum(citations >= seq_along(citations))
   as.integer(h)
 }
@@ -114,11 +116,14 @@ build_coauth_graph <- function(works) {
   edges <- dplyr::count(edges, .data$a1, .data$a2, name = "weight")
 
   node_lookup <- dplyr::distinct(
-    authors, id = .data[[id_col]], name = .data[[name_col]]
+    authors,
+    id = .data[[id_col]], name = .data[[name_col]]
   )
 
-  g <- igraph::graph_from_data_frame(edges, directed = FALSE,
-                                     vertices = node_lookup)
+  g <- igraph::graph_from_data_frame(edges,
+    directed = FALSE,
+    vertices = node_lookup
+  )
   g
 }
 
@@ -144,14 +149,21 @@ kleinberg_bursts <- function(keywords, dates, top_n = 50, gamma = 1.0) {
 
   results <- lapply(top_kw$keyword, function(kw) {
     kw_dates <- sort(df$date[df$keyword == kw])
-    if (length(kw_dates) < 3) return(NULL)
+    if (length(kw_dates) < 3) {
+      return(NULL)
+    }
     offsets <- as.numeric(difftime(kw_dates, min(kw_dates), units = "days"))
-    if (all(offsets == 0)) return(NULL)
-    tryCatch({
-      b <- bursts::kleinberg(offsets, gamma = gamma)
-      b$keyword <- kw
-      b
-    }, error = function(e) NULL)
+    if (all(offsets == 0)) {
+      return(NULL)
+    }
+    tryCatch(
+      {
+        b <- bursts::kleinberg(offsets, gamma = gamma)
+        b$keyword <- kw
+        b
+      },
+      error = function(e) NULL
+    )
   })
 
   dplyr::bind_rows(results)
